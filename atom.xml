@@ -36,18 +36,19 @@
   </entry>
   
   <entry>
-    <title>Hello World</title>
+    <title>mmdet框架搭建过程</title>
     <link href="https://gaozhiwei1.github.io/2021/06/01/hello-world/"/>
     <id>https://gaozhiwei1.github.io/2021/06/01/hello-world/</id>
     <published>2021-06-01T00:45:05.460Z</published>
-    <updated>2021-06-01T00:45:05.461Z</updated>
+    <updated>2021-06-01T04:16:56.577Z</updated>
     
     
       
       
         
         
-    <summary type="html">&lt;p&gt;Welcome to &lt;a href=&quot;https://hexo.io/&quot;&gt;Hexo&lt;/a&gt;! This is your very first post. Check &lt;a href=&quot;https://hexo.io/docs/&quot;&gt;documentation&lt;/a&gt;</summary>
+    <summary type="html">&lt;p&gt;本篇博客我将介绍如何在WSL2环境下利用vscode搭建mmdet环境，该环境是用来执行深度学习目标检测任务，常见算法由faster-rcnn以及yolo目标检测算法系列，在阅读本博客之前，你的配置应当包括wsl2系统以及python编译环境。&lt;/p&gt;
+&lt;h2</summary>
         
       
     
