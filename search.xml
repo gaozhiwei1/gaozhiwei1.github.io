@@ -4,6 +4,33 @@
   
     
     <entry>
+      <title>my first post</title>
+      <link href="2021/06/01/my-first-post/"/>
+      <url>2021/06/01/my-first-post/</url>
+      
+        <content type="html"><![CDATA[]]></content>
+      
+      
+      <categories>
+          
+          <category> 搭建博客 </category>
+          
+      </categories>
+      
+      
+        <tags>
+            
+            <tag> Hexo </tag>
+            
+            <tag> Markdown </tag>
+            
+        </tags>
+      
+    </entry>
+    
+    
+    
+    <entry>
       <title>Hello World</title>
       <link href="2021/06/01/hello-world/"/>
       <url>2021/06/01/hello-world/</url>
