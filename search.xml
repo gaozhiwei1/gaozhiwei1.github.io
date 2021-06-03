@@ -4,6 +4,25 @@
   
     
     <entry>
+      <title>wsl 安装及python环境配置</title>
+      <link href="2021/06/03/wsl/"/>
+      <url>2021/06/03/wsl/</url>
+      
+        <content type="html"><![CDATA[<h2 id="本篇博客我将介绍如何安装wsl以及其中的python环境配置，需要读者具备一定的linux操作系统知识，以及python基本知识"><a href="#本篇博客我将介绍如何安装wsl以及其中的python环境配置，需要读者具备一定的linux操作系统知识，以及python基本知识" class="headerlink" title="本篇博客我将介绍如何安装wsl以及其中的python环境配置，需要读者具备一定的linux操作系统知识，以及python基本知识"></a>本篇博客我将介绍如何安装wsl以及其中的python环境配置，需要读者具备一定的linux操作系统知识，以及python基本知识</h2>]]></content>
+      
+      
+      
+        <tags>
+            
+            <tag> 环境安装 linux </tag>
+            
+        </tags>
+      
+    </entry>
+    
+    
+    
+    <entry>
       <title>my first post</title>
       <link href="2021/06/01/my-first-post/"/>
       <url>2021/06/01/my-first-post/</url>
