@@ -473,14 +473,14 @@
                 
                 <div class="info-break-policy">
                     <i class="far fa-file-word fa-fw"></i>文章字数:&nbsp;&nbsp;
-                    373
+                    642
                 </div>
                 
 
                 
                 <div class="info-break-policy">
                     <i class="far fa-clock fa-fw"></i>阅读时长:&nbsp;&nbsp;
-                    1 分
+                    2 分
                 </div>
                 
 
@@ -520,8 +520,26 @@ $ <span class="token function">sudo</span> <span class="token function">apt-get<
 $ pip3 <span class="token function">install</span> numpy matplotlib
 $ <span class="token function">mkdir</span> python_files <span class="token comment">#在/home/username目录下创建python_files文件夹</span>
 $ <span class="token builtin class-name">cd</span> python_files
-$ code <span class="token builtin class-name">.</span>  <span class="token comment">#下载vscode,注意code命令后的空格</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
-<p>以上命令将帮助你进入到vscode中，建立简单的python文件，按F5编译，提示安装python编译扩展，安装后便可成功编译，如下图</p>
+$ code <span class="token builtin class-name">.</span>  <span class="token comment">#下载vscode,注意code命令后的空格</span>
+$ <span class="token function">sudo</span> <span class="token function">chmod</span> -R <span class="token number">777</span> /home/<span class="token operator">&lt;</span>username<span class="token operator">&gt;</span>/python_files <span class="token comment">#获得修改，增加文件的权限</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+<p>以上命令将帮助你进入到vscode中，建立简单的python文件，按F5编译，提示安装python编译扩展，安装后便可成功编译，如下图<br><img src="/images/3.png"></p>
+<h3 id="配置Python绘图环境"><a href="#配置Python绘图环境" class="headerlink" title="配置Python绘图环境"></a>配置Python绘图环境</h3><p>此时利用python进行绘图是不能显示的，需要另外配置gui，进入到ubuntu原始目录下,输入cd,然后输入以下命令</p>
+<pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token function">sudo</span> <span class="token function">vim</span> ~/.bashrc<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
+<p>进入到.bashrc文件下，到文件最下方添加如下两行</p>
+<pre class="line-numbers language-none"><code class="language-none">export DISPLAY=$(cat /etc/resolv.conf | grep nameserver | awk '{print $2}'):0
+export LIBGL_ALWAYS_INDIRECT=1<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span></span></code></pre>
+<p>按Esc键，和:wq命令保存上述修改。而后进入命令行使文件生效</p>
+<pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">$ <span class="token builtin class-name">source</span> ~/.bashrc<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
+<p>接下来安装简易桌面，进入<a target="_blank" rel="noopener" href="https://sourceforge.net/projects/vcxsrv/">Vcxsrv</a>页面下载该工具，一路默认安装，而后打开，见到如下页面<br><img src="/images/4.png"></p>
+<p>上面最后一个一定要勾上。接下来运行命令行安装xfce4</p>
+<pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">$ <span class="token function">sudo</span> <span class="token function">apt-get</span> <span class="token function">install</span> xfce4
+$ <span class="token function">sudo</span> <span class="token function">apt-get</span> <span class="token function">install</span> xfce4-terminal<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span></span></code></pre>
+<p>在安装</p>
+<pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">$ <span class="token function">sudo</span> <span class="token function">apt-get</span> <span class="token function">install</span> x11-apps
+$ xeyes<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span></span></code></pre>
+<p>如果出现一对眼睛，则便是安装成功。加下来安装</p>
+<pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">$ <span class="token function">sudo</span> <span class="token function">apt-get</span> <span class="token function">install</span> python3.8-tk<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
+<p>再次编译python文件，便可绘图，如遇到缺少字体，百度输入报错命令，安装字体即可。</p>
 
                 
             </div>
@@ -1058,7 +1076,7 @@ $ code <span class="token builtin class-name">.</span>  <span class="token comme
             <br>
             
                 &nbsp;<i class="fas fa-chart-area"></i>&nbsp;站点总字数:&nbsp;<span
-                        class="white-color">491</span>
+                        class="white-color">760</span>
             
             
             
