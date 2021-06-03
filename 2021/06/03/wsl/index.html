@@ -537,12 +537,12 @@ $ <span class="token function">sudo</span> <span class="token function">apt-get<
 <p>在安装</p>
 <pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">$ <span class="token function">sudo</span> <span class="token function">apt-get</span> <span class="token function">install</span> x11-apps
 $ xeyes<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span></span></code></pre>
-<p>如果出现一对眼睛，则便是安装成功。加下来安装</p>
+<p>如果出现一对眼睛，则便是安装成功。接下来安装</p>
 <pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">$ <span class="token function">sudo</span> <span class="token function">apt-get</span> <span class="token function">install</span> python3.8-tk<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
 <p>再次编译python文件，便可绘图，如遇到缺少字体，百度输入报错命令，安装字体即可。</p>
 <h3 id="将WSL迁移到D盘"><a href="#将WSL迁移到D盘" class="headerlink" title="将WSL迁移到D盘"></a>将WSL迁移到D盘</h3><p>因为C盘是系统盘，后面WSL内存可能相当大，因此很不方便，这里我们将WSL迁到D盘，首先我们在D盘下创建文件夹wsl。后面我们进入到<a target="_blank" rel="noopener" href="https://github.com/DDoSolitary/LxRunOffline/releases">lxrunoffline</a>官网中下载如下工具</p>
 <p><img src="/images/5.png"></p>
-<p>解压到d盘下，同时配置系统的path变量，变量为D:\LxRunOffline-v3.5.0-msvc，而后进入cmd，输入lxrunoffice，如果没报错，则安装成功。后面再cmd中输入</p>
+<p>解压到d盘下，同时配置系统的path变量，变量为D:\LxRunOffline-v3.5.0-msvc，而后进入cmd，输入lxrunoffline，如果没报错，则安装成功。后面再cmd中输入</p>
 <pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">$ wsl --shutdown<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
 <p>暂时关闭wsl<br>而后运行</p>
 <pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">$ LxRunOffline move -n Ubuntu-20.04 -d D:<span class="token punctuation">\</span>wsl<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
