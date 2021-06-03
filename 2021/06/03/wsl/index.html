@@ -473,7 +473,7 @@
                 
                 <div class="info-break-policy">
                     <i class="far fa-file-word fa-fw"></i>文章字数:&nbsp;&nbsp;
-                    839
+                    842
                 </div>
                 
 
@@ -513,7 +513,7 @@ Enable-WindowsOptionalFeature -Online -FeatureName VirtualMachinePlatform<span a
 <pre class="line-numbers language-none"><code class="language-none">C:\Users\Admin\AppData\Local\Packages\CanonicalGroupLimited.UbuntuonWindows_79rhkp1fndgsc\LocalState\rootfs<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
 <p>简要搜索方式为下图</p>
 <p><img src="/images/2.png"></p>
-<h3 id="配置python环境"><a href="#配置python环境" class="headerlink" title="配置python环境"></a>配置python环境</h3><p>安装完ubuntu后，其中是自带python环境的，这么建议不要更改默认源，后面有可能会出现很大的问题（血的教训），进入ubuntu中，依次输入一下命令，利用vscode编译python。</p>
+<h3 id="3-配置python环境"><a href="#3-配置python环境" class="headerlink" title="3.配置python环境"></a>3.配置python环境</h3><p>安装完ubuntu后，其中是自带python环境的，这么建议不要更改默认源，后面有可能会出现很大的问题（血的教训），进入ubuntu中，依次输入一下命令，利用vscode编译python。</p>
 <pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">$ <span class="token function">sudo</span> <span class="token function">apt-get</span> update
 $ <span class="token function">sudo</span> <span class="token function">apt-get</span> upgrade
 $ <span class="token function">sudo</span> <span class="token function">apt-get</span> <span class="token function">install</span> python3-pip <span class="token comment">#安装python3的pip命令</span>
@@ -523,7 +523,7 @@ $ <span class="token builtin class-name">cd</span> python_files
 $ code <span class="token builtin class-name">.</span>  <span class="token comment">#下载vscode,注意code命令后的空格</span>
 $ <span class="token function">sudo</span> <span class="token function">chmod</span> -R <span class="token number">777</span> /home/<span class="token operator">&lt;</span>username<span class="token operator">&gt;</span>/python_files <span class="token comment">#获得修改，增加文件的权限</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
 <p>以上命令将帮助你进入到vscode中，建立简单的python文件，按F5编译，提示安装python编译扩展，安装后便可成功编译，如下图<br><img src="/images/3.png"></p>
-<h3 id="配置Python绘图环境"><a href="#配置Python绘图环境" class="headerlink" title="配置Python绘图环境"></a>配置Python绘图环境</h3><p>此时利用python进行绘图是不能显示的，需要另外配置gui，进入到ubuntu原始目录下,输入cd,然后输入以下命令</p>
+<h3 id="4-配置Python绘图环境"><a href="#4-配置Python绘图环境" class="headerlink" title="4.配置Python绘图环境"></a>4.配置Python绘图环境</h3><p>此时利用python进行绘图是不能显示的，需要另外配置gui，进入到ubuntu原始目录下,输入cd,然后输入以下命令</p>
 <pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token function">sudo</span> <span class="token function">vim</span> ~/.bashrc<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
 <p>进入到.bashrc文件下，到文件最下方添加如下两行</p>
 <pre class="line-numbers language-none"><code class="language-none">export DISPLAY=$(cat /etc/resolv.conf | grep nameserver | awk '{print $2}'):0
@@ -540,7 +540,7 @@ $ xeyes<span aria-hidden="true" class="line-numbers-rows"><span></span><span></s
 <p>如果出现一对眼睛，则便是安装成功。接下来安装</p>
 <pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">$ <span class="token function">sudo</span> <span class="token function">apt-get</span> <span class="token function">install</span> python3.8-tk<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
 <p>再次编译python文件，便可绘图，如遇到缺少字体，百度输入报错命令，安装字体即可。</p>
-<h3 id="将WSL迁移到D盘"><a href="#将WSL迁移到D盘" class="headerlink" title="将WSL迁移到D盘"></a>将WSL迁移到D盘</h3><p>因为C盘是系统盘，后面WSL内存可能相当大，因此很不方便，这里我们将WSL迁到D盘，首先我们在D盘下创建文件夹wsl。后面我们进入到<a target="_blank" rel="noopener" href="https://github.com/DDoSolitary/LxRunOffline/releases">lxrunoffline</a>官网中下载如下工具</p>
+<h3 id="5-将WSL迁移到D盘"><a href="#5-将WSL迁移到D盘" class="headerlink" title="5.将WSL迁移到D盘"></a>5.将WSL迁移到D盘</h3><p>因为C盘是系统盘，后面WSL内存可能相当大，因此很不方便，这里我们将WSL迁到D盘，首先我们在D盘下创建文件夹wsl。后面我们进入到<a target="_blank" rel="noopener" href="https://github.com/DDoSolitary/LxRunOffline/releases">lxrunoffline</a>官网中下载如下工具</p>
 <p><img src="/images/5.png"></p>
 <p>解压到d盘下，同时配置系统的path变量，变量为D:\LxRunOffline-v3.5.0-msvc，而后进入cmd，输入lxrunoffline，如果没报错，则安装成功。后面再cmd中输入</p>
 <pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">$ wsl --shutdown<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
@@ -1083,7 +1083,7 @@ $ xeyes<span aria-hidden="true" class="line-numbers-rows"><span></span><span></s
             <br>
             
                 &nbsp;<i class="fas fa-chart-area"></i>&nbsp;站点总字数:&nbsp;<span
-                        class="white-color">957</span>
+                        class="white-color">960</span>
             
             
             
