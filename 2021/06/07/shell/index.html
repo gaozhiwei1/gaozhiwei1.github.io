@@ -4,7 +4,7 @@
 
 <head>
     <meta charset="utf-8">
-    <meta name="keywords" content="mmdet框架搭建过程, 要勇敢面对呀~">
+    <meta name="keywords" content="Linux部分shell命令, 要勇敢面对呀~">
     <meta name="description" content="">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
@@ -16,7 +16,7 @@
     <!-- Global site tag (gtag.js) - Google Analytics -->
 
 
-    <title>mmdet框架搭建过程 | 要勇敢面对呀~</title>
+    <title>Linux部分shell命令 | 要勇敢面对呀~</title>
     <link rel="icon" type="image/png" href="/favicon.png">
 
     <link rel="stylesheet" type="text/css" href="/libs/awesome/css/all.css">
@@ -313,12 +313,12 @@
 
 
 
-<div class="bg-cover pd-header post-cover" style="background-image: url('/medias/featureimages/20.jpg')">
+<div class="bg-cover pd-header post-cover" style="background-image: url('/medias/featureimages/19.jpg')">
     <div class="container" style="right: 0px;left: 0px;">
         <div class="row">
             <div class="col s12 m12 l12">
                 <div class="brand">
-                    <h1 class="description center-align post-title">mmdet框架搭建过程</h1>
+                    <h1 class="description center-align post-title">Linux部分shell命令</h1>
                 </div>
             </div>
         </div>
@@ -434,8 +434,8 @@
                     
                     <div class="article-tag">
                         
-                            <a href="/tags/%E7%9B%AE%E6%A0%87%E6%A3%80%E6%B5%8B/">
-                                <span class="chip bg-color">目标检测</span>
+                            <a href="/tags/shell/">
+                                <span class="chip bg-color">shell</span>
                             </a>
                         
                     </div>
@@ -446,8 +446,8 @@
                     <div class="post-cate">
                         <i class="fas fa-bookmark fa-fw icon-category"></i>
                         
-                            <a href="/categories/%E6%B7%B1%E5%BA%A6%E5%AD%A6%E4%B9%A0/" class="post-category">
-                                深度学习
+                            <a href="/categories/Linux/" class="post-category">
+                                Linux
                             </a>
                         
                     </div>
@@ -459,21 +459,21 @@
                 
                 <div class="post-date info-break-policy">
                     <i class="far fa-calendar-minus fa-fw"></i>发布日期:&nbsp;&nbsp;
-                    2021-06-01
+                    2021-06-07
                 </div>
                 
 
                 
                 <div class="post-date info-break-policy">
                     <i class="far fa-calendar-check fa-fw"></i>更新日期:&nbsp;&nbsp;
-                    2021-06-03
+                    2021-06-07
                 </div>
                 
 
                 
                 <div class="info-break-policy">
                     <i class="far fa-file-word fa-fw"></i>文章字数:&nbsp;&nbsp;
-                    118
+                    304
                 </div>
                 
 
@@ -503,19 +503,122 @@
 
         <div class="card-content article-card-content">
             <div id="articleContent">
-                <p>本篇博客我将介绍如何在WSL2环境下利用vscode搭建mmdet环境，该环境是用来执行深度学习目标检测任务，常见算法由faster-rcnn以及yolo目标检测算法系列，在阅读本博客之前，你的配置应当包括wsl2系统以及python编译环境。</p>
-<h2 id="Quick-Start"><a href="#Quick-Start" class="headerlink" title="Quick Start"></a>Quick Start</h2><h3 id="Create-a-new-post"><a href="#Create-a-new-post" class="headerlink" title="Create a new post"></a>Create a new post</h3><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">$ hexo new <span class="token string">"My New Post"</span><span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
+                <h3 id="Vi-编辑器"><a href="#Vi-编辑器" class="headerlink" title="Vi 编辑器"></a>Vi 编辑器</h3><p>因为每次使用vi编辑器的时候，都会忘记一些基本的命令，这里将其记录如下</p>
+<h4 id="1-进入插入模式"><a href="#1-进入插入模式" class="headerlink" title="1.进入插入模式"></a>1.进入插入模式</h4><table>
+<thead>
+<tr>
+<th align="center">命令</th>
+<th>功能</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="center">i</td>
+<td>从光标当前所在位置之前开始插入</td>
+</tr>
+<tr>
+<td align="center">a</td>
+<td>从光标当前所在位置之后开始插入</td>
+</tr>
+<tr>
+<td align="center">I</td>
+<td>在光标所在行的行首插入</td>
+</tr>
+<tr>
+<td align="center">A</td>
+<td>在光标所在行的末尾插入</td>
+</tr>
+<tr>
+<td align="center">o</td>
+<td>在光标所在行的下面新开一行插入</td>
+</tr>
+<tr>
+<td align="center">O</td>
+<td>在光标所在行的上面新开一行插入</td>
+</tr>
+<tr>
+<td align="center">s</td>
+<td>删除光标位置的一个字符，然后进入插入模式</td>
+</tr>
+<tr>
+<td align="center">S</td>
+<td>删除光标坐在的行，然后进入插入模式</td>
+</tr>
+</tbody></table>
+<table>
+  <caption>我的第一个表格</caption>
+    <tbody><tr>
+        <th>类型</th>
+        <th>命令</th>
+        <th>功能</th>  
+    </tr>
+    <tr>
+        <td rowspan="9">type</td>
+        <td>text</td>
+        <td>单行文本输入框</td>
+    </tr>
+    <tr>
+        <td>password</td>
+        <td>密码输入框</td>
+    </tr>
+    <tr>
+        <td>radio</td>
+        <td>单选按钮</td>
+    </tr>
+    <tr>
+        <td>CheckBox</td>
+        <td>复选按钮</td>
+    </tr>
+    <tr><td>button</td>
+        <td>普通按钮</td>
+    </tr>
+    <tr>
+        <td>submit</td>
+        <td>提交按钮</td>
+    </tr>
+    <tr>
+        <td>reset</td>
+        <td>重置按钮</td>
+    </tr>
+    <tr>
+        <td>image</td>
+        <td>图像形式的提交按钮</td>
+    </tr>
+    <tr>
+        <td>file</td>
+        <td>文件域</td>
+    </tr>
+    <tr>
+        <td>name</td>
+        <td>用户自定义</td>
+        <td>控件名称</td>
+    </tr>
+    <tr>
+        <td>value</td>
+        <td>用户自定义</td>
+        <td>默认文本值</td>
+    </tr>
+    <tr>
+        <td>size</td>
+        <td>正整数</td>
+        <td>控件在页面中的显示宽度</td>
+    </tr>
+    <tr>
+        <td>checked</td>
+        <td>checked</td>
+        <td>定义选择控件默认被选中项</td>
+    </tr>
+    <tr>
+        <td>maxlength</td>
+        <td>正整数</td>
+        <td>控件允许输入的最多字符</td>
+    </tr>
+</tbody></table>
 
-<p>More info: <a target="_blank" rel="noopener" href="https://hexo.io/docs/writing.html">Writing</a></p>
-<h3 id="Run-server"><a href="#Run-server" class="headerlink" title="Run server"></a>Run server</h3><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">$ hexo server<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
 
-<p>More info: <a target="_blank" rel="noopener" href="https://hexo.io/docs/server.html">Server</a></p>
-<h3 id="Generate-static-files"><a href="#Generate-static-files" class="headerlink" title="Generate static files"></a>Generate static files</h3><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">$ hexo generate<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
 
-<p>More info: <a target="_blank" rel="noopener" href="https://hexo.io/docs/generating.html">Generating</a></p>
-<h3 id="Deploy-to-remote-sites"><a href="#Deploy-to-remote-sites" class="headerlink" title="Deploy to remote sites"></a>Deploy to remote sites</h3><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">$ hexo deploy<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
 
-<p>More info: <a target="_blank" rel="noopener" href="https://hexo.io/docs/one-command-deployment.html">Deployment</a></p>
+
+
 
                 
             </div>
@@ -542,7 +645,7 @@
                     </i>
                 </span>
                 <span class="reprint-info">
-                    <a href="https://gaozhiwei1.github.io/2021/06/01/hello-world/">https://gaozhiwei1.github.io/2021/06/01/hello-world/</a>
+                    <a href="https://gaozhiwei1.github.io/2021/06/07/shell/">https://gaozhiwei1.github.io/2021/06/07/shell/</a>
                 </span>
             </div>
             <div class="reprint__notice">
@@ -580,8 +683,8 @@
                     
                         <div class="article-tag">
                             
-                                <a href="/tags/%E7%9B%AE%E6%A0%87%E6%A3%80%E6%B5%8B/">
-                                    <span class="chip bg-color">目标检测</span>
+                                <a href="/tags/shell/">
+                                    <span class="chip bg-color">shell</span>
                                 </a>
                             
                         </div>
@@ -1019,66 +1122,18 @@
 <article id="prenext-posts" class="prev-next articles">
     <div class="row article-row">
         
-        <div class="article col s12 m6" data-aos="fade-up">
+        <div class="article col s12 m6" data-aos="fade-up" data-aos="fade-up">
             <div class="article-badge left-badge text-color">
-                <i class="fas fa-chevron-left"></i>&nbsp;上一篇</div>
+                <i class="far fa-dot-circle"></i>&nbsp;本篇
+            </div>
             <div class="card">
-                <a href="/2021/06/03/wsl/">
+                <a href="/2021/06/07/shell/">
                     <div class="card-image">
                         
                         
-                        <img src="/medias/featureimages/1.jpg" class="responsive-img" alt="wsl 安装及python环境配置">
+                        <img src="/medias/featureimages/19.jpg" class="responsive-img" alt="Linux部分shell命令">
                         
-                        <span class="card-title">wsl 安装及python环境配置</span>
-                    </div>
-                </a>
-                <div class="card-content article-content">
-                    <div class="summary block-with-text">
-                        
-                            
-                        
-                    </div>
-                    <div class="publish-info">
-                        <span class="publish-date">
-                            <i class="far fa-clock fa-fw icon-date"></i>2021-06-03
-                        </span>
-                        <span class="publish-author">
-                            
-                            <i class="fas fa-bookmark fa-fw icon-category"></i>
-                            
-                            <a href="/categories/linux/" class="post-category">
-                                    linux
-                                </a>
-                            
-                            
-                        </span>
-                    </div>
-                </div>
-                
-                <div class="card-action article-tags">
-                    
-                    <a href="/tags/%E7%8E%AF%E5%A2%83%E6%90%AD%E5%BB%BA/">
-                        <span class="chip bg-color">环境搭建</span>
-                    </a>
-                    
-                </div>
-                
-            </div>
-        </div>
-        
-        
-        <div class="article col s12 m6" data-aos="fade-up">
-            <div class="article-badge right-badge text-color">
-                本篇&nbsp;<i class="far fa-dot-circle"></i>
-            </div>
-            <div class="card">
-                <a href="/2021/06/01/hello-world/">
-                    <div class="card-image">
-                        
-                        
-                        <img src="/medias/featureimages/20.jpg" class="responsive-img" alt="mmdet框架搭建过程">
-                        
-                        <span class="card-title">mmdet框架搭建过程</span>
+                        <span class="card-title">Linux部分shell命令</span>
                     </div>
                 </a>
                 <div class="card-content article-content">
@@ -1089,14 +1144,14 @@
                     </div>
                     <div class="publish-info">
                             <span class="publish-date">
-                                <i class="far fa-clock fa-fw icon-date"></i>2021-06-01
+                                <i class="far fa-clock fa-fw icon-date"></i>2021-06-07
                             </span>
                         <span class="publish-author">
                             
                             <i class="fas fa-bookmark fa-fw icon-category"></i>
                             
-                            <a href="/categories/%E6%B7%B1%E5%BA%A6%E5%AD%A6%E4%B9%A0/" class="post-category">
-                                    深度学习
+                            <a href="/categories/Linux/" class="post-category">
+                                    Linux
                                 </a>
                             
                             
@@ -1107,8 +1162,57 @@
                 
                 <div class="card-action article-tags">
                     
-                    <a href="/tags/%E7%9B%AE%E6%A0%87%E6%A3%80%E6%B5%8B/">
-                        <span class="chip bg-color">目标检测</span>
+                    <a href="/tags/shell/">
+                        <span class="chip bg-color">shell</span>
+                    </a>
+                    
+                </div>
+                
+            </div>
+        </div>
+        
+        
+        <div class="article col s12 m6" data-aos="fade-up">
+            <div class="article-badge right-badge text-color">
+                下一篇&nbsp;<i class="fas fa-chevron-right"></i>
+            </div>
+            <div class="card">
+                <a href="/2021/06/07/wuhezhizhong/">
+                    <div class="card-image">
+                        
+                        
+                        <img src="/medias/featureimages/0.jpg" class="responsive-img" alt="乌合之众">
+                        
+                        <span class="card-title">乌合之众</span>
+                    </div>
+                </a>
+                <div class="card-content article-content">
+                    <div class="summary block-with-text">
+                        
+                            
+                        
+                    </div>
+                    <div class="publish-info">
+                            <span class="publish-date">
+                                <i class="far fa-clock fa-fw icon-date"></i>2021-06-07
+                            </span>
+                        <span class="publish-author">
+                            
+                            <i class="fas fa-bookmark fa-fw icon-category"></i>
+                            
+                            <a href="/categories/%E8%AF%BB%E4%B9%A6/" class="post-category">
+                                    读书
+                                </a>
+                            
+                            
+                        </span>
+                    </div>
+                </div>
+                
+                <div class="card-action article-tags">
+                    
+                    <a href="/tags/%E6%91%98%E6%8A%84/">
+                        <span class="chip bg-color">摘抄</span>
                     </a>
                     
                 </div>
