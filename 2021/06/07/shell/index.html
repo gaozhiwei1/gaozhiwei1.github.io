@@ -473,7 +473,7 @@
                 
                 <div class="info-break-policy">
                     <i class="far fa-file-word fa-fw"></i>文章字数:&nbsp;&nbsp;
-                    358
+                    345
                 </div>
                 
 
@@ -503,65 +503,7 @@
 
         <div class="card-content article-card-content">
             <div id="articleContent">
-                <h3 id="Vi-编辑器"><a href="#Vi-编辑器" class="headerlink" title="Vi 编辑器"></a>Vi 编辑器</h3><style type="text/css">
-    
-    table{
-        border-collapse:collapse;
-        table-layout:fixed;
-        border-radius:5px;
-        overflow:hidden;
-        margin: 10px auto;
-        border:2px solid #70aefb ;
-        background-color: #328ef4;
-        color: #c7dafb;
-        }
-     table td,th{
-        /* padding: 5px;
-        width: 33%; */
-        text-align: center;
-        border:1px solid #70aefb ;
-        vertical-align:middle;
-        /* font-size: 15px; */
-        width: 80%;
-    }
-        
-     .table-color-green{
-         background-color: green;
-     
-     }
-     
-     .table-color-grey{
-     
-         background-color:  #696969;
-     }
-     
-      .table-color-black{
-     
-         background-color: black;
-     }
-     
-     .jt-up-color{
-       color:red;
-     }
-     
-     .parent-position{
-         position: relative;
-     }
-     
-     .child-position{
-             position: absolute;
-            right: 0;
-            bottom: 0;
-     }
-     
-     .main-font{
-             font-size: 23px;
-     }
-</style>
-
-
-
-<h4 id="1-进入插入模式"><a href="#1-进入插入模式" class="headerlink" title="1.进入插入模式"></a>1.进入插入模式</h4><table>
+                <h3 id="Vi-编辑器"><a href="#Vi-编辑器" class="headerlink" title="Vi 编辑器"></a>Vi 编辑器</h3><h4 id="1-进入插入模式"><a href="#1-进入插入模式" class="headerlink" title="1.进入插入模式"></a>1.进入插入模式</h4><table>
 <thead>
 <tr>
 <th align="center">命令</th>
@@ -603,72 +545,58 @@
 </tbody></table>
 <h4 id="2-命令操作模式"><a href="#2-命令操作模式" class="headerlink" title="2.命令操作模式"></a>2.命令操作模式</h4><table>
     <tbody><tr>
-        <th>类型</th>
+        <th background="red">类型</th>
         <th>命令</th>
         <th>功能</th>  
     </tr>
     <tr>
-        <td rowspan="9">type</td>
-        <td>text</td>
-        <td>单行文本输入框</td>
+        <td rowspan="13" ,align="center">删除</td>
+        <td>x</td>
+        <td>删除光标所在位置的字符</td>
     </tr>
     <tr>
-        <td>password</td>
-        <td>密码输入框</td>
+        <td>X</td>
+        <td>删除光标所在位置的前一个字符</td>
     </tr>
     <tr>
-        <td>radio</td>
-        <td>单选按钮</td>
+        <td>nx</td>
+        <td>删除光标所在位置开始的n个字符，n代表数字</td>
     </tr>
     <tr>
-        <td>CheckBox</td>
-        <td>复选按钮</td>
+        <td>dd</td>
+        <td>删除光标所在行</td>
     </tr>
-    <tr><td>button</td>
-        <td>普通按钮</td>
-    </tr>
-    <tr>
-        <td>submit</td>
-        <td>提交按钮</td>
+    <tr><td>db</td>
+        <td>删除光标所在位置的前面一个单词</td>
     </tr>
     <tr>
-        <td>reset</td>
-        <td>重置按钮</td>
+        <td>ndb</td>
+        <td>删除光标所在位置的前面n个单词，n代表数字</td>
     </tr>
     <tr>
-        <td>image</td>
-        <td>图像形式的提交按钮</td>
+        <td>dw</td>
+        <td>从光标所在位置开始删除一个单词</td>
     </tr>
     <tr>
-        <td>file</td>
-        <td>文件域</td>
+        <td>ndw</td>
+        <td>从光标所在位置开始删除n个单词，n代表数字</td>
     </tr>
     <tr>
-        <td>name</td>
-        <td>用户自定义</td>
-        <td>控件名称</td>
+        <td>d$</td>
+        <td>删除光标到行尾的内容（包括光标所在处）</td>
     </tr>
-    <tr>
-        <td>value</td>
-        <td>用户自定义</td>
-        <td>默认文本值</td>
-    </tr>
-    <tr>
-        <td>size</td>
-        <td>正整数</td>
-        <td>控件在页面中的显示宽度</td>
-    </tr>
-    <tr>
-        <td>checked</td>
-        <td>checked</td>
-        <td>定义选择控件默认被选中项</td>
-    </tr>
-    <tr>
-        <td>maxlength</td>
-        <td>正整数</td>
-        <td>控件允许输入的最多字符</td>
-    </tr>
+  <tr>
+    <td>D</td>
+    <td>删除光标到行尾的内容（含光标所在处字符）</td>
+  </tr>
+  <tr>
+    <td>dG</td>
+    <td>从光标所在位置一直删除到文件尾</td>
+  </tr>
+    
 </tbody></table>
+
+<h2 id="目录和文件管理"><a href="#目录和文件管理" class="headerlink" title="目录和文件管理"></a>目录和文件管理</h2>
                 
             </div>
             <hr/>
@@ -1171,17 +1099,18 @@
 <article id="prenext-posts" class="prev-next articles">
     <div class="row article-row">
         
-        <div class="article col s12 m6" data-aos="fade-up">
+        <div class="article col s12 m6" data-aos="fade-up" data-aos="fade-up">
             <div class="article-badge left-badge text-color">
-                <i class="fas fa-chevron-left"></i>&nbsp;上一篇</div>
+                <i class="far fa-dot-circle"></i>&nbsp;本篇
+            </div>
             <div class="card">
-                <a href="/2021/06/08/wen-jian/">
+                <a href="/2021/06/07/shell/">
                     <div class="card-image">
                         
                         
-                        <img src="/medias/featureimages/0.jpg" class="responsive-img" alt="">
+                        <img src="/medias/featureimages/19.jpg" class="responsive-img" alt="Linux部分shell命令">
                         
-                        <span class="card-title"></span>
+                        <span class="card-title">Linux部分shell命令</span>
                     </div>
                 </a>
                 <div class="card-content article-content">
@@ -1191,16 +1120,29 @@
                         
                     </div>
                     <div class="publish-info">
-                        <span class="publish-date">
-                            <i class="far fa-clock fa-fw icon-date"></i>2021-06-08
-                        </span>
+                            <span class="publish-date">
+                                <i class="far fa-clock fa-fw icon-date"></i>2021-06-07
+                            </span>
                         <span class="publish-author">
                             
-                            <i class="fas fa-user fa-fw"></i>
-                            gaozhiwei
+                            <i class="fas fa-bookmark fa-fw icon-category"></i>
+                            
+                            <a href="/categories/Linux/" class="post-category">
+                                    Linux
+                                </a>
+                            
                             
                         </span>
                     </div>
+                </div>
+
+                
+                <div class="card-action article-tags">
+                    
+                    <a href="/tags/shell/">
+                        <span class="chip bg-color">shell</span>
+                    </a>
+                    
                 </div>
                 
             </div>
@@ -1452,7 +1394,7 @@
             <br>
             
                 &nbsp;<i class="fas fa-chart-area"></i>&nbsp;站点总字数:&nbsp;<span
-                        class="white-color">2.4k</span>
+                        class="white-color">2.3k</span>
             
             
             
