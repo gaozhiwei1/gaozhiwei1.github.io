@@ -6,7 +6,7 @@
   <link href="https://gaozhiwei1.github.io/atom.xml" rel="self"/>
   
   <link href="https://gaozhiwei1.github.io/"/>
-  <updated>2021-06-08T14:37:37.832Z</updated>
+  <updated>2021-06-12T08:18:00.206Z</updated>
   <id>https://gaozhiwei1.github.io/</id>
   
   <author>
@@ -17,11 +17,65 @@
   <generator uri="https://hexo.io/">Hexo</generator>
   
   <entry>
+    <title>python遍历文件</title>
+    <link href="https://gaozhiwei1.github.io/2021/06/12/python/"/>
+    <id>https://gaozhiwei1.github.io/2021/06/12/python/</id>
+    <published>2021-06-12T07:59:59.000Z</published>
+    <updated>2021-06-12T08:18:00.206Z</updated>
+    
+    
+      
+      
+        
+        
+    <summary type="html">&lt;p&gt;这篇文章记录一下一个非常有用的python遍历文件目录的几种方法。以后可能用到，在这里记录一下。&lt;/p&gt;
+&lt;h3 id=&quot;1-os-walk遍历文件目录&quot;&gt;&lt;a href=&quot;#1-os-walk遍历文件目录&quot; class=&quot;headerlink&quot; title=&quot;1</summary>
+        
+      
+    
+    
+    
+    <category term="python" scheme="https://gaozhiwei1.github.io/categories/python/"/>
+    
+    
+    <category term="文件系统" scheme="https://gaozhiwei1.github.io/tags/%E6%96%87%E4%BB%B6%E7%B3%BB%E7%BB%9F/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>深度学习目标检测xml解析以及生成</title>
+    <link href="https://gaozhiwei1.github.io/2021/06/11/xml/"/>
+    <id>https://gaozhiwei1.github.io/2021/06/11/xml/</id>
+    <published>2021-06-11T15:06:59.000Z</published>
+    <updated>2021-06-12T08:53:25.123Z</updated>
+    
+    
+      
+      
+        
+        
+    <summary type="html">&lt;p&gt;这篇文章主要介绍的是根据深度学习目标检测中生成的xml文件获取bndbox的位置，进而绘制在图片中，同时生成新的xml树。不多说，直接上代码，首先我们来看一个原始的xml文件因为太长，这里我仅仅只列出一部分&lt;/p&gt;
+&lt;pre class=&quot;line-numbers</summary>
+        
+      
+    
+    
+    
+    <category term="python" scheme="https://gaozhiwei1.github.io/categories/python/"/>
+    
+    
+    <category term="python" scheme="https://gaozhiwei1.github.io/tags/python/"/>
+    
+    <category term="xml" scheme="https://gaozhiwei1.github.io/tags/xml/"/>
+    
+  </entry>
+  
+  <entry>
     <title>Linux部分shell命令</title>
     <link href="https://gaozhiwei1.github.io/2021/06/07/shell/"/>
     <id>https://gaozhiwei1.github.io/2021/06/07/shell/</id>
     <published>2021-06-07T14:38:45.000Z</published>
-    <updated>2021-06-08T14:37:37.832Z</updated>
+    <updated>2021-06-10T03:39:10.632Z</updated>
     
     
       
