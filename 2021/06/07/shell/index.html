@@ -29,7 +29,9 @@
 
     <script src="/libs/jquery/jquery.min.js"></script>
 
-<meta name="generator" content="Hexo 5.4.0">
+<!-- hexo injector head_end start -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.12.0/dist/katex.min.css">
+<!-- hexo injector head_end end --><meta name="generator" content="Hexo 5.4.0">
 <style>.github-emoji { position: relative; display: inline-block; width: 1.2em; min-height: 1.2em; overflow: hidden; vertical-align: top; color: transparent; }  .github-emoji > span { position: relative; z-index: 10; }  .github-emoji img, .github-emoji .fancybox { margin: 0 !important; padding: 0 !important; border: none !important; outline: none !important; text-decoration: none !important; user-select: none !important; cursor: auto !important; }  .github-emoji img { height: 1.2em !important; width: 1.2em !important; position: absolute !important; left: 50% !important; top: 50% !important; transform: translate(-50%, -50%) !important; user-select: none !important; cursor: auto !important; } .github-emoji-fallback { color: inherit; } .github-emoji-fallback img { opacity: 0 !important; }</style>
 <link rel="alternate" href="/atom.xml" title="要勇敢面对呀~" type="application/atom+xml">
 </head>
@@ -503,88 +505,93 @@
 
         <div class="card-content article-card-content">
             <div id="articleContent">
-                <h3 id="Vi-编辑器"><a href="#Vi-编辑器" class="headerlink" title="Vi 编辑器"></a>Vi 编辑器</h3><h4 id="1-进入插入模式"><a href="#1-进入插入模式" class="headerlink" title="1.进入插入模式"></a>1.进入插入模式</h4><table>
+                <h3 id="vi-编辑器"><a class="markdownIt-Anchor" href="#vi-编辑器"></a> Vi 编辑器</h3>
+<h4 id="1进入插入模式"><a class="markdownIt-Anchor" href="#1进入插入模式"></a> 1.进入插入模式</h4>
+<table>
 <thead>
 <tr>
-<th align="center">命令</th>
+<th style="text-align:center">命令</th>
 <th>功能</th>
 </tr>
 </thead>
-<tbody><tr>
-<td align="center">i</td>
+<tbody>
+<tr>
+<td style="text-align:center">i</td>
 <td>从光标当前所在位置之前开始插入</td>
 </tr>
 <tr>
-<td align="center">a</td>
+<td style="text-align:center">a</td>
 <td>从光标当前所在位置之后开始插入</td>
 </tr>
 <tr>
-<td align="center">I</td>
+<td style="text-align:center">I</td>
 <td>在光标所在行的行首插入</td>
 </tr>
 <tr>
-<td align="center">A</td>
+<td style="text-align:center">A</td>
 <td>在光标所在行的末尾插入</td>
 </tr>
 <tr>
-<td align="center">o</td>
+<td style="text-align:center">o</td>
 <td>在光标所在行的下面新开一行插入</td>
 </tr>
 <tr>
-<td align="center">O</td>
+<td style="text-align:center">O</td>
 <td>在光标所在行的上面新开一行插入</td>
 </tr>
 <tr>
-<td align="center">s</td>
+<td style="text-align:center">s</td>
 <td>删除光标位置的一个字符，然后进入插入模式</td>
 </tr>
 <tr>
-<td align="center">S</td>
+<td style="text-align:center">S</td>
 <td>删除光标坐在的行，然后进入插入模式</td>
 </tr>
-</tbody></table>
-<h4 id="2-命令操作模式"><a href="#2-命令操作模式" class="headerlink" title="2.命令操作模式"></a>2.命令操作模式</h4><table>
-    <tbody><tr>
-        <th background="red">类型</th>
-        <th>命令</th>
-        <th>功能</th>  
-    </tr>
-    <tr>
-        <td rowspan="13" ,align="center">删除</td>
-        <td>x</td>
-        <td>删除光标所在位置的字符</td>
-    </tr>
-    <tr>
-        <td>X</td>
-        <td>删除光标所在位置的前一个字符</td>
-    </tr>
-    <tr>
-        <td>nx</td>
-        <td>删除光标所在位置开始的n个字符，n代表数字</td>
-    </tr>
-    <tr>
-        <td>dd</td>
-        <td>删除光标所在行</td>
-    </tr>
-    <tr><td>db</td>
-        <td>删除光标所在位置的前面一个单词</td>
-    </tr>
-    <tr>
-        <td>ndb</td>
-        <td>删除光标所在位置的前面n个单词，n代表数字</td>
-    </tr>
-    <tr>
-        <td>dw</td>
-        <td>从光标所在位置开始删除一个单词</td>
-    </tr>
-    <tr>
-        <td>ndw</td>
-        <td>从光标所在位置开始删除n个单词，n代表数字</td>
-    </tr>
-    <tr>
-        <td>d$</td>
-        <td>删除光标到行尾的内容（包括光标所在处）</td>
-    </tr>
+</tbody>
+</table>
+<h4 id="2命令操作模式"><a class="markdownIt-Anchor" href="#2命令操作模式"></a> 2.命令操作模式</h4>
+<table>
+	<tbody><tr>
+	    <th background="red">类型</th>
+	    <th>命令</th>
+	    <th>功能</th>  
+	</tr>
+	<tr>
+	    <td rowspan="13" ,align="center">删除</td>
+	    <td>x</td>
+	    <td>删除光标所在位置的字符</td>
+	</tr>
+	<tr>
+	    <td>X</td>
+	    <td>删除光标所在位置的前一个字符</td>
+	</tr>
+	<tr>
+	    <td>nx</td>
+	    <td>删除光标所在位置开始的n个字符，n代表数字</td>
+	</tr>
+	<tr>
+	    <td>dd</td>
+	    <td>删除光标所在行</td>
+	</tr>
+	<tr><td>db</td>
+	    <td>删除光标所在位置的前面一个单词</td>
+	</tr>
+	<tr>
+	    <td>ndb</td>
+	    <td>删除光标所在位置的前面n个单词，n代表数字</td>
+	</tr>
+	<tr>
+	    <td>dw</td>
+	    <td>从光标所在位置开始删除一个单词</td>
+	</tr>
+	<tr>
+	    <td>ndw</td>
+	    <td>从光标所在位置开始删除n个单词，n代表数字</td>
+	</tr>
+	<tr>
+	    <td>d$</td>
+	    <td>删除光标到行尾的内容（包括光标所在处）</td>
+	</tr>
   <tr>
     <td>D</td>
     <td>删除光标到行尾的内容（含光标所在处字符）</td>
@@ -593,20 +600,27 @@
     <td>dG</td>
     <td>从光标所在位置一直删除到文件尾</td>
   </tr>
-    
 </tbody></table>
-
-<h3 id="Linux常用操作命令"><a href="#Linux常用操作命令" class="headerlink" title="Linux常用操作命令"></a>Linux常用操作命令</h3><h4 id="文本内容显示"><a href="#文本内容显示" class="headerlink" title="文本内容显示"></a>文本内容显示</h4><ol>
-<li>cat：显示文本文件<br>cat [选项] [文件]</li>
-<li>more：分页显示文本文件  </li>
+<h3 id="linux常用操作命令"><a class="markdownIt-Anchor" href="#linux常用操作命令"></a> Linux常用操作命令</h3>
+<h4 id="文本内容显示"><a class="markdownIt-Anchor" href="#文本内容显示"></a> 文本内容显示</h4>
+<ol>
+<li>cat：显示文本文件<br>
+cat [选项] [文件]</li>
+<li>more：分页显示文本文件</li>
 </ol>
-<h4 id="文本内容处理"><a href="#文本内容处理" class="headerlink" title="文本内容处理"></a>文本内容处理</h4><ol>
-<li>sort：对文件中的数据进行排序<br>sort [选项] [文件]</li>
-<li>uniq: 将重复行从输出文件中删除<br>uniq [选项] [文件]</li>
+<h4 id="文本内容处理"><a class="markdownIt-Anchor" href="#文本内容处理"></a> 文本内容处理</h4>
+<ol>
+<li>sort：对文件中的数据进行排序<br>
+sort [选项] [文件]</li>
+<li>uniq: 将重复行从输出文件中删除<br>
+uniq [选项] [文件]</li>
 </ol>
-<h4 id="文件和命令查找"><a href="#文件和命令查找" class="headerlink" title="文件和命令查找"></a>文件和命令查找</h4><ol>
-<li>grep：查找文件中符合条件的字符串<br>grep [选项] [查找模式] [文件名]</li>
-<li>find: 列出文件系统内符合条件的文件<br>find [路径] [选项]</li>
+<h4 id="文件和命令查找"><a class="markdownIt-Anchor" href="#文件和命令查找"></a> 文件和命令查找</h4>
+<ol>
+<li>grep：查找文件中符合条件的字符串<br>
+grep [选项] [查找模式] [文件名]</li>
+<li>find: 列出文件系统内符合条件的文件<br>
+find [路径] [选项]</li>
 </ol>
 
                 
@@ -1408,7 +1422,7 @@
             <br>
             
                 &nbsp;<i class="fas fa-chart-area"></i>&nbsp;站点总字数:&nbsp;<span
-                        class="white-color">5.3k</span>
+                        class="white-color">6k</span>
             
             
             

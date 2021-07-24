@@ -4,7 +4,7 @@
 
 <head>
     <meta charset="utf-8">
-    <meta name="keywords" content="激荡三十年读书摘抄, 要勇敢面对呀~">
+    <meta name="keywords" content="KL $(p\|q)$ Minimization, 要勇敢面对呀~">
     <meta name="description" content="">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
@@ -16,7 +16,7 @@
     <!-- Global site tag (gtag.js) - Google Analytics -->
 
 
-    <title>激荡三十年读书摘抄 | 要勇敢面对呀~</title>
+    <title>KL $(p\|q)$ Minimization | 要勇敢面对呀~</title>
     <link rel="icon" type="image/png" href="/favicon.png">
 
     <link rel="stylesheet" type="text/css" href="/libs/awesome/css/all.css">
@@ -315,12 +315,12 @@
 
 
 
-<div class="bg-cover pd-header post-cover" style="background-image: url('/medias/featureimages/14.jpg')">
+<div class="bg-cover pd-header post-cover" style="background-image: url('/medias/featureimages/9.jpg')">
     <div class="container" style="right: 0px;left: 0px;">
         <div class="row">
             <div class="col s12 m12 l12">
                 <div class="brand">
-                    <h1 class="description center-align post-title">激荡三十年读书摘抄</h1>
+                    <h1 class="description center-align post-title">KL $(p\|q)$ Minimization</h1>
                 </div>
             </div>
         </div>
@@ -436,23 +436,14 @@
                     
                     <div class="article-tag">
                         
-                            <a href="/tags/%E6%91%98%E6%8A%84/">
-                                <span class="chip bg-color">摘抄</span>
+                            <a href="/tags/Math-neural-networks/">
+                                <span class="chip bg-color">Math, neural networks</span>
                             </a>
                         
                     </div>
                     
                 </div>
                 <div class="col s5 right-align">
-                    
-                    <div class="post-cate">
-                        <i class="fas fa-bookmark fa-fw icon-category"></i>
-                        
-                            <a href="/categories/%E8%AF%BB%E4%B9%A6/" class="post-category">
-                                读书
-                            </a>
-                        
-                    </div>
                     
                 </div>
             </div>
@@ -461,28 +452,28 @@
                 
                 <div class="post-date info-break-policy">
                     <i class="far fa-calendar-minus fa-fw"></i>发布日期:&nbsp;&nbsp;
-                    2021-06-03
+                    2021-07-24
                 </div>
                 
 
                 
                 <div class="post-date info-break-policy">
                     <i class="far fa-calendar-check fa-fw"></i>更新日期:&nbsp;&nbsp;
-                    2021-06-06
+                    2021-07-24
                 </div>
                 
 
                 
                 <div class="info-break-policy">
                     <i class="far fa-file-word fa-fw"></i>文章字数:&nbsp;&nbsp;
-                    944
+                    647
                 </div>
                 
 
                 
                 <div class="info-break-policy">
                     <i class="far fa-clock fa-fw"></i>阅读时长:&nbsp;&nbsp;
-                    3 分
+                    4 分
                 </div>
                 
 
@@ -505,23 +496,89 @@
 
         <div class="card-content article-card-content">
             <div id="articleContent">
-                <p><font face="楷体" size="4.5"> <strong>  在中国，经济改革的成功并非国家治理的唯一目标，它从来被置于稳固执政地位和维护国家安全的两大前提之下，因此，有着高于经济发展的“人为计划性”和别于他国的中国特色。</strong>
+                <font face="Times New Roman" size="4"> 
+One form of variational inference minimizes the Kullback-Leibler divergence from $p\left(\bf{z}|\bf{x}\right)$ to $q\left(\bf{z};\lambda\right)$,
+$$
+\begin{equation*}
+\large
+\begin{split}
+\lambda^{*} &amp;= \arg \min_{\lambda} KL\left(p\left(\bf{z}|\bf{x}\right)\|q\left(\bf{z};\lambda\right)\right)\\
+&amp; = \arg \min_{\lambda} \mathbb{E}_{p\left(\bf{z}|\bf{x}\right)}\left[ \log p\left(\bf{z}|\bf{x}\right) - \log q\left(\bf{z};\lambda\right)\right]
+\end{split}
+\end{equation*}
+$$
+The KL divergence is a non-symmetric, information theoretic measure of similarity between two probability distributions. 
+</font>    
+<h2 id="minimizing-an-intractable-objective-function"><a class="markdownIt-Anchor" href="#minimizing-an-intractable-objective-function"></a> Minimizing an intractable objective function</h2>
+<font face="Times New Roman" size="4">
+The KL$\left(p\|q\right)$ objective we seek to minimize is intractable; it directly involves the posterior $p\left(\bf{z}|\bf{x}\right)$. Ignoring this for the moment, consider its grdient
+<p class="katex-block katex-error" title="ParseError: KaTeX parse error: No such environment: equation* at position 7: \begin{̲e̲q̲u̲a̲t̲i̲o̲n̲*̲}̲
+\large
+\bigtri…">\begin{equation*}
+\large
+\bigtriangledown_{\lambda}KL\left(p\left(\bf{z}|\bf{x}\right)\|q\left(\bf{z};\lambda\right)\right) = -\mathbb{E}_{p\left(\bf{z}|\bf{x}\right)}\left[\bigtriangledown_{\lambda}\log q\left(\bf{z};\lambda\right)\right]
+\end{equation*}
+</p>
+</font><p><font face="Times New Roman" size="4">Both KL<span class="katex"><span class="katex-mathml"><math><semantics><mrow><mo fence="true">(</mo><mi>p</mi><mi mathvariant="normal">∥</mi><mi>q</mi><mo fence="true">)</mo></mrow><annotation encoding="application/x-tex">\left(p\|q\right)</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="minner"><span class="mopen delimcenter" style="top:0em;">(</span><span class="mord mathdefault">p</span><span class="mord">∥</span><span class="mord mathdefault" style="margin-right:0.03588em;">q</span><span class="mclose delimcenter" style="top:0em;">)</span></span></span></span></span> and its gradient are intractable because of the posterior expectation. We can use importance sampling to both estimate the objective and calculate stochastic gradients (Oh &amp; Berger, 1992).
+</font></p>
+<h2 id="adaptive-importance-sampling"><a class="markdownIt-Anchor" href="#adaptive-importance-sampling"></a> Adaptive Importance sampling</h2>
+<font face="Times New Roman" size="4">
+First rewrite the expectation to be with respect to the variational distribution,
+$$
+\begin{equation*}
+\large
+\mathbb{E}_{p\left(\bf{z}|\bf{x}\right)}\left[\bigtriangledown_{\lambda}\log q\left(\bf{z};\lambda\right)\right] = - \mathbb{E}_{q\left(\bf{z};\lambda\right)} \left[ \frac{p\left(\bf{z}|\bf{x}\right)}{q\left(\bf{z};\lambda\right)}\bigtriangledown_{\lambda}\log q\left(\bf{z};\lambda\right)\right]
+\end{equation*}$$  
 </font>
-<br>
-<font face="楷体" size="4"> <strong>  中国拥有强大的政府，能够有效快速的落实各种民生政策，但它仍需要在法治和民主上继续努力；而美国虽有法治和民主，但由于制衡体系过于庞杂繁复，“制衡效率太高”，导致联邦政府的施政能力低下。</strong>
-</font>
-<br>
-<font face="楷体" size="4"> <strong>  透过本部企业史所描述的无数细节，我们可以发现，在缺乏长期性顶层设计的前提下，中国经济变革的动力来自以下四个方面。<br>
-  制度创新——四十年来，恢复及确立市场在资源配置中的角色和作用，一直是中国治理者在持续探索的方向，其间的稚嫰，反复及彷徨，构成了改革的所有戏剧性。与其他市场经济国家不同的是，中国政府始终没有放弃国有资本集团在国民经济中的控制力，这也成为制度创新的最大不确定性。<br>
-  容忍非均衡——中国改革的非均衡性特征和“灰度治理”，是打破计划经济体制的独特秘诀。它包括“让一部分人先富起来”，东南沿海优先发展，给予外资集团的超国民待遇，甚至还有对环境破坏的长期容忍，对农民工群体的利益剥夺，以及民营企业家对现行法律的突破。<br>
-  规模效应——庞大的人口规模为中国的创业者提供了巨大的成长红利，这使得每一个产业的进入者否有机会以粗放的方式完成自己的原始积累，然后在此基础上，建立核心竞争力。“巨国效应”及规模可能形成的势能，无论是产能，消费力，还是资本能力，往往以其出其不意的方式创造出新的可能性和模式突变。<br>
-  技术壁垒——相对于制度创新的反复性，技术的不可逆性打破了既得利益集团的准入性壁垒，从而重构产业范式，并倒逼体制内改革。这一特征在改革的前三十年并不突出，然而，随着互联网的崛起，很多产业的原有基础设施遭到毁灭性打击，带来了竞争格局的焕然一新。在可以预见的未来，技术的破壁能力将在更多的领域中持续发酵。</strong></font>
-<br>
-<font face="楷体" size="4"> <strong>  由此，你惊奇的发现，貌似毫无路线预设的中国改革，实则一直有一条强大的市场化内在逻辑。如同大江之浩荡东流，其间曲折百回，冲决无碍，惊涛与礁石搏斗，旧水与新流争势，时而江平潮阔，时而床高岸低，但是，趋势之顽强，目的之确然，却非任何人可以抵挡。</strong>
-</font>
-<br>
-<font face="楷体" size="4"> <strong>  有人叹息青春散场，历史已经结束，也有人吟唱“世界如此之新，一切尚未命名”。<br>
-  对于这一段尚未结束的当代史，必须摆脱历史宿命论，承认历史发展的戏剧性和人的主动性。我们应该相信科学史家伯纳德的看法，他说：“对那些与事先设计的模式不相吻合的事实，要予以特殊的注意”。创造意味着背叛和分离，也就是说，新的发生总是伴随着不适感和不确定的可能性。</strong>
+<font face="Times New Roman" size="4">
+We then use importance sampling to obtain a noisy estimate of this gradient. The basic procedure follows these steps:
+<ol>
+<li>
+<p>draw <span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi>S</mi></mrow><annotation encoding="application/x-tex">S</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.68333em;vertical-align:0em;"></span><span class="mord mathdefault" style="margin-right:0.05764em;">S</span></span></span></span> samples <span class="katex"><span class="katex-mathml"><math><semantics><mrow><msubsup><mrow><mo fence="true">{</mo><msub><mi mathvariant="bold">z</mi><mi mathvariant="bold">s</mi></msub><mo fence="true">}</mo></mrow><mn>1</mn><mi>S</mi></msubsup><mo>∼</mo><mi>q</mi><mrow><mo fence="true">(</mo><mrow><mi mathvariant="bold">z</mi><mo separator="true">;</mo><mi>λ</mi></mrow><mo fence="true">)</mo></mrow></mrow><annotation encoding="application/x-tex">\left\{\bf{z}_{s}\right\}_{1}^{S}\sim q\left(\bf{z};\lambda\right)</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:1.2809309999999998em;vertical-align:-0.29969999999999997em;"></span><span class="minner"><span class="minner"><span class="mopen delimcenter" style="top:0em;">{</span><span class="mord"><span class="mord"><span class="mord"><span class="mord mathbf">z</span></span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.161108em;"><span style="top:-2.5500000000000003em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mathbf mtight">s</span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span></span><span class="mclose delimcenter" style="top:0em;">}</span></span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.981231em;"><span style="top:-2.4003em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mtight">1</span></span></span></span><span style="top:-3.2029em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mathdefault mtight" style="margin-right:0.05764em;">S</span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.29969999999999997em;"><span></span></span></span></span></span></span><span class="mspace" style="margin-right:0.2777777777777778em;"></span><span class="mrel">∼</span><span class="mspace" style="margin-right:0.2777777777777778em;"></span></span><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mord mathdefault" style="margin-right:0.03588em;">q</span><span class="mspace" style="margin-right:0.16666666666666666em;"></span><span class="minner"><span class="mopen delimcenter" style="top:0em;">(</span><span class="mord"><span class="mord"><span class="mord mathbf">z</span></span><span class="mpunct">;</span><span class="mspace" style="margin-right:0.16666666666666666em;"></span><span class="mord mathdefault">λ</span></span><span class="mclose delimcenter" style="top:0em;">)</span></span></span></span></span></p>
+</li>
+<li>
+<p>evaluate <span class="katex"><span class="katex-mathml"><math><semantics><mrow><msub><mo>▽</mo><mi>λ</mi></msub><mi>log</mi><mo>⁡</mo><mi>q</mi><mrow><mo fence="true">(</mo><mrow><msub><mi mathvariant="bold">z</mi><mi mathvariant="bold">s</mi></msub><mo separator="true">;</mo><mi>λ</mi></mrow><mo fence="true">)</mo></mrow></mrow><annotation encoding="application/x-tex">\bigtriangledown_{\lambda}\log   q\left(\bf{z}_{s};\lambda\right)</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mord"><span class="mbin">▽</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.33610799999999996em;"><span style="top:-2.5500000000000003em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mathdefault mtight">λ</span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mspace" style="margin-right:0.16666666666666666em;"></span><span class="mop">lo<span style="margin-right:0.01389em;">g</span></span><span class="mspace" style="margin-right:0.16666666666666666em;"></span><span class="mord mathdefault" style="margin-right:0.03588em;">q</span><span class="mspace" style="margin-right:0.16666666666666666em;"></span><span class="minner"><span class="mopen delimcenter" style="top:0em;">(</span><span class="mord"><span class="mord"><span class="mord"><span class="mord mathbf">z</span></span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.161108em;"><span style="top:-2.5500000000000003em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mathbf mtight">s</span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mpunct">;</span><span class="mspace" style="margin-right:0.16666666666666666em;"></span><span class="mord mathdefault">λ</span></span><span class="mclose delimcenter" style="top:0em;">)</span></span></span></span></span></p>
+</li>
+<li>
+<p>compute the normalized importance weights</p>
+</li>
+</ol>
+<p class="katex-block katex-error" title="ParseError: KaTeX parse error: No such environment: equation* at position 7: \begin{̲e̲q̲u̲a̲t̲i̲o̲n̲*̲}̲
+\omega_{s} = \…">\begin{equation*}
+\omega_{s} = \left.\frac{p\left(\bf{z}_{s}|\bf{x}\right)}{q\left(\bf{z}_{s};\lambda\right)}\middle/ \sum_{s=1}^{S}\frac{p\left(\bf{z}|\bf{x}\right)}{q\left(\bf{z};\lambda\right)}\right.
+\end{equation*}</p>
+</font><ol start="4"><font face="Times New Roman" size="4">
+</font><li><font face="Times New Roman" size="4">compute the weighted sum<br>
+</font></li>
+</ol>
+<font face="Times New Roman" size="4">
+The key insight is that we can use the joint $p(\mathbf{x},\mathbf{z})p(\mathbf{x},\mathbf{z})$ instead of the posterior when estimating the normalized importance weights
+<p class="katex-block katex-error" title="ParseError: KaTeX parse error: No such environment: equation* at position 7: \begin{̲e̲q̲u̲a̲t̲i̲o̲n̲*̲}̲
+\large
+\begin{…">\begin{equation*}
+\large
+\begin{split}
+\omega_{s} &amp;= \left.\frac{p\left(\bf{z}_{s}|\bf{x}\right)}{q\left(\bf{z}_{s};\lambda\right)}\middle/ \sum_{s=1}^{S}\frac{p\left(\bf{z}|\bf{x}\right)}{q\left(\bf{z};\lambda\right)}\right.\\
+&amp;= \left.\frac{p\left(\bf{z}_{s},\bf{x}\right)}{q\left(\bf{z}_{s};\lambda\right)}\middle/ \sum_{s=1}^{S}\frac{p\left(\bf{z},\bf{x}\right)}{q\left(\bf{z};\lambda\right)}\right.
+\end{split}
+\end{equation*}</p>
+<p>This follows the bayesian rule</p>
+<p class="katex-block katex-error" title="ParseError: KaTeX parse error: No such environment: equation* at position 7: \begin{̲e̲q̲u̲a̲t̲i̲o̲n̲*̲}̲
+\begin{split}
+…">\begin{equation*}
+\begin{split}
+p\left(\bf{z}|\bf{x}\right) &amp;= p\left(\bf{x}, \bf{z}\right)/p\left(\bf{x}\right)\\
+&amp; = p\left(\bf{x},\bf{z}\right)/\text{a constant function of } \bf{z}
+\end{split}
+\end{equation*}</p>
+<p>Importance sampling thus gives the following biased yet consistent gradient estimate</p>
+<p class="katex-block katex-error" title="ParseError: KaTeX parse error: No such environment: equation* at position 7: \begin{̲e̲q̲u̲a̲t̲i̲o̲n̲*̲}̲
+\large
+\bigtri…">\begin{equation*}
+\large
+\bigtriangledown_{\lambda}KL\left(p\left(\bf{z}|\bf{x}\right)\|q\left(\bf{z};\lambda\right)\right) = -\sum_{s=1}^{S}W_{s}\bigtriangledown_{\lambda}\log q\left(\bf{z};\lambda\right)
+\end{equation*}</p>
+</font><p><font face="Times New Roman" size="4">That's all the procedure in the importance sampling process.
 </font></p>
 
                 
@@ -549,7 +606,7 @@
                     </i>
                 </span>
                 <span class="reprint-info">
-                    <a href="https://gaozhiwei1.github.io/2021/06/03/yueduxinde/">https://gaozhiwei1.github.io/2021/06/03/yueduxinde/</a>
+                    <a href="https://gaozhiwei1.github.io/2021/07/24/kl/">https://gaozhiwei1.github.io/2021/07/24/kl/</a>
                 </span>
             </div>
             <div class="reprint__notice">
@@ -587,8 +644,8 @@
                     
                         <div class="article-tag">
                             
-                                <a href="/tags/%E6%91%98%E6%8A%84/">
-                                    <span class="chip bg-color">摘抄</span>
+                                <a href="/tags/Math-neural-networks/">
+                                    <span class="chip bg-color">Math, neural networks</span>
                                 </a>
                             
                         </div>
@@ -1026,17 +1083,18 @@
 <article id="prenext-posts" class="prev-next articles">
     <div class="row article-row">
         
-        <div class="article col s12 m6" data-aos="fade-up">
+        <div class="article col s12 m6" data-aos="fade-up" data-aos="fade-up">
             <div class="article-badge left-badge text-color">
-                <i class="fas fa-chevron-left"></i>&nbsp;上一篇</div>
+                <i class="far fa-dot-circle"></i>&nbsp;本篇
+            </div>
             <div class="card">
-                <a href="/2021/06/07/wuhezhizhong/">
+                <a href="/2021/07/24/kl/">
                     <div class="card-image">
                         
                         
-                        <img src="/medias/featureimages/0.jpg" class="responsive-img" alt="乌合之众">
+                        <img src="/medias/featureimages/9.jpg" class="responsive-img" alt="KL $(p\|q)$ Minimization">
                         
-                        <span class="card-title">乌合之众</span>
+                        <span class="card-title">KL $(p\|q)$ Minimization</span>
                     </div>
                 </a>
                 <div class="card-content article-content">
@@ -1046,26 +1104,23 @@
                         
                     </div>
                     <div class="publish-info">
-                        <span class="publish-date">
-                            <i class="far fa-clock fa-fw icon-date"></i>2021-06-07
-                        </span>
+                            <span class="publish-date">
+                                <i class="far fa-clock fa-fw icon-date"></i>2021-07-24
+                            </span>
                         <span class="publish-author">
                             
-                            <i class="fas fa-bookmark fa-fw icon-category"></i>
-                            
-                            <a href="/categories/%E8%AF%BB%E4%B9%A6/" class="post-category">
-                                    读书
-                                </a>
-                            
+                            <i class="fas fa-user fa-fw"></i>
+                            gaozhiwei
                             
                         </span>
                     </div>
                 </div>
+
                 
                 <div class="card-action article-tags">
                     
-                    <a href="/tags/%E6%91%98%E6%8A%84/">
-                        <span class="chip bg-color">摘抄</span>
+                    <a href="/tags/Math-neural-networks/">
+                        <span class="chip bg-color">Math, neural networks</span>
                     </a>
                     
                 </div>
@@ -1079,13 +1134,13 @@
                 下一篇&nbsp;<i class="fas fa-chevron-right"></i>
             </div>
             <div class="card">
-                <a href="/2021/06/03/wsl/">
+                <a href="/2021/06/12/python/">
                     <div class="card-image">
                         
                         
-                        <img src="/medias/featureimages/1.jpg" class="responsive-img" alt="wsl 安装及python环境配置">
+                        <img src="/medias/featureimages/20.jpg" class="responsive-img" alt="python遍历文件">
                         
-                        <span class="card-title">wsl 安装及python环境配置</span>
+                        <span class="card-title">python遍历文件</span>
                     </div>
                 </a>
                 <div class="card-content article-content">
@@ -1096,14 +1151,14 @@
                     </div>
                     <div class="publish-info">
                             <span class="publish-date">
-                                <i class="far fa-clock fa-fw icon-date"></i>2021-06-03
+                                <i class="far fa-clock fa-fw icon-date"></i>2021-06-12
                             </span>
                         <span class="publish-author">
                             
                             <i class="fas fa-bookmark fa-fw icon-category"></i>
                             
-                            <a href="/categories/linux/" class="post-category">
-                                    linux
+                            <a href="/categories/python/" class="post-category">
+                                    python
                                 </a>
                             
                             
@@ -1113,8 +1168,8 @@
                 
                 <div class="card-action article-tags">
                     
-                    <a href="/tags/%E7%8E%AF%E5%A2%83%E6%90%AD%E5%BB%BA/">
-                        <span class="chip bg-color">环境搭建</span>
+                    <a href="/tags/%E6%96%87%E4%BB%B6%E7%B3%BB%E7%BB%9F/">
+                        <span class="chip bg-color">文件系统</span>
                     </a>
                     
                 </div>
@@ -1245,6 +1300,13 @@
 
 </main>
 
+
+<script src="https://cdn.bootcss.com/mathjax/2.7.5/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+<script>
+    MathJax.Hub.Config({
+        tex2jax: {inlineMath: [['$', '$'], ['\(', '\)']]}
+    });
+</script>
 
 
 
