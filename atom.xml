@@ -6,7 +6,7 @@
   <link href="https://gaozhiwei1.github.io/atom.xml" rel="self"/>
   
   <link href="https://gaozhiwei1.github.io/"/>
-  <updated>2021-07-24T07:19:06.135Z</updated>
+  <updated>2021-07-31T10:39:57.708Z</updated>
   <id>https://gaozhiwei1.github.io/</id>
   
   <author>
@@ -15,6 +15,29 @@
   </author>
   
   <generator uri="https://hexo.io/">Hexo</generator>
+  
+  <entry>
+    <title>南京疫情防控</title>
+    <link href="https://gaozhiwei1.github.io/2021/07/31/nanjing/"/>
+    <id>https://gaozhiwei1.github.io/2021/07/31/nanjing/</id>
+    <published>2021-07-31T05:41:39.000Z</published>
+    <updated>2021-07-31T10:39:57.708Z</updated>
+    
+    
+      
+      
+        
+        
+    <summary type="html">&lt;p&gt;本轮疫情自7月21日禄口机场首发以外，已经过去了快两个星期，期间疫情扩散至十几个省，由此本轮南京疫情成为自去年武汉疫情以来，扩散范围最广的一次，而这次疫情传播源为Delta病毒，该病毒传染力极强，病毒栽毒量为原始病毒的1670倍，故此次防疫绝不可掉以轻心，接下来我将利用py</summary>
+        
+      
+    
+    
+    
+    
+    <category term="生活" scheme="https://gaozhiwei1.github.io/tags/%E7%94%9F%E6%B4%BB/"/>
+    
+  </entry>
   
   <entry>
     <title>KL $(p\|q)$ Minimization</title>
