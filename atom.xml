@@ -6,7 +6,7 @@
   <link href="https://gaozhiwei1.github.io/atom.xml" rel="self"/>
   
   <link href="https://gaozhiwei1.github.io/"/>
-  <updated>2021-07-31T10:39:57.708Z</updated>
+  <updated>2021-08-11T01:29:57.386Z</updated>
   <id>https://gaozhiwei1.github.io/</id>
   
   <author>
@@ -15,6 +15,31 @@
   </author>
   
   <generator uri="https://hexo.io/">Hexo</generator>
+  
+  <entry>
+    <title>Normalizing Flows</title>
+    <link href="https://gaozhiwei1.github.io/2021/08/10/normlizing-flows/"/>
+    <id>https://gaozhiwei1.github.io/2021/08/10/normlizing-flows/</id>
+    <published>2021-08-10T13:34:41.000Z</published>
+    <updated>2021-08-11T01:29:57.386Z</updated>
+    
+    
+      
+      
+        
+        
+    <summary type="html">&lt;h1&gt;What is normalizing flows?&lt;/h1&gt;
+&lt;div class=&quot;contain&quot;&gt;
+    &lt;p&gt;Think about such kind of problems, you have a very complex distribution,</summary>
+        
+      
+    
+    
+    
+    
+    <category term="math normalizing-flows" scheme="https://gaozhiwei1.github.io/tags/math-normalizing-flows/"/>
+    
+  </entry>
   
   <entry>
     <title>南京疫情防控</title>
