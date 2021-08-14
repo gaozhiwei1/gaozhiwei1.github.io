@@ -6,7 +6,7 @@
   <link href="https://gaozhiwei1.github.io/atom.xml" rel="self"/>
   
   <link href="https://gaozhiwei1.github.io/"/>
-  <updated>2021-08-13T12:51:41.257Z</updated>
+  <updated>2021-08-14T06:23:06.054Z</updated>
   <id>https://gaozhiwei1.github.io/</id>
   
   <author>
@@ -21,7 +21,7 @@
     <link href="https://gaozhiwei1.github.io/2021/08/13/qixi/"/>
     <id>https://gaozhiwei1.github.io/2021/08/13/qixi/</id>
     <published>2021-08-13T12:44:26.000Z</published>
-    <updated>2021-08-13T12:51:41.257Z</updated>
+    <updated>2021-08-14T06:23:06.054Z</updated>
     
     
       
@@ -34,8 +34,10 @@
     
     
     
+    <category term="生活" scheme="https://gaozhiwei1.github.io/categories/%E7%94%9F%E6%B4%BB/"/>
     
-    <category term="情人节" scheme="https://gaozhiwei1.github.io/tags/%E6%83%85%E4%BA%BA%E8%8A%82/"/>
+    
+    <category term="七夕" scheme="https://gaozhiwei1.github.io/tags/%E4%B8%83%E5%A4%95/"/>
     
   </entry>
   
@@ -44,7 +46,7 @@
     <link href="https://gaozhiwei1.github.io/2021/08/10/normlizing-flows/"/>
     <id>https://gaozhiwei1.github.io/2021/08/10/normlizing-flows/</id>
     <published>2021-08-10T13:34:41.000Z</published>
-    <updated>2021-08-11T01:40:18.775Z</updated>
+    <updated>2021-08-14T06:25:54.953Z</updated>
     
     
       
@@ -59,8 +61,12 @@
     
     
     
+    <category term="math" scheme="https://gaozhiwei1.github.io/categories/math/"/>
     
-    <category term="math normalizing-flows" scheme="https://gaozhiwei1.github.io/tags/math-normalizing-flows/"/>
+    
+    <category term="math" scheme="https://gaozhiwei1.github.io/tags/math/"/>
+    
+    <category term="normalizing-flows" scheme="https://gaozhiwei1.github.io/tags/normalizing-flows/"/>
     
   </entry>
   
@@ -69,7 +75,7 @@
     <link href="https://gaozhiwei1.github.io/2021/07/31/nanjing/"/>
     <id>https://gaozhiwei1.github.io/2021/07/31/nanjing/</id>
     <published>2021-07-31T05:41:39.000Z</published>
-    <updated>2021-07-31T10:39:57.708Z</updated>
+    <updated>2021-08-14T06:31:14.988Z</updated>
     
     
       
@@ -82,8 +88,10 @@
     
     
     
+    <category term="生活" scheme="https://gaozhiwei1.github.io/categories/%E7%94%9F%E6%B4%BB/"/>
     
-    <category term="生活" scheme="https://gaozhiwei1.github.io/tags/%E7%94%9F%E6%B4%BB/"/>
+    
+    <category term="疫情" scheme="https://gaozhiwei1.github.io/tags/%E7%96%AB%E6%83%85/"/>
     
   </entry>
   
@@ -92,7 +100,7 @@
     <link href="https://gaozhiwei1.github.io/2021/07/24/kl/"/>
     <id>https://gaozhiwei1.github.io/2021/07/24/kl/</id>
     <published>2021-07-24T02:15:19.000Z</published>
-    <updated>2021-07-24T07:19:06.135Z</updated>
+    <updated>2021-08-14T06:33:17.424Z</updated>
     
     
       
@@ -106,8 +114,12 @@ One form of variational inference minimizes the Kullback-Leibler divergence from
     
     
     
+    <category term="math" scheme="https://gaozhiwei1.github.io/categories/math/"/>
     
-    <category term="Math, neural networks" scheme="https://gaozhiwei1.github.io/tags/Math-neural-networks/"/>
+    
+    <category term="Math" scheme="https://gaozhiwei1.github.io/tags/Math/"/>
+    
+    <category term="neural networks" scheme="https://gaozhiwei1.github.io/tags/neural-networks/"/>
     
   </entry>
   
@@ -116,7 +128,7 @@ One form of variational inference minimizes the Kullback-Leibler divergence from
     <link href="https://gaozhiwei1.github.io/2021/06/12/python/"/>
     <id>https://gaozhiwei1.github.io/2021/06/12/python/</id>
     <published>2021-06-12T07:59:59.000Z</published>
-    <updated>2021-06-12T08:18:00.206Z</updated>
+    <updated>2021-08-14T06:27:08.295Z</updated>
     
     
       
@@ -142,7 +154,7 @@ One form of variational inference minimizes the Kullback-Leibler divergence from
     <link href="https://gaozhiwei1.github.io/2021/06/11/xml/"/>
     <id>https://gaozhiwei1.github.io/2021/06/11/xml/</id>
     <published>2021-06-11T15:06:59.000Z</published>
-    <updated>2021-06-12T08:53:25.123Z</updated>
+    <updated>2021-08-14T06:29:28.860Z</updated>
     
     
       
@@ -170,7 +182,7 @@ One form of variational inference minimizes the Kullback-Leibler divergence from
     <link href="https://gaozhiwei1.github.io/2021/06/07/shell/"/>
     <id>https://gaozhiwei1.github.io/2021/06/07/shell/</id>
     <published>2021-06-07T14:38:45.000Z</published>
-    <updated>2021-06-10T03:39:10.632Z</updated>
+    <updated>2021-08-14T06:31:25.593Z</updated>
     
     
       
@@ -196,7 +208,7 @@ One form of variational inference minimizes the Kullback-Leibler divergence from
     <link href="https://gaozhiwei1.github.io/2021/06/07/wuhezhizhong/"/>
     <id>https://gaozhiwei1.github.io/2021/06/07/wuhezhizhong/</id>
     <published>2021-06-07T04:39:13.000Z</published>
-    <updated>2021-06-08T04:02:26.027Z</updated>
+    <updated>2021-08-14T06:02:36.343Z</updated>
     
     
       
@@ -221,7 +233,7 @@ One form of variational inference minimizes the Kullback-Leibler divergence from
     <link href="https://gaozhiwei1.github.io/2021/06/03/yueduxinde/"/>
     <id>https://gaozhiwei1.github.io/2021/06/03/yueduxinde/</id>
     <published>2021-06-03T11:52:23.000Z</published>
-    <updated>2021-06-06T14:03:37.794Z</updated>
+    <updated>2021-08-14T06:17:21.411Z</updated>
     
     
       
@@ -246,7 +258,7 @@ One form of variational inference minimizes the Kullback-Leibler divergence from
     <link href="https://gaozhiwei1.github.io/2021/06/03/wsl/"/>
     <id>https://gaozhiwei1.github.io/2021/06/03/wsl/</id>
     <published>2021-06-03T04:08:08.000Z</published>
-    <updated>2021-06-03T12:02:01.622Z</updated>
+    <updated>2021-08-14T05:59:44.966Z</updated>
     
     
       
@@ -272,7 +284,7 @@ One form of variational inference minimizes the Kullback-Leibler divergence from
     <link href="https://gaozhiwei1.github.io/2021/06/01/hello-world/"/>
     <id>https://gaozhiwei1.github.io/2021/06/01/hello-world/</id>
     <published>2021-06-01T00:45:05.460Z</published>
-    <updated>2021-06-03T12:00:23.884Z</updated>
+    <updated>2021-08-14T05:51:44.168Z</updated>
     
     
       

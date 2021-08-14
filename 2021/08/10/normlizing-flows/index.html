@@ -315,7 +315,7 @@
 
 
 
-<div class="bg-cover pd-header post-cover" style="background-image: url('/medias/featureimages/9.jpg')">
+<div class="bg-cover pd-header post-cover" style="background-image: url('https://douglascayers.files.wordpress.com/2017/07/refreshable-flow-banner.png')">
     <div class="container" style="right: 0px;left: 0px;">
         <div class="row">
             <div class="col s12 m12 l12">
@@ -436,14 +436,27 @@
                     
                     <div class="article-tag">
                         
-                            <a href="/tags/math-normalizing-flows/">
-                                <span class="chip bg-color">math normalizing-flows</span>
+                            <a href="/tags/math/">
+                                <span class="chip bg-color">math</span>
+                            </a>
+                        
+                            <a href="/tags/normalizing-flows/">
+                                <span class="chip bg-color">normalizing-flows</span>
                             </a>
                         
                     </div>
                     
                 </div>
                 <div class="col s5 right-align">
+                    
+                    <div class="post-cate">
+                        <i class="fas fa-bookmark fa-fw icon-category"></i>
+                        
+                            <a href="/categories/math/" class="post-category">
+                                math
+                            </a>
+                        
+                    </div>
                     
                 </div>
             </div>
@@ -459,7 +472,7 @@
                 
                 <div class="post-date info-break-policy">
                     <i class="far fa-calendar-check fa-fw"></i>更新日期:&nbsp;&nbsp;
-                    2021-08-11
+                    2021-08-14
                 </div>
                 
 
@@ -498,7 +511,7 @@
             <div id="articleContent">
                 <h1>What is normalizing flows?</h1>
 <div class="contain">
-    <p>Think about such kind of problems, you have a very complex distribution, with an expression that is too difficult to calculate, or we just don't know its explicit expression at all and can only get some samples from it through a very expensive progress which costs a lot. In this case, how can we simplify this problem and sample from the <span>target distribution</span> easily? Think about the density function conversion formula in the class of probability, suppose we have a very simple distribution named <span>base distribution</span>, which is easy to sample, and whose expression can be expressed analyticly, through single or multible  maps  which are inversible, we can probably change the base distribution to our <span>target distribution</span>, then we can just sample from the <span>base distribution</span>, can transfer the samples through the map to get the target samples. This is called a normalizing flow. 
+    <p>Think about such kind of problems, you have a very complex distribution, with an expression that is too difficult to calculate, or we just don't know its explicit expression at all and can only get some samples from it through a very expensive progress which costs a lot. In this case, how can we simplify this problem and sample from the <span>target distribution</span> easily? Think about the density function conversion formula in the class of probability, suppose we have a very simple distribution named <span>base distribution</span>, which is easy to sample, and whose expression can be expressed analyticly, through single or multible  maps  which are inversible, we can probably change the base distribution to our <span>target distribution</span>, then we can just sample from the <span>base distribution</span>, then transfer the samples through the map to get the target samples. This is called a normalizing flow. 
     </p>
     <img src="/images/flow.png" style="zoom:37%;">
 </div>
@@ -578,7 +591,7 @@ the code is as follow
 <p></p>
 <h2>Coupling layers</h2>
 <p> 
-ne way to implement a normalizing flow that results in a triangular Jacobian is to use *coupling layers*, introduced by <a href="https://arxiv.org/abs/1410.8516" target="_blank">Dihn et al. (2015)</a>. A coupling layer leaves the first $d$ elements unchanged, and the rest of the elements are linearly transformed with a (possibly nonlinear) function of the first $d$ elements. More formally, if $\mathbf{z}$ is the input vector and by $\mathbf{z}_{1:d}$ we denote a slice of the first $d$ elements, a coupling layer implements the following equations to produce the output vector $\mathbf{z}'$:
+The way to implement a normalizing flow that results in a triangular Jacobian is to use *coupling layers*, introduced by <a href="https://arxiv.org/abs/1410.8516" target="_blank">Dihn et al. (2015)</a>. A coupling layer leaves the first $d$ elements unchanged, and the rest of the elements are linearly transformed with a (possibly nonlinear) function of the first $d$ elements. More formally, if $\mathbf{z}$ is the input vector and by $\mathbf{z}_{1:d}$ we denote a slice of the first $d$ elements, a coupling layer implements the following equations to produce the output vector $\mathbf{z}'$:
 $$
 \begin{align}
 \mathbf{z}'_{1:d} &amp;= \mathbf{z}_{1:d} \\
@@ -783,8 +796,12 @@ reverse KL divergence even if we cannot evaluate the base density or compute the
                     
                         <div class="article-tag">
                             
-                                <a href="/tags/math-normalizing-flows/">
-                                    <span class="chip bg-color">math normalizing-flows</span>
+                                <a href="/tags/math/">
+                                    <span class="chip bg-color">math</span>
+                                </a>
+                            
+                                <a href="/tags/normalizing-flows/">
+                                    <span class="chip bg-color">normalizing-flows</span>
                                 </a>
                             
                         </div>
@@ -1194,8 +1211,8 @@ reverse KL divergence even if we cannot evaluate the base density or compute the
 <script>
     new Valine({
         el: '#vcomments',
-        appId: 'xxxxxxxx',
-        appKey: 'xxxxxxx',
+        appId: '8xPf8oCdwbzrrftXdypBYTKt-gzGzoHsz',
+        appKey: '46kwrPlaSCvGCz109ykHIFTU',
         notify: 'true' === 'true',
         verify: 'true' === 'true',
         visitor: 'true' === 'true',
@@ -1229,8 +1246,7 @@ reverse KL divergence even if we cannot evaluate the base density or compute the
                 <a href="/2021/08/13/qixi/">
                     <div class="card-image">
                         
-                        
-                        <img src="/medias/featureimages/11.jpg" class="responsive-img" alt="七夕情人节">
+                        <img src="/images/8.jpg" class="responsive-img" alt="七夕情人节">
                         
                         <span class="card-title">七夕情人节</span>
                     </div>
@@ -1247,8 +1263,12 @@ reverse KL divergence even if we cannot evaluate the base density or compute the
                         </span>
                         <span class="publish-author">
                             
-                            <i class="fas fa-user fa-fw"></i>
-                            gaozhiwei
+                            <i class="fas fa-bookmark fa-fw icon-category"></i>
+                            
+                            <a href="/categories/%E7%94%9F%E6%B4%BB/" class="post-category">
+                                    生活
+                                </a>
+                            
                             
                         </span>
                     </div>
@@ -1256,8 +1276,8 @@ reverse KL divergence even if we cannot evaluate the base density or compute the
                 
                 <div class="card-action article-tags">
                     
-                    <a href="/tags/%E6%83%85%E4%BA%BA%E8%8A%82/">
-                        <span class="chip bg-color">情人节</span>
+                    <a href="/tags/%E4%B8%83%E5%A4%95/">
+                        <span class="chip bg-color">七夕</span>
                     </a>
                     
                 </div>
@@ -1274,8 +1294,7 @@ reverse KL divergence even if we cannot evaluate the base density or compute the
                 <a href="/2021/07/31/nanjing/">
                     <div class="card-image">
                         
-                        
-                        <img src="/medias/featureimages/12.jpg" class="responsive-img" alt="南京疫情防控">
+                        <img src="https://www.jeffco.net/sites/default/files/styles/full_node_primary_extra_wide/public/imageattachments/publichealth/page/11791/covid-19.png?itok=-x8A9h9_" class="responsive-img" alt="南京疫情防控">
                         
                         <span class="card-title">南京疫情防控</span>
                     </div>
@@ -1292,8 +1311,12 @@ reverse KL divergence even if we cannot evaluate the base density or compute the
                             </span>
                         <span class="publish-author">
                             
-                            <i class="fas fa-user fa-fw"></i>
-                            gaozhiwei
+                            <i class="fas fa-bookmark fa-fw icon-category"></i>
+                            
+                            <a href="/categories/%E7%94%9F%E6%B4%BB/" class="post-category">
+                                    生活
+                                </a>
+                            
                             
                         </span>
                     </div>
@@ -1301,8 +1324,8 @@ reverse KL divergence even if we cannot evaluate the base density or compute the
                 
                 <div class="card-action article-tags">
                     
-                    <a href="/tags/%E7%94%9F%E6%B4%BB/">
-                        <span class="chip bg-color">生活</span>
+                    <a href="/tags/%E7%96%AB%E6%83%85/">
+                        <span class="chip bg-color">疫情</span>
                     </a>
                     
                 </div>
@@ -1731,6 +1754,8 @@ $(function () {
 
     
 
+    
+    <script type="text/javascript" src="/libs/background/ribbon-dynamic.js" async="async"></script>
     
 
     
