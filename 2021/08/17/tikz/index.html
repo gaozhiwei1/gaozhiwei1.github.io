@@ -436,8 +436,12 @@
                     
                     <div class="article-tag">
                         
-                            <a href="/tags/%E7%BB%98%E5%9B%BE-tikz/">
-                                <span class="chip bg-color">-绘图 -tikz</span>
+                            <a href="/tags/%E7%BB%98%E5%9B%BE/">
+                                <span class="chip bg-color">绘图</span>
+                            </a>
+                        
+                            <a href="/tags/tikz/">
+                                <span class="chip bg-color">tikz</span>
                             </a>
                         
                     </div>
@@ -505,7 +509,8 @@
 
         <div class="card-content article-card-content">
             <div id="articleContent">
-                <p>这是我第一次拿tikz绘制神经网络图，也是画的最复杂的一个，尚有很有需要完善之处，代码写的也比较凌乱，请大家见谅，以后在写的时候会逐渐写的整齐规范，最后不得不说一句，tikz画的图真好看。以下是Latex代码和图<br></p><pre class="line-numbers language-latex" data-language="latex"><code class="language-latex"><span class="token function selector">\documentclass</span><span class="token punctuation">{</span><span class="token keyword">standalone</span><span class="token punctuation">}</span>
+                <p>这是我第一次拿tikz绘制神经网络图，也是画的最复杂的一个，尚有很有需要完善之处，代码写的也比较凌乱，请大家见谅，以后在写的时候会逐渐写的整齐规范，最后不得不说一句，tikz画的图真好看。以下是Latex代码和图</p>
+<pre class="line-numbers language-latex" data-language="latex"><code class="language-latex"><span class="token function selector">\documentclass</span><span class="token punctuation">{</span><span class="token keyword">standalone</span><span class="token punctuation">}</span>
 <span class="token function selector">\usepackage</span><span class="token punctuation">{</span><span class="token keyword">tikz</span><span class="token punctuation">}</span>
 <span class="token function selector">\usepackage</span><span class="token punctuation">{</span><span class="token keyword">pgf</span><span class="token punctuation">}</span>
 <span class="token function selector">\usetikzlibrary</span><span class="token punctuation">{</span>shapes<span class="token punctuation">}</span>
@@ -718,7 +723,9 @@
         	<span class="token function selector">\draw</span><span class="token punctuation">[</span>-&gt;,thick<span class="token punctuation">]</span>(rects1.west)--(<span class="token punctuation">[</span>xshift=-1.1cm<span class="token punctuation">]</span>rects1.west)|-(<span class="token punctuation">[</span>yshift=0.7cm<span class="token punctuation">]</span>rectE14.north)--(rectE14.north);
         <span class="token function selector">\end</span><span class="token punctuation">{</span><span class="token keyword">scope</span><span class="token punctuation">}</span> 
     <span class="token function selector">\end</span><span class="token punctuation">{</span><span class="token keyword">tikzpicture</span><span class="token punctuation">}</span>
-<span class="token function selector">\end</span><span class="token punctuation">{</span><span class="token keyword">document</span><span class="token punctuation">}</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre><br>最终生成的效果如下<br><img src="./images/example.png" alt=""><p></p>
+<span class="token function selector">\end</span><span class="token punctuation">{</span><span class="token keyword">document</span><span class="token punctuation">}</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+<p>最终生成的效果如下
+<img src="/images/example.png" alt=""></p>
 
                 
             </div>
@@ -783,8 +790,12 @@
                     
                         <div class="article-tag">
                             
-                                <a href="/tags/%E7%BB%98%E5%9B%BE-tikz/">
-                                    <span class="chip bg-color">-绘图 -tikz</span>
+                                <a href="/tags/%E7%BB%98%E5%9B%BE/">
+                                    <span class="chip bg-color">绘图</span>
+                                </a>
+                            
+                                <a href="/tags/tikz/">
+                                    <span class="chip bg-color">tikz</span>
                                 </a>
                             
                         </div>
@@ -1261,8 +1272,12 @@
                 
                 <div class="card-action article-tags">
                     
-                    <a href="/tags/%E7%BB%98%E5%9B%BE-tikz/">
-                        <span class="chip bg-color">-绘图 -tikz</span>
+                    <a href="/tags/%E7%BB%98%E5%9B%BE/">
+                        <span class="chip bg-color">绘图</span>
+                    </a>
+                    
+                    <a href="/tags/tikz/">
+                        <span class="chip bg-color">tikz</span>
                     </a>
                     
                 </div>

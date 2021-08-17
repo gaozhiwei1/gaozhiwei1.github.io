@@ -6,7 +6,7 @@
   <link href="https://gaozhiwei1.github.io/atom.xml" rel="self"/>
   
   <link href="https://gaozhiwei1.github.io/"/>
-  <updated>2021-08-17T15:43:20.969Z</updated>
+  <updated>2021-08-17T15:48:44.839Z</updated>
   <id>https://gaozhiwei1.github.io/</id>
   
   <author>
@@ -21,14 +21,15 @@
     <link href="https://gaozhiwei1.github.io/2021/08/17/tikz/"/>
     <id>https://gaozhiwei1.github.io/2021/08/17/tikz/</id>
     <published>2021-08-17T15:29:21.000Z</published>
-    <updated>2021-08-17T15:43:20.969Z</updated>
+    <updated>2021-08-17T15:48:44.839Z</updated>
     
     
       
       
         
         
-    <summary type="html">&lt;p&gt;这是我第一次拿tikz绘制神经网络图，也是画的最复杂的一个，尚有很有需要完善之处，代码写的也比较凌乱，请大家见谅，以后在写的时候会逐渐写的整齐规范，最后不得不说一句，tikz画的图真好看。以下是Latex代码和图&lt;br&gt;&lt;/p&gt;&lt;pre</summary>
+    <summary type="html">&lt;p&gt;这是我第一次拿tikz绘制神经网络图，也是画的最复杂的一个，尚有很有需要完善之处，代码写的也比较凌乱，请大家见谅，以后在写的时候会逐渐写的整齐规范，最后不得不说一句，tikz画的图真好看。以下是Latex代码和图&lt;/p&gt;
+&lt;pre class=&quot;line-numbers</summary>
         
       
     
@@ -37,7 +38,9 @@
     <category term="latex" scheme="https://gaozhiwei1.github.io/categories/latex/"/>
     
     
-    <category term="-绘图 -tikz" scheme="https://gaozhiwei1.github.io/tags/%E7%BB%98%E5%9B%BE-tikz/"/>
+    <category term="绘图" scheme="https://gaozhiwei1.github.io/tags/%E7%BB%98%E5%9B%BE/"/>
+    
+    <category term="tikz" scheme="https://gaozhiwei1.github.io/tags/tikz/"/>
     
   </entry>
   
