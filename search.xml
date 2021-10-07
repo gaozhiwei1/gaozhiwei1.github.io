@@ -4,6 +4,31 @@
   
     
     <entry>
+      <title>linux环境下配置通过ssh keys 连通github跟ssh-agent</title>
+      <link href="2021/10/07/ssh-github/"/>
+      <url>2021/10/07/ssh-github/</url>
+      
+        <content type="html"><![CDATA[<p>由于平常经常需要帮人配置一些github上的ssh-key这种，命令比较多，因此在此记录一下配置的一些命令。</p><h2 id="1-初始化"><a class="markdownIt-Anchor" href="#1-初始化"></a> 1. 初始化</h2><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">$ <span class="token function">mkdir</span> github <span class="token operator">&amp;</span> <span class="token builtin class-name">cd</span> github$ <span class="token function">git</span> init<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span></span></code></pre><h2 id="2-设置你的用户名称与邮件地址"><a class="markdownIt-Anchor" href="#2-设置你的用户名称与邮件地址"></a> 2. 设置你的用户名称与邮件地址</h2><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">$ <span class="token function">git</span> config --global user.name <span class="token string">"user.name"</span>$ <span class="token function">git</span> config --global user.email <span class="token string">"user.email"</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span></span></code></pre><h2 id="3-验证是否已经存在ssh-keys"><a class="markdownIt-Anchor" href="#3-验证是否已经存在ssh-keys"></a> 3. 验证是否已经存在ssh-keys</h2><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">$ <span class="token builtin class-name">cd</span> ~/.ssh$ <span class="token function">ls</span> <span aria-hidden="true" class="line-numbers-rows"><span></span><span></span></span></code></pre><p>一般这里是不会有文件id_rsa和文件id_rsa.pub，需要通过以下命令进行创建</p><h2 id="4-生成ssh-key"><a class="markdownIt-Anchor" href="#4-生成ssh-key"></a> 4. 生成ssh-key</h2><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">ssh-keygen -t rsa -C <span class="token string">"youremail@example.com"</span><span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre><h2 id="5-把专用密钥添加到ssh-agent的高速缓存中"><a class="markdownIt-Anchor" href="#5-把专用密钥添加到ssh-agent的高速缓存中"></a> 5. 把专用密钥添加到ssh-agent的高速缓存中</h2><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">$ <span class="token builtin class-name">eval</span> <span class="token variable"><span class="token variable">$(</span>ssh-agent<span class="token variable">)</span></span>$ ssh-add ~/.ssh/id_rsa<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span></span></code></pre><h2 id="6在github中添加以上的ssh-key"><a class="markdownIt-Anchor" href="#6在github中添加以上的ssh-key"></a> 6.在github中添加以上的ssh-key</h2><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">$ <span class="token function">cat</span> id_rsa.pub<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre><p>打开github中的settings，新建一个ssh-key，将上面命令打印出来的ssh-key输入其中，注意这个密钥应该是以固定格式开头，添加之后就可以用了</p>]]></content>
+      
+      
+      <categories>
+          
+          <category> linux </category>
+          
+      </categories>
+      
+      
+        <tags>
+            
+            <tag> linux </tag>
+            
+        </tags>
+      
+    </entry>
+    
+    
+    
+    <entry>
       <title>tik绘制复杂的神经网络图</title>
       <link href="2021/08/17/tikz/"/>
       <url>2021/08/17/tikz/</url>

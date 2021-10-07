@@ -6,7 +6,7 @@
   <link href="https://gaozhiwei1.github.io/atom.xml" rel="self"/>
   
   <link href="https://gaozhiwei1.github.io/"/>
-  <updated>2021-08-17T15:48:44.839Z</updated>
+  <updated>2021-10-07T01:39:35.327Z</updated>
   <id>https://gaozhiwei1.github.io/</id>
   
   <author>
@@ -15,6 +15,32 @@
   </author>
   
   <generator uri="https://hexo.io/">Hexo</generator>
+  
+  <entry>
+    <title>linux环境下配置通过ssh keys 连通github跟ssh-agent</title>
+    <link href="https://gaozhiwei1.github.io/2021/10/07/ssh-github/"/>
+    <id>https://gaozhiwei1.github.io/2021/10/07/ssh-github/</id>
+    <published>2021-10-07T01:17:38.000Z</published>
+    <updated>2021-10-07T01:39:35.327Z</updated>
+    
+    
+      
+      
+        
+        
+    <summary type="html">&lt;p&gt;由于平常经常需要帮人配置一些github上的ssh-key这种，命令比较多，因此在此记录一下配置的一些命令。&lt;/p&gt;
+&lt;h2 id=&quot;1-初始化&quot;&gt;&lt;a class=&quot;markdownIt-Anchor&quot; href=&quot;#1-初始化&quot;&gt;&lt;/a&gt; 1.</summary>
+        
+      
+    
+    
+    
+    <category term="linux" scheme="https://gaozhiwei1.github.io/categories/linux/"/>
+    
+    
+    <category term="linux" scheme="https://gaozhiwei1.github.io/tags/linux/"/>
+    
+  </entry>
   
   <entry>
     <title>tik绘制复杂的神经网络图</title>

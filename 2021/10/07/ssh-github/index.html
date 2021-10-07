@@ -4,7 +4,7 @@
 
 <head>
     <meta charset="utf-8">
-    <meta name="keywords" content="wsl 安装及python环境配置, 要勇敢面对呀~">
+    <meta name="keywords" content="linux环境下配置通过ssh keys 连通github跟ssh-agent, 要勇敢面对呀~">
     <meta name="description" content="">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
@@ -16,7 +16,7 @@
     <!-- Global site tag (gtag.js) - Google Analytics -->
 
 
-    <title>wsl 安装及python环境配置 | 要勇敢面对呀~</title>
+    <title>linux环境下配置通过ssh keys 连通github跟ssh-agent | 要勇敢面对呀~</title>
     <link rel="icon" type="image/png" href="/favicon.png">
 
     <link rel="stylesheet" type="text/css" href="/libs/awesome/css/all.css">
@@ -315,12 +315,12 @@
 
 
 
-<div class="bg-cover pd-header post-cover" style="background-image: url('/images/wsl.jpg')">
+<div class="bg-cover pd-header post-cover" style="background-image: url('/medias/featureimages/21.jpg')">
     <div class="container" style="right: 0px;left: 0px;">
         <div class="row">
             <div class="col s12 m12 l12">
                 <div class="brand">
-                    <h1 class="description center-align post-title">wsl 安装及python环境配置</h1>
+                    <h1 class="description center-align post-title">linux环境下配置通过ssh keys 连通github跟ssh-agent</h1>
                 </div>
             </div>
         </div>
@@ -436,8 +436,8 @@
                     
                     <div class="article-tag">
                         
-                            <a href="/tags/%E7%8E%AF%E5%A2%83%E6%90%AD%E5%BB%BA/">
-                                <span class="chip bg-color">环境搭建</span>
+                            <a href="/tags/linux/">
+                                <span class="chip bg-color">linux</span>
                             </a>
                         
                     </div>
@@ -461,28 +461,28 @@
                 
                 <div class="post-date info-break-policy">
                     <i class="far fa-calendar-minus fa-fw"></i>发布日期:&nbsp;&nbsp;
-                    2021-06-03
+                    2021-10-07
                 </div>
                 
 
                 
                 <div class="post-date info-break-policy">
                     <i class="far fa-calendar-check fa-fw"></i>更新日期:&nbsp;&nbsp;
-                    2021-08-18
+                    2021-10-07
                 </div>
                 
 
                 
                 <div class="info-break-policy">
                     <i class="far fa-file-word fa-fw"></i>文章字数:&nbsp;&nbsp;
-                    845
+                    222
                 </div>
                 
 
                 
                 <div class="info-break-policy">
                     <i class="far fa-clock fa-fw"></i>阅读时长:&nbsp;&nbsp;
-                    3 分
+                    1 分
                 </div>
                 
 
@@ -505,58 +505,25 @@
 
         <div class="card-content article-card-content">
             <div id="articleContent">
-                <p>本篇博客我将介绍如何安装wsl以及其中的python环境配置，需要读者具备一定的linux操作系统知识，以及python基本知识。</p>
-<h3 id="1-开启虚拟机及wsl平台"><a class="markdownIt-Anchor" href="#1-开启虚拟机及wsl平台"></a> 1 开启虚拟机及wsl平台</h3>
-<p>首先搜索cmd进入命令行工具，开启windows中wsl和虚拟机功能，命令行如下</p>
- <pre class="line-numbers language-none"><code class="language-none">Enable-WindowsOptionalFeature -Online -FeatureName Microsoft-Windows-Subsystem-Linux
-Enable-WindowsOptionalFeature -Online -FeatureName VirtualMachinePlatform<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span></span></code></pre>
-<p>在此之后，重启电脑，并按顺序打开：控制面板-&gt; 卸载程序-&gt;启用或关闭Windows功能到如下界面、</p>
-<p><img src="/images/1.png" alt=""></p>
-<h3 id="2下载ubuntu"><a class="markdownIt-Anchor" href="#2下载ubuntu"></a> 2.下载Ubuntu</h3>
-<p>到Windows应用商店下载ubuntu-20.04最新版，下载后点击安装，会弹出设置unixname以及两次设置密码功能，按照步骤下载安装即可，下载完ubuntu默认安装目录为</p>
-<pre class="line-numbers language-none"><code class="language-none">C:\Users\Admin\AppData\Local\Packages\CanonicalGroupLimited.UbuntuonWindows_79rhkp1fndgsc\LocalState\rootfs<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
-<p>简要搜索方式为下图</p>
-<p><img src="/images/2.png" alt=""></p>
-<h3 id="3配置python环境"><a class="markdownIt-Anchor" href="#3配置python环境"></a> 3.配置python环境</h3>
-<p>安装完ubuntu后，其中是自带python环境的，这么建议不要更改默认源，后面有可能会出现很大的问题（血的教训），进入ubuntu中，依次输入一下命令，利用vscode编译python。</p>
-<pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">$ <span class="token function">sudo</span> <span class="token function">apt-get</span> update
-$ <span class="token function">sudo</span> <span class="token function">apt-get</span> upgrade
-$ <span class="token function">sudo</span> <span class="token function">apt-get</span> <span class="token function">install</span> python3-pip <span class="token comment">#安装python3的pip命令</span>
-$ pip3 <span class="token function">install</span> numpy matplotlib
-$ <span class="token function">mkdir</span> python_files <span class="token comment">#在/home/username目录下创建python_files文件夹</span>
-$ <span class="token builtin class-name">cd</span> python_files
-$ code <span class="token builtin class-name">.</span>  <span class="token comment">#下载vscode,注意code命令后的空格</span>
-$ <span class="token function">sudo</span> <span class="token function">chmod</span> -R <span class="token number">777</span> /home/<span class="token operator">&lt;</span>username<span class="token operator">&gt;</span>/python_files <span class="token comment">#获得修改，增加文件的权限</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
-<p>以上命令将帮助你进入到vscode中，建立简单的python文件，按F5编译，提示安装python编译扩展，安装后便可成功编译，如下图
-<img src="/images/3.png" alt=""></p>
-<h3 id="4配置python绘图环境"><a class="markdownIt-Anchor" href="#4配置python绘图环境"></a> 4.配置Python绘图环境</h3>
-<p>此时利用python进行绘图是不能显示的，需要另外配置gui，进入到ubuntu原始目录下,输入cd,然后输入以下命令</p>
-<pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token function">sudo</span> <span class="token function">vim</span> ~/.bashrc<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
-<p>进入到.bashrc文件下，到文件最下方添加如下两行</p>
-<pre class="line-numbers language-none"><code class="language-none">export DISPLAY=$(cat /etc/resolv.conf | grep nameserver | awk '{print $2}'):0
-export LIBGL_ALWAYS_INDIRECT=1<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span></span></code></pre>
-<p>按Esc键，和:wq命令保存上述修改。而后进入命令行使文件生效</p>
-<pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">$ <span class="token builtin class-name">source</span> ~/.bashrc<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
-<p>接下来安装简易桌面，进入<a target="_blank" rel="noopener" href="https://sourceforge.net/projects/vcxsrv/">Vcxsrv</a>页面下载该工具，一路默认安装，而后打开，见到如下页面
-<img src="/images/4.png" alt=""></p>
-<p>上面最后一个一定要勾上。接下来运行命令行安装xfce4</p>
-<pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">$ <span class="token function">sudo</span> <span class="token function">apt-get</span> <span class="token function">install</span> xfce4
-$ <span class="token function">sudo</span> <span class="token function">apt-get</span> <span class="token function">install</span> xfce4-terminal<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span></span></code></pre>
-<p>在安装</p>
-<pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">$ <span class="token function">sudo</span> <span class="token function">apt-get</span> <span class="token function">install</span> x11-apps
-$ xeyes<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span></span></code></pre>
-<p>如果出现一对眼睛，则便是安装成功。接下来安装</p>
-<pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">$ <span class="token function">sudo</span> <span class="token function">apt-get</span> <span class="token function">install</span> python3.8-tk<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
-<p>再次编译python文件，便可绘图，如遇到缺少字体，百度输入报错命令，安装字体即可。</p>
-<h3 id="5将wsl迁移到d盘"><a class="markdownIt-Anchor" href="#5将wsl迁移到d盘"></a> 5.将WSL迁移到D盘</h3>
-<p>因为C盘是系统盘，后面WSL内存可能相当大，因此很不方便，这里我们将WSL迁到D盘，首先我们在D盘下创建文件夹wsl。后面我们进入到<a target="_blank" rel="noopener" href="https://github.com/DDoSolitary/LxRunOffline/releases">lxrunoffline</a>官网中下载如下工具</p>
-<p><img src="/images/5.png" alt=""></p>
-<p>解压到d盘下，同时配置系统的path变量，变量为D:\LxRunOffline-v3.5.0-msvc，而后进入cmd，输入lxrunoffline，如果没报错，则安装成功。后面再cmd中输入</p>
-<pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">$ wsl --shutdown<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
-<p>暂时关闭wsl
-而后运行</p>
-<pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">$ LxRunOffline move -n Ubuntu-20.04 -d D:<span class="token punctuation">\</span>wsl<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
-<p>等待一段时间，如果wsl文件夹中出现映射文件则代表安装正确，接下来就可以愉快的使用python进行编程了，后续还会有更新，请大家保持持续关注。</p>
+                <p>由于平常经常需要帮人配置一些github上的ssh-key这种，命令比较多，因此在此记录一下配置的一些命令。</p>
+<h2 id="1-初始化"><a class="markdownIt-Anchor" href="#1-初始化"></a> 1. 初始化</h2>
+<pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">$ <span class="token function">mkdir</span> github <span class="token operator">&amp;</span> <span class="token builtin class-name">cd</span> github
+$ <span class="token function">git</span> init<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span></span></code></pre>
+<h2 id="2-设置你的用户名称与邮件地址"><a class="markdownIt-Anchor" href="#2-设置你的用户名称与邮件地址"></a> 2. 设置你的用户名称与邮件地址</h2>
+<pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">$ <span class="token function">git</span> config --global user.name <span class="token string">"user.name"</span>
+$ <span class="token function">git</span> config --global user.email <span class="token string">"user.email"</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span></span></code></pre>
+<h2 id="3-验证是否已经存在ssh-keys"><a class="markdownIt-Anchor" href="#3-验证是否已经存在ssh-keys"></a> 3. 验证是否已经存在ssh-keys</h2>
+<pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">$ <span class="token builtin class-name">cd</span> ~/.ssh
+$ <span class="token function">ls</span> <span aria-hidden="true" class="line-numbers-rows"><span></span><span></span></span></code></pre>
+<p>一般这里是不会有文件id_rsa和文件id_rsa.pub，需要通过以下命令进行创建</p>
+<h2 id="4-生成ssh-key"><a class="markdownIt-Anchor" href="#4-生成ssh-key"></a> 4. 生成ssh-key</h2>
+<pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">ssh-keygen -t rsa -C <span class="token string">"youremail@example.com"</span><span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
+<h2 id="5-把专用密钥添加到ssh-agent的高速缓存中"><a class="markdownIt-Anchor" href="#5-把专用密钥添加到ssh-agent的高速缓存中"></a> 5. 把专用密钥添加到ssh-agent的高速缓存中</h2>
+<pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">$ <span class="token builtin class-name">eval</span> <span class="token variable"><span class="token variable">$(</span>ssh-agent<span class="token variable">)</span></span>
+$ ssh-add ~/.ssh/id_rsa<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span></span></code></pre>
+<h2 id="6在github中添加以上的ssh-key"><a class="markdownIt-Anchor" href="#6在github中添加以上的ssh-key"></a> 6.在github中添加以上的ssh-key</h2>
+<pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">$ <span class="token function">cat</span> id_rsa.pub<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
+<p>打开github中的settings，新建一个ssh-key，将上面命令打印出来的ssh-key输入其中，注意这个密钥应该是以固定格式开头，添加之后就可以用了</p>
 
                 
             </div>
@@ -583,7 +550,7 @@ $ xeyes<span aria-hidden="true" class="line-numbers-rows"><span></span><span></s
                     </i>
                 </span>
                 <span class="reprint-info">
-                    <a href="https://gaozhiwei1.github.io/2021/06/03/wsl/">https://gaozhiwei1.github.io/2021/06/03/wsl/</a>
+                    <a href="https://gaozhiwei1.github.io/2021/10/07/ssh-github/">https://gaozhiwei1.github.io/2021/10/07/ssh-github/</a>
                 </span>
             </div>
             <div class="reprint__notice">
@@ -621,8 +588,8 @@ $ xeyes<span aria-hidden="true" class="line-numbers-rows"><span></span><span></s
                     
                         <div class="article-tag">
                             
-                                <a href="/tags/%E7%8E%AF%E5%A2%83%E6%90%AD%E5%BB%BA/">
-                                    <span class="chip bg-color">环境搭建</span>
+                                <a href="/tags/linux/">
+                                    <span class="chip bg-color">linux</span>
                                 </a>
                             
                         </div>
@@ -1060,16 +1027,18 @@ $ xeyes<span aria-hidden="true" class="line-numbers-rows"><span></span><span></s
 <article id="prenext-posts" class="prev-next articles">
     <div class="row article-row">
         
-        <div class="article col s12 m6" data-aos="fade-up">
+        <div class="article col s12 m6" data-aos="fade-up" data-aos="fade-up">
             <div class="article-badge left-badge text-color">
-                <i class="fas fa-chevron-left"></i>&nbsp;上一篇</div>
+                <i class="far fa-dot-circle"></i>&nbsp;本篇
+            </div>
             <div class="card">
-                <a href="/2021/06/03/yueduxinde/">
+                <a href="/2021/10/07/ssh-github/">
                     <div class="card-image">
                         
-                        <img src="/images/%E9%98%85%E8%AF%BB%E5%BF%83%E5%BE%97.webp" class="responsive-img" alt="激荡三十年读书摘抄">
                         
-                        <span class="card-title">激荡三十年读书摘抄</span>
+                        <img src="/medias/featureimages/21.jpg" class="responsive-img" alt="linux环境下配置通过ssh keys 连通github跟ssh-agent">
+                        
+                        <span class="card-title">linux环境下配置通过ssh keys 连通github跟ssh-agent</span>
                     </div>
                 </a>
                 <div class="card-content article-content">
@@ -1079,26 +1048,27 @@ $ xeyes<span aria-hidden="true" class="line-numbers-rows"><span></span><span></s
                         
                     </div>
                     <div class="publish-info">
-                        <span class="publish-date">
-                            <i class="far fa-clock fa-fw icon-date"></i>2021-06-03
-                        </span>
+                            <span class="publish-date">
+                                <i class="far fa-clock fa-fw icon-date"></i>2021-10-07
+                            </span>
                         <span class="publish-author">
                             
                             <i class="fas fa-bookmark fa-fw icon-category"></i>
                             
-                            <a href="/categories/%E8%AF%BB%E4%B9%A6/" class="post-category">
-                                    读书
+                            <a href="/categories/linux/" class="post-category">
+                                    linux
                                 </a>
                             
                             
                         </span>
                     </div>
                 </div>
+
                 
                 <div class="card-action article-tags">
                     
-                    <a href="/tags/%E6%91%98%E6%8A%84/">
-                        <span class="chip bg-color">摘抄</span>
+                    <a href="/tags/linux/">
+                        <span class="chip bg-color">linux</span>
                     </a>
                     
                 </div>
@@ -1112,12 +1082,12 @@ $ xeyes<span aria-hidden="true" class="line-numbers-rows"><span></span><span></s
                 下一篇&nbsp;<i class="fas fa-chevron-right"></i>
             </div>
             <div class="card">
-                <a href="/2021/06/01/hello-world/">
+                <a href="/2021/08/17/tikz/">
                     <div class="card-image">
                         
-                        <img src="/images/9.png" class="responsive-img" alt="mmdet框架搭建过程">
+                        <img src="/images/10.png" class="responsive-img" alt="tik绘制复杂的神经网络图">
                         
-                        <span class="card-title">mmdet框架搭建过程</span>
+                        <span class="card-title">tik绘制复杂的神经网络图</span>
                     </div>
                 </a>
                 <div class="card-content article-content">
@@ -1128,14 +1098,14 @@ $ xeyes<span aria-hidden="true" class="line-numbers-rows"><span></span><span></s
                     </div>
                     <div class="publish-info">
                             <span class="publish-date">
-                                <i class="far fa-clock fa-fw icon-date"></i>2021-06-01
+                                <i class="far fa-clock fa-fw icon-date"></i>2021-08-17
                             </span>
                         <span class="publish-author">
                             
                             <i class="fas fa-bookmark fa-fw icon-category"></i>
                             
-                            <a href="/categories/%E6%B7%B1%E5%BA%A6%E5%AD%A6%E4%B9%A0/" class="post-category">
-                                    深度学习
+                            <a href="/categories/latex/" class="post-category">
+                                    latex
                                 </a>
                             
                             
@@ -1145,8 +1115,12 @@ $ xeyes<span aria-hidden="true" class="line-numbers-rows"><span></span><span></s
                 
                 <div class="card-action article-tags">
                     
-                    <a href="/tags/%E7%9B%AE%E6%A0%87%E6%A3%80%E6%B5%8B/">
-                        <span class="chip bg-color">目标检测</span>
+                    <a href="/tags/%E7%BB%98%E5%9B%BE/">
+                        <span class="chip bg-color">绘图</span>
+                    </a>
+                    
+                    <a href="/tags/tikz/">
+                        <span class="chip bg-color">tikz</span>
                     </a>
                     
                 </div>
