@@ -4,6 +4,56 @@
   
     
     <entry>
+      <title>love</title>
+      <link href="2021/12/26/love/"/>
+      <url>2021/12/26/love/</url>
+      
+        <content type="html"><![CDATA[<font face="kaiti" size="4">**  恋爱十余天以来，我愈发觉得你（萌萌）是个很不错的女孩，在此单独夸一下哈哈，你是我理想的类型，不仅可爱，还很懂事，善解人意，最重要的是你很上进，能给我一种西南的感觉，是可以一起努力创造未来的伴侣，和你一起，我觉得未来便在脚下。     很多时候，我也会对你提很多要求，例如多锻炼，饮食均衡，注意身体健康，培养一些好的习惯，因为在我看来，这些东西都是未来幸福生活的基础，我既然选择了你，便应当肩负起这份责任，我很喜欢未雨绸缪，提前具备未来可能会用到的技能，很多时候，正是这种想法帮助我抓住了很多重要的机会，所以我自始至终都将其奉为圭臬，幸运的是，老天让我有幸碰到了你这样一个好女孩，你似乎都明白，明白我所做的于我和我们而言有多么多重要，每次我认真讲话的时候，你都会眨巴着大眼睛，一双如此精致的眸子，耐心的听着我滔滔不绝的讲，而后似乎也把我说的记进了心里，我能很明显的看到你的进步和真的从心底对我的重视，这无时无刻不让我备受感动，      很多时候，爱情不是所谓的风花雪月，也不是很多人笔中所描写的那样轰轰烈烈，它更像是一股涓涓细流，不断滋润着彼此的内心，带着两人不断流向前方，最终迈入星辰大海。成熟的恋爱不是整日腻在一起，追剧追星，吃吃喝喝，而是互相提携，鼓励，促进，真正温暖彼此的内心，帮助对方成为更好的自己。很多时候，我虽做不到看你一眼，便无需多言，但有的是你知我在，便是心安。最后，我还是想说一句，很幸运能碰到你，萌萌，我的好宝贝，虽然不知遇见你是否花光了我所有的运气，但还是希望能留下一点，继续庇佑我两的未来。爱你哟，萌萌**  </font>]]></content>
+      
+      
+      <categories>
+          
+          <category> life </category>
+          
+      </categories>
+      
+      
+        <tags>
+            
+            <tag> record </tag>
+            
+        </tags>
+      
+    </entry>
+    
+    
+    
+    <entry>
+      <title>hexo-transmit</title>
+      <link href="2021/12/26/hexo-transmit/"/>
+      <url>2021/12/26/hexo-transmit/</url>
+      
+        <content type="html"><![CDATA[<p>Here I want to record the process of migrating the hexo blog to another computer since I purchase a new computer for personal needs, which can be decomposed into several steps as follow:</p><h3 id="copy-the-files"><a class="markdownIt-Anchor" href="#copy-the-files"></a> Copy the files</h3><p>First copy the original files in the old computer to the new computer and delete the childer folder <strong>node_modules</strong> under the main folder <strong>blog</strong>, the basic tree structure of the <strong>blog</strong> is stated as follow:<img src="/images/tree_blog.png" alt=""></p><h3 id="download-git-and-nodejs"><a class="markdownIt-Anchor" href="#download-git-and-nodejs"></a> Download git and node.js</h3><p>Then download git and node.js and authorize your github email and username and ssh the github use the commands as follow:</p><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token function">git</span> config --global user.name <span class="token string">"username"</span><span class="token function">git</span> config --global user.email <span class="token string">"useremail"</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span></span></code></pre><h3 id="install-the-dependencies"><a class="markdownIt-Anchor" href="#install-the-dependencies"></a> Install the dependencies</h3><p>The following is that you need to install dependecies for the hexo blog using the these commands</p><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token function">npm</span> <span class="token function">install</span> hexo-cli g<span class="token function">npm</span> <span class="token function">install</span><span class="token comment"># install other plug-ins as follow</span><span class="token function">npm</span> <span class="token function">install</span> hexo-server --save<span class="token function">npm</span> <span class="token function">install</span> hexo-admin --save<span class="token function">npm</span> <span class="token function">install</span> hexo-generator-archive --save<span class="token function">npm</span> <span class="token function">install</span> hexo-generator-feed --save<span class="token function">npm</span> <span class="token function">install</span> hexo-generator-search --save<span class="token function">npm</span> <span class="token function">install</span> hexo-generator-tag --save<span class="token function">npm</span> <span class="token function">install</span> hexo-deployer-git --save<span class="token function">npm</span> <span class="token function">install</span> hexo-generator-sitemap --save<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre><p>Finally you can use the <span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi>h</mi><mi>e</mi><mi>x</mi><mi>o</mi><mi>g</mi></mrow><annotation encoding="application/x-tex">hexo g</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.8888799999999999em;vertical-align:-0.19444em;"></span><span class="mord mathdefault">h</span><span class="mord mathdefault">e</span><span class="mord mathdefault">x</span><span class="mord mathdefault">o</span><span class="mord mathdefault" style="margin-right:0.03588em;">g</span></span></span></span> command to surf the locate website with address <span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi>l</mi><mi>o</mi><mi>c</mi><mi>a</mi><mi>l</mi><mi>h</mi><mi>o</mi><mi>s</mi><mi>t</mi><mo>:</mo><mn>4000</mn></mrow><annotation encoding="application/x-tex">localhost:4000</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.69444em;vertical-align:0em;"></span><span class="mord mathdefault" style="margin-right:0.01968em;">l</span><span class="mord mathdefault">o</span><span class="mord mathdefault">c</span><span class="mord mathdefault">a</span><span class="mord mathdefault" style="margin-right:0.01968em;">l</span><span class="mord mathdefault">h</span><span class="mord mathdefault">o</span><span class="mord mathdefault">s</span><span class="mord mathdefault">t</span><span class="mspace" style="margin-right:0.2777777777777778em;"></span><span class="mrel">:</span><span class="mspace" style="margin-right:0.2777777777777778em;"></span></span><span class="base"><span class="strut" style="height:0.64444em;vertical-align:0em;"></span><span class="mord">4</span><span class="mord">0</span><span class="mord">0</span><span class="mord">0</span></span></span></span>, everything goes well, bingo!</p>]]></content>
+      
+      
+      <categories>
+          
+          <category> hexo </category>
+          
+      </categories>
+      
+      
+        <tags>
+            
+            <tag> hexo transmit </tag>
+            
+        </tags>
+      
+    </entry>
+    
+    
+    
+    <entry>
       <title>linux环境下配置通过ssh keys 连通github跟ssh-agent</title>
       <link href="2021/10/07/ssh-github/"/>
       <url>2021/10/07/ssh-github/</url>
