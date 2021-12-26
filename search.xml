@@ -8,7 +8,7 @@
       <link href="2021/12/26/love/"/>
       <url>2021/12/26/love/</url>
       
-        <content type="html"><![CDATA[<font face="kaiti" size="4">**  恋爱十余天以来，我愈发觉得你（萌萌）是个很不错的女孩，在此单独夸一下哈哈，你是我理想的类型，不仅可爱，还很懂事，善解人意，最重要的是你很上进，能给我一种西南的感觉，是可以一起努力创造未来的伴侣，和你一起，我觉得未来便在脚下。     很多时候，我也会对你提很多要求，例如多锻炼，饮食均衡，注意身体健康，培养一些好的习惯，因为在我看来，这些东西都是未来幸福生活的基础，我既然选择了你，便应当肩负起这份责任，我很喜欢未雨绸缪，提前具备未来可能会用到的技能，很多时候，正是这种想法帮助我抓住了很多重要的机会，所以我自始至终都将其奉为圭臬，幸运的是，老天让我有幸碰到了你这样一个好女孩，你似乎都明白，明白我所做的于我和我们而言有多么多重要，每次我认真讲话的时候，你都会眨巴着大眼睛，一双如此精致的眸子，耐心的听着我滔滔不绝的讲，而后似乎也把我说的记进了心里，我能很明显的看到你的进步和真的从心底对我的重视，这无时无刻不让我备受感动，      很多时候，爱情不是所谓的风花雪月，也不是很多人笔中所描写的那样轰轰烈烈，它更像是一股涓涓细流，不断滋润着彼此的内心，带着两人不断流向前方，最终迈入星辰大海。成熟的恋爱不是整日腻在一起，追剧追星，吃吃喝喝，而是互相提携，鼓励，促进，真正温暖彼此的内心，帮助对方成为更好的自己。很多时候，我虽做不到看你一眼，便无需多言，但有的是你知我在，便是心安。最后，我还是想说一句，很幸运能碰到你，萌萌，我的好宝贝，虽然不知遇见你是否花光了我所有的运气，但还是希望能留下一点，继续庇佑我两的未来。爱你哟，萌萌。**  </font>]]></content>
+        <content type="html"><![CDATA[<p><font face="kaiti" size="4"><strong>  恋爱十余天以来，我愈发觉得你（萌萌）是个很不错的女孩，在此单独夸一下哈哈，你是我理想的类型，不仅可爱，还很懂事，善解人意，最重要的是你很上进，能给我一种西南的感觉，是可以一起努力创造未来的伴侣，和你一起，我觉得未来便在脚下。<br>   很多时候，我也会对你提很多要求，例如多锻炼，饮食均衡，注意身体健康，培养一些好的习惯，因为在我看来，这些东西都是未来幸福生活的基础，我既然选择了你，便应当肩负起这份责任，我很喜欢未雨绸缪，提前具备未来可能会用到的技能，很多时候，正是这种想法帮助我抓住了很多重要的机会，所以我自始至终都将其奉为圭臬，幸运的是，老天让我有幸碰到了你这样一个好女孩，你似乎都明白，明白我所做的于我和我们而言有多么多重要，每次我认真讲话的时候，你都会眨巴着大眼睛，一双如此精致的眸子，耐心的听着我滔滔不绝的讲，而后似乎也把我说的记进了心里，我能很明显的看到你的进步和真的从心底对我的重视，这无时无刻不让我备受感动，<br>  很多时候，爱情不是所谓的风花雪月，也不是很多人笔中所描写的那样轰轰烈烈，它更像是一股涓涓细流，不断滋润着彼此的内心，带着两人不断流向前方，最终迈入星辰大海。成熟的恋爱不是整日腻在一起，追剧追星，吃吃喝喝，而是互相提携，鼓励，促进，真正温暖彼此的内心，帮助对方成为更好的自己。很多时候，我虽做不到看你一眼，便无需多言，但有的是你知我在，便是心安。最后，我还是想说一句，很幸运能碰到你，萌萌，我的好宝贝，虽然不知遇见你是否花光了我所有的运气，但还是希望能留下一点，继续庇佑我两的未来。爱你哟，萌萌。</strong></font></p><font face="kaiti" size="4"></font>]]></content>
       
       
       <categories>
@@ -46,6 +46,31 @@
         <tags>
             
             <tag> hexo transmit </tag>
+            
+        </tags>
+      
+    </entry>
+    
+    
+    
+    <entry>
+      <title>mmdet框架搭建过程</title>
+      <link href="2021/12/26/hello-world/"/>
+      <url>2021/12/26/hello-world/</url>
+      
+        <content type="html"><![CDATA[<p>本篇博客我将介绍如何在WSL2环境下利用vscode搭建mmdet环境，该环境是用来执行深度学习目标检测任务，常见算法由faster-rcnn以及yolo目标检测算法系列，在阅读本博客之前，你的配置应当包括wsl2系统以及python编译环境。</p><h2 id="quick-start"><a class="markdownIt-Anchor" href="#quick-start"></a> Quick Start</h2><h3 id="create-a-new-post"><a class="markdownIt-Anchor" href="#create-a-new-post"></a> Create a new post</h3><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">$ hexo new <span class="token string">"My New Post"</span><span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre><p>More info: <a href="https://hexo.io/docs/writing.html">Writing</a></p><h3 id="run-server"><a class="markdownIt-Anchor" href="#run-server"></a> Run server</h3><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">$ hexo server<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre><p>More info: <a href="https://hexo.io/docs/server.html">Server</a></p><h3 id="generate-static-files"><a class="markdownIt-Anchor" href="#generate-static-files"></a> Generate static files</h3><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">$ hexo generate<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre><p>More info: <a href="https://hexo.io/docs/generating.html">Generating</a></p><h3 id="deploy-to-remote-sites"><a class="markdownIt-Anchor" href="#deploy-to-remote-sites"></a> Deploy to remote sites</h3><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">$ hexo deploy<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre><p>More info: <a href="https://hexo.io/docs/one-command-deployment.html">Deployment</a></p>]]></content>
+      
+      
+      <categories>
+          
+          <category> 深度学习 </category>
+          
+      </categories>
+      
+      
+        <tags>
+            
+            <tag> 目标检测 </tag>
             
         </tags>
       
@@ -329,31 +354,6 @@
         <tags>
             
             <tag> 环境搭建 </tag>
-            
-        </tags>
-      
-    </entry>
-    
-    
-    
-    <entry>
-      <title>mmdet框架搭建过程</title>
-      <link href="2021/06/01/hello-world/"/>
-      <url>2021/06/01/hello-world/</url>
-      
-        <content type="html"><![CDATA[<p>本篇博客我将介绍如何在WSL2环境下利用vscode搭建mmdet环境，该环境是用来执行深度学习目标检测任务，常见算法由faster-rcnn以及yolo目标检测算法系列，在阅读本博客之前，你的配置应当包括wsl2系统以及python编译环境。</p><h2 id="quick-start"><a class="markdownIt-Anchor" href="#quick-start"></a> Quick Start</h2><h3 id="create-a-new-post"><a class="markdownIt-Anchor" href="#create-a-new-post"></a> Create a new post</h3><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">$ hexo new <span class="token string">"My New Post"</span><span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre><p>More info: <a href="https://hexo.io/docs/writing.html">Writing</a></p><h3 id="run-server"><a class="markdownIt-Anchor" href="#run-server"></a> Run server</h3><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">$ hexo server<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre><p>More info: <a href="https://hexo.io/docs/server.html">Server</a></p><h3 id="generate-static-files"><a class="markdownIt-Anchor" href="#generate-static-files"></a> Generate static files</h3><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">$ hexo generate<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre><p>More info: <a href="https://hexo.io/docs/generating.html">Generating</a></p><h3 id="deploy-to-remote-sites"><a class="markdownIt-Anchor" href="#deploy-to-remote-sites"></a> Deploy to remote sites</h3><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">$ hexo deploy<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre><p>More info: <a href="https://hexo.io/docs/one-command-deployment.html">Deployment</a></p>]]></content>
-      
-      
-      <categories>
-          
-          <category> 深度学习 </category>
-          
-      </categories>
-      
-      
-        <tags>
-            
-            <tag> 目标检测 </tag>
             
         </tags>
       
