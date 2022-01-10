@@ -6,7 +6,7 @@
   <link href="https://gaozhiwei1.github.io/atom.xml" rel="self"/>
   
   <link href="https://gaozhiwei1.github.io/"/>
-  <updated>2022-01-03T09:03:09.218Z</updated>
+  <updated>2022-01-06T06:53:08.191Z</updated>
   <id>https://gaozhiwei1.github.io/</id>
   
   <author>
@@ -17,11 +17,61 @@
   <generator uri="https://hexo.io/">Hexo</generator>
   
   <entry>
+    <title>c++ object oriented programming</title>
+    <link href="https://gaozhiwei1.github.io/2022/01/05/c-object-oriented-programming/"/>
+    <id>https://gaozhiwei1.github.io/2022/01/05/c-object-oriented-programming/</id>
+    <published>2022-01-05T01:11:16.000Z</published>
+    <updated>2022-01-06T06:53:08.191Z</updated>
+    
+    
+      
+      
+        
+        
+    <summary type="html">&lt;p&gt;In this blog, I would like to introduce some basic knowledge about c++ oop, which I find is so intersting than I have ever imagined,</summary>
+        
+      
+    
+    
+    
+    <category term="c++" scheme="https://gaozhiwei1.github.io/categories/c/"/>
+    
+    
+    <category term="oop" scheme="https://gaozhiwei1.github.io/tags/oop/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>function_programming</title>
+    <link href="https://gaozhiwei1.github.io/2022/01/05/function-programming/"/>
+    <id>https://gaozhiwei1.github.io/2022/01/05/function-programming/</id>
+    <published>2022-01-05T01:10:58.000Z</published>
+    <updated>2022-01-05T03:08:00.523Z</updated>
+    
+    
+      
+      
+        
+        
+    <summary type="html">&lt;p&gt;In this blog, I will illustrate the functional programming skiils in python, while has gigant usage in our daily coding work, while the</summary>
+        
+      
+    
+    
+    
+    <category term="python" scheme="https://gaozhiwei1.github.io/categories/python/"/>
+    
+    
+    <category term="functional progrmming" scheme="https://gaozhiwei1.github.io/tags/functional-progrmming/"/>
+    
+  </entry>
+  
+  <entry>
     <title>git版本控制学习笔记</title>
     <link href="https://gaozhiwei1.github.io/2022/01/03/git/"/>
     <id>https://gaozhiwei1.github.io/2022/01/03/git/</id>
     <published>2022-01-03T08:43:50.000Z</published>
-    <updated>2022-01-03T09:03:09.218Z</updated>
+    <updated>2022-01-05T01:14:01.452Z</updated>
     
     
       
@@ -120,10 +170,10 @@
   
   <entry>
     <title>学期总结</title>
-    <link href="https://gaozhiwei1.github.io/2021/12/28/conclusion/"/>
-    <id>https://gaozhiwei1.github.io/2021/12/28/conclusion/</id>
+    <link href="https://gaozhiwei1.github.io/2021/12/28/conclusion-2021/"/>
+    <id>https://gaozhiwei1.github.io/2021/12/28/conclusion-2021/</id>
     <published>2021-12-28T13:42:13.000Z</published>
-    <updated>2021-12-28T15:01:05.405Z</updated>
+    <updated>2022-01-05T02:50:21.036Z</updated>
     
     
       
@@ -145,10 +195,10 @@
   
   <entry>
     <title>寒假规划</title>
-    <link href="https://gaozhiwei1.github.io/2021/12/28/friend/"/>
-    <id>https://gaozhiwei1.github.io/2021/12/28/friend/</id>
+    <link href="https://gaozhiwei1.github.io/2021/12/28/the-plan-for-the-winter-vacation/"/>
+    <id>https://gaozhiwei1.github.io/2021/12/28/the-plan-for-the-winter-vacation/</id>
     <published>2021-12-28T01:31:03.000Z</published>
-    <updated>2021-12-28T01:49:55.488Z</updated>
+    <updated>2022-01-05T02:51:04.502Z</updated>
     
     
       
@@ -171,10 +221,10 @@
   
   <entry>
     <title>恋爱纪实</title>
-    <link href="https://gaozhiwei1.github.io/2021/12/26/love/"/>
-    <id>https://gaozhiwei1.github.io/2021/12/26/love/</id>
+    <link href="https://gaozhiwei1.github.io/2021/12/26/lian-ai-ji-shi/"/>
+    <id>https://gaozhiwei1.github.io/2021/12/26/lian-ai-ji-shi/</id>
     <published>2021-12-26T14:49:33.000Z</published>
-    <updated>2021-12-27T00:28:59.365Z</updated>
+    <updated>2022-01-10T13:31:09.510Z</updated>
     
     
       
@@ -483,57 +533,6 @@ One form of variational inference minimizes the Kullback-Leibler divergence from
     
     
     <category term="摘抄" scheme="https://gaozhiwei1.github.io/tags/%E6%91%98%E6%8A%84/"/>
-    
-  </entry>
-  
-  <entry>
-    <title>激荡三十年读书摘抄</title>
-    <link href="https://gaozhiwei1.github.io/2021/06/03/yueduxinde/"/>
-    <id>https://gaozhiwei1.github.io/2021/06/03/yueduxinde/</id>
-    <published>2021-06-03T11:52:23.000Z</published>
-    <updated>2021-08-18T06:18:16.666Z</updated>
-    
-    
-      
-      
-        
-        
-    <summary type="html">&lt;p&gt;&lt;font face=&quot;楷体&quot; size=&quot;4.5&quot;&gt;</summary>
-        
-      
-    
-    
-    
-    <category term="读书" scheme="https://gaozhiwei1.github.io/categories/%E8%AF%BB%E4%B9%A6/"/>
-    
-    
-    <category term="摘抄" scheme="https://gaozhiwei1.github.io/tags/%E6%91%98%E6%8A%84/"/>
-    
-  </entry>
-  
-  <entry>
-    <title>wsl 安装及python环境配置</title>
-    <link href="https://gaozhiwei1.github.io/2021/06/03/wsl/"/>
-    <id>https://gaozhiwei1.github.io/2021/06/03/wsl/</id>
-    <published>2021-06-03T04:08:08.000Z</published>
-    <updated>2021-08-18T06:20:24.641Z</updated>
-    
-    
-      
-      
-        
-        
-    <summary type="html">&lt;p&gt;本篇博客我将介绍如何安装wsl以及其中的python环境配置，需要读者具备一定的linux操作系统知识，以及python基本知识。&lt;/p&gt;
-&lt;h3 id=&quot;1-开启虚拟机及wsl平台&quot;&gt;&lt;a class=&quot;markdownIt-Anchor&quot;</summary>
-        
-      
-    
-    
-    
-    <category term="linux" scheme="https://gaozhiwei1.github.io/categories/linux/"/>
-    
-    
-    <category term="环境搭建" scheme="https://gaozhiwei1.github.io/tags/%E7%8E%AF%E5%A2%83%E6%90%AD%E5%BB%BA/"/>
     
   </entry>
   

@@ -4,6 +4,56 @@
   
     
     <entry>
+      <title>c++ object oriented programming</title>
+      <link href="2022/01/05/c-object-oriented-programming/"/>
+      <url>2022/01/05/c-object-oriented-programming/</url>
+      
+        <content type="html"><![CDATA[<p>In this blog, I would like to introduce some basic knowledge about c++ oop, which I find is so intersting than I have ever imagined, with great regret that I don't learn it eariler, here I am committed to learning it better and keeping taking notes.</p><h3 id="1-the-basic-properties-of-class-in-c"><a class="markdownIt-Anchor" href="#1-the-basic-properties-of-class-in-c"></a> 1. The basic properties of class in c++</h3><table><thead><tr><th style="text-align:center">concept</th><th style="text-align:center">description</th></tr></thead><tbody><tr><td style="text-align:center">member function</td><td style="text-align:center"></td></tr><tr><td style="text-align:center">class access modifier</td><td style="text-align:center"></td></tr><tr><td style="text-align:center">constructor&amp;deconstructor</td><td style="text-align:center"></td></tr><tr><td style="text-align:center">copy constructor</td><td style="text-align:center"></td></tr><tr><td style="text-align:center">friend function</td><td style="text-align:center"></td></tr><tr><td style="text-align:center">inline function</td><td style="text-align:center"></td></tr><tr><td style="text-align:center">this pointer</td><td style="text-align:center"></td></tr><tr><td style="text-align:center">the pointer point the class</td><td style="text-align:center"></td></tr><tr><td style="text-align:center">static members</td><td style="text-align:center"></td></tr></tbody></table><h3 id="2-the-access-permission-in-c"><a class="markdownIt-Anchor" href="#2-the-access-permission-in-c"></a> 2. the access permission in c++</h3><p>The permission bweteen different classes is different, as stated in the following table</p><table><thead><tr><th style="text-align:left">visit</th><th style="text-align:center">public</th><th style="text-align:center">protected</th><th style="text-align:center">private</th></tr></thead><tbody><tr><td style="text-align:left">the same class</td><td style="text-align:center">yes</td><td style="text-align:center">yes</td><td style="text-align:center">yes</td></tr><tr><td style="text-align:left">derived class</td><td style="text-align:center">yes</td><td style="text-align:center">yes</td><td style="text-align:center">no</td></tr><tr><td style="text-align:left">outer class</td><td style="text-align:center">yes</td><td style="text-align:center">no</td><td style="text-align:center">no</td></tr></tbody></table><p>This is an example about multible inheritence</p><pre class="line-numbers language-cpp" data-language="cpp"><code class="language-cpp"><span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span><span class="token string">&lt;iostream&gt;</span></span><span class="token keyword">using</span> <span class="token keyword">namespace</span> std<span class="token punctuation">;</span><span class="token keyword">class</span> <span class="token class-name">Shape</span><span class="token punctuation">{</span>    <span class="token keyword">public</span><span class="token operator">:</span>        <span class="token keyword">void</span> <span class="token function">setWidth</span><span class="token punctuation">(</span><span class="token keyword">int</span> w<span class="token punctuation">)</span>        <span class="token punctuation">{</span>            width <span class="token operator">=</span> w<span class="token punctuation">;</span>        <span class="token punctuation">}</span>        <span class="token keyword">void</span> <span class="token function">setHeight</span><span class="token punctuation">(</span><span class="token keyword">int</span> h<span class="token punctuation">)</span><span class="token punctuation">{</span>            height <span class="token operator">=</span> h<span class="token punctuation">;</span>        <span class="token punctuation">}</span>    <span class="token keyword">protected</span><span class="token operator">:</span>        <span class="token keyword">int</span> height<span class="token punctuation">;</span>        <span class="token keyword">int</span> width<span class="token punctuation">;</span><span class="token punctuation">}</span><span class="token punctuation">;</span><span class="token keyword">class</span> <span class="token class-name">PaintCost</span><span class="token punctuation">{</span>    <span class="token keyword">public</span><span class="token operator">:</span>        <span class="token keyword">int</span> <span class="token function">getCost</span><span class="token punctuation">(</span><span class="token keyword">int</span> area<span class="token punctuation">)</span>        <span class="token punctuation">{</span>            <span class="token keyword">return</span> area<span class="token operator">*</span><span class="token number">70</span><span class="token punctuation">;</span>        <span class="token punctuation">}</span><span class="token punctuation">}</span><span class="token punctuation">;</span><span class="token keyword">class</span> <span class="token class-name">Rectangle</span><span class="token operator">:</span><span class="token base-clause"><span class="token keyword">public</span> <span class="token class-name">Shape</span><span class="token punctuation">,</span><span class="token keyword">public</span> <span class="token class-name">PaintCost</span></span><span class="token punctuation">{</span>    <span class="token keyword">public</span><span class="token operator">:</span>        <span class="token keyword">int</span> <span class="token function">getArea</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">{</span>            <span class="token keyword">return</span> <span class="token punctuation">(</span>width<span class="token operator">*</span>height<span class="token punctuation">)</span><span class="token punctuation">;</span>        <span class="token punctuation">}</span><span class="token punctuation">}</span><span class="token punctuation">;</span><span class="token keyword">int</span> <span class="token function">main</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">{</span>   Rectangle Rect<span class="token punctuation">;</span>   Rect<span class="token punctuation">.</span><span class="token function">setWidth</span><span class="token punctuation">(</span><span class="token number">5</span><span class="token punctuation">)</span><span class="token punctuation">;</span>   Rect<span class="token punctuation">.</span><span class="token function">setHeight</span><span class="token punctuation">(</span><span class="token number">7</span><span class="token punctuation">)</span><span class="token punctuation">;</span>   cout <span class="token operator">&lt;&lt;</span> <span class="token string">"Total area: "</span> <span class="token operator">&lt;&lt;</span> Rect<span class="token punctuation">.</span><span class="token function">getArea</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">&lt;&lt;</span> endl<span class="token punctuation">;</span>   <span class="token keyword">return</span> <span class="token number">0</span><span class="token punctuation">;</span><span class="token punctuation">}</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>]]></content>
+      
+      
+      <categories>
+          
+          <category> c++ </category>
+          
+      </categories>
+      
+      
+        <tags>
+            
+            <tag> oop </tag>
+            
+        </tags>
+      
+    </entry>
+    
+    
+    
+    <entry>
+      <title>function_programming</title>
+      <link href="2022/01/05/function-programming/"/>
+      <url>2022/01/05/function-programming/</url>
+      
+        <content type="html"><![CDATA[<p>In this blog, I will illustrate the functional programming skiils in python, while has gigant usage in our daily coding work, while the majority of commands is common and not difficult, but a comprehensive learning is trend that it can geatly enhance my progamming skills.</p>]]></content>
+      
+      
+      <categories>
+          
+          <category> python </category>
+          
+      </categories>
+      
+      
+        <tags>
+            
+            <tag> functional progrmming </tag>
+            
+        </tags>
+      
+    </entry>
+    
+    
+    
+    <entry>
       <title>git版本控制学习笔记</title>
       <link href="2022/01/03/git/"/>
       <url>2022/01/03/git/</url>
@@ -105,8 +155,8 @@
     
     <entry>
       <title>学期总结</title>
-      <link href="2021/12/28/conclusion/"/>
-      <url>2021/12/28/conclusion/</url>
+      <link href="2021/12/28/conclusion-2021/"/>
+      <url>2021/12/28/conclusion-2021/</url>
       
         <content type="html"><![CDATA[<p>这学期快结束了，闲来无事，我在此总结一下这个学期的收获与不足吧，首先说一下不足的地方吧，感觉学了很多无用的课程，在此点名实分析，课程内容纷繁复杂，毫无逻辑可言，老师上课全然照着ppt讲，经常让人不知所云，实属浪费时间之举！再说学位英语这门课，我自觉这门课对我的英语水平毫无提升，远不如我自己学的扎实，尚且都到了研究生阶段，为何还要如此强制上英语课？安排之不合理可见一斑，且课程任务繁多，堪比数学分析！敢问真有此必要？再说上课内容与学术写作几无相关之处，为啥要如此浪费别人的宝贵时间？最让人诟病的当乃政治课，心照不宣即可。<br>最有用的两门课当属高等数值分析和泛函了，所学甚为基础详细，乃数学课本来之模样，由此看来，整个学期的课程也有收获之处，总的来说，喜忧参半吧。<br>最后说一下收获吧，学习上，学会了很多基础的深度生成模型，代码能力进一步提高，研读论文的能力进一步提高，但仍旧空间很大，不过总归是有所进步的，阅读书籍始终没有停下，思维见解进一步深刻，调整状态的能力愈发增强。同时竞赛上也收获了两个国家级奖项，一个是华为杯数模竞赛，获得了三等奖，也算是国家级奖项吧，另一个是EDA精英挑战赛，参与不算太多，但是最后结果还可以，拿到了国家级三等奖，这个比赛也让我见识到了工业界对自我创新能力的渴望，尤其是在电子方面，感觉很有可取之处，明年打算继续参加，并且好好做一做。当然，这个学期最大的收获当然是收获了一枚可爱的女盆友啦，从此以后生活更加有盼头，我的目标也愈发清晰明确。<br>当下的生活也让我非常满意，学业可期，未来有盼头，老师对我很好，父母没拖后腿，积极支持我，个人规划明确，有朋友积极关心我，给我参谋，各方面能力进一步提升，女朋友很爱我，我觉得我应该好好珍惜现在拥有的一切，努力不辜负自己，对得起所有关心我，爱我的人，好好努力，才是我当前最应该做的事。</p>]]></content>
       
@@ -130,8 +180,8 @@
     
     <entry>
       <title>寒假规划</title>
-      <link href="2021/12/28/friend/"/>
-      <url>2021/12/28/friend/</url>
+      <link href="2021/12/28/the-plan-for-the-winter-vacation/"/>
+      <url>2021/12/28/the-plan-for-the-winter-vacation/</url>
       
         <content type="html"><![CDATA[<h2 id="寒假规划"><a class="markdownIt-Anchor" href="#寒假规划"></a> 寒假规划</h2><h3 id="1-必做事项清单"><a class="markdownIt-Anchor" href="#1-必做事项清单"></a> 1. 必做事项清单</h3><h4 id="11-自我提升"><a class="markdownIt-Anchor" href="#11-自我提升"></a> 1.1 自我提升</h4><ol><li>c++ 面向对象进阶，视频 +leetcode。</li><li>python 中 pyqt 开发入门，要会制作简单的 gui。</li><li>高等概率论 + 测度论进阶，主要学习 B 站视频外加书籍《Measure-Theory-and-Probability-Theory》，作者 Adams, Malcolm Ritchie。</li><li>继续熟悉 transformer，GAN，normlizing flow, VAE 类深度生成模型，争取阅读多篇最新发表论文，为下学期论文写作打基础。</li><li>托福写作基础入门，阶段性开展写作训练与听力训练，具体学习方法尚有待探索。</li><li>处理完老师交代的科研任务，调试完成的代码，得出初步结果。</li></ol><h4 id="12-人际关系处理"><a class="markdownIt-Anchor" href="#12-人际关系处理"></a> 1.2 人际关系处理</h4><ol><li>和往日好友相见吃饭或者线上联系。</li><li>和亲人，爱人，朋友加深关系，多与人交流。</li><li>阅读书籍《沟通的艺术》，作者卡耐基。</li></ol><h4 id="13-生活技能"><a class="markdownIt-Anchor" href="#13-生活技能"></a> 1.3 生活技能</h4><ol><li>多做饭，提升厨艺，多关心爸妈。</li><li>保持良好的作息习惯，健身，跑步不可拉下。</li></ol><h3 id="2-选作事项清单"><a class="markdownIt-Anchor" href="#2-选作事项清单"></a> 2. 选作事项清单</h3><h4 id="21-自我提升"><a class="markdownIt-Anchor" href="#21-自我提升"></a> 2.1 自我提升</h4><ol><li>latex package and class 学习。</li><li>继续阅读完书籍《数学之美》与《当下即是生活》与《无畏的希望：重申美国梦》与继续观看完《货币银行学》视频并及时记录。</li><li>托福单词在多刷几遍，争取记住 80-95%。</li><li>博客继续更新起来，将学过的知识进行归纳总结或者更好的记录，以免忘记。</li><li>金融知识尚且不够系统化，若有空余时间阅读《货币金融学》作者 FredericS. Mishkin，该书与《货币银行学》或有相通之处，或可有所启发，尚且不是如此枯燥。</li></ol><p>在此我还要感谢<a href="https://zhuxiaowei1998.github.io/">晓炜</a>一直以来的鼓励和陪伴，让我在很多方面有了新的认识与思考，愿都越来越好。</p>]]></content>
       
@@ -155,10 +205,10 @@
     
     <entry>
       <title>恋爱纪实</title>
-      <link href="2021/12/26/love/"/>
-      <url>2021/12/26/love/</url>
+      <link href="2021/12/26/lian-ai-ji-shi/"/>
+      <url>2021/12/26/lian-ai-ji-shi/</url>
       
-        <content type="html"><![CDATA[<p><font face="kaiti" size="4"><strong>  恋爱十余天以来，我愈发觉得你（萌萌）是个很不错的女孩，在此单独夸一下哈哈，你是我理想的类型，不仅可爱，还很懂事，善解人意，最重要的是你很上进，能给我一种心安的感觉，是可以一起努力创造未来的伴侣，和你一起，我觉得未来便在脚下。<br>   有时，我也会对你提很多要求，例如多锻炼，饮食均衡，注意身体健康，培养一些好的习惯，因为在我看来，这些东西都是未来幸福生活的基础，我既然选择了你，便应当肩负起这份责任，我很喜欢未雨绸缪，提前具备未来可能会用到的技能，很多时候，正是这种想法帮助我抓住了很多重要的机会，所以我自始至终都将其奉为圭臬，幸运的是，老天让我有幸碰到了你这样一个好女孩，你似乎都明白，明白我所做的于我和我们而言有多么多重要，每次我认真讲话的时候，你都会眨巴着大眼睛，一双如此精致的眸子，耐心的听着我滔滔不绝的讲，而后似乎也把我说的记进了心里，我能很明显的看到你的进步和真的从心底对我的重视，这无时无刻不让我备受感动。<br>  很多时候，爱情不是所谓的风花雪月，也不是很多人笔中所描写的那样轰轰烈烈，它更像是一股涓涓细流，不断滋润着彼此的内心，带着两人不断流向前方，最终迈入星辰大海。成熟的恋爱不是整日腻在一起，追剧追星，吃吃喝喝，而是互相提携，鼓励，促进，真正温暖彼此的内心，帮助对方成为更好的自己。很多时候，我虽做不到看你一眼，便无需多言，但有的是你知我在，便是心安。最后，我还是想说一句，很幸运能碰到你，萌萌，我的好宝贝，虽然不知遇见你是否花光了我所有的运气，但还是希望能留下一点，继续庇佑我两的未来。爱你哟，萌萌。</strong><br></font></p>]]></content>
+        <content type="html"><![CDATA[<p><font face="kaiti" size="4"><strong>  恋爱十余天以来，我愈发觉得你（萌萌）是个很不错的女孩，在此单独夸一下哈哈，你是我理想的类型，不仅可爱，还很懂事，善解人意，最重要的是你很上进，能给我一种心安的感觉，是可以一起努力创造未来的伴侣，和你一起，我觉得未来便在脚下。<br>   有时，我也会对你提很多要求，例如多锻炼，饮食均衡，注意身体健康，培养一些好的习惯，因为在我看来，这些东西都是未来幸福生活的基础，我既然选择了你，便应当肩负起这份责任，我很喜欢未雨绸缪，提前具备未来可能会用到的技能，很多时候，正是这种想法帮助我抓住了很多重要的机会，所以我自始至终都将其奉为圭臬，幸运的是，老天让我有幸碰到了你这样一个好女孩，你似乎都明白，明白我所做的于我和我们而言有多么多重要，每次我认真讲话的时候，你都会眨巴着大眼睛，一双如此精致的眸子，耐心的听着我滔滔不绝的讲，而后似乎也把我说的记进了心里，我能很明显的看到你的进步和真的从心底对我的重视，这无时无刻不让我备受感动。<br>  很多时候，爱情不是所谓的风花雪月，也不是很多人笔中所描写的那样轰轰烈烈，它更像是一股涓涓细流，不断滋润着彼此的内心，带着两人不断流向前方，最终迈入星辰大海。成熟的恋爱不是整日腻在一起，追剧追星，吃吃喝喝，而是互相提携，鼓励，促进，真正温暖彼此的内心，帮助对方成为更好的自己。很多时候，我虽做不到看你一眼，便无需多言，但有的是你知我在，便是心安。最后，我还是想说一句，很幸运能碰到你，萌萌，我的好宝贝，虽然不知遇见你是否花光了我所有的运气，但还是希望能留下一点，继续庇佑我两的未来。爱你哟，萌萌。</strong><br></font>此处给萌萌画了一个大大的<a href="http://htmlpreview.github.io/?https://github.com/gaozhiwei1/qixi.github.io/blob/main/index.html">心</a>，点击观看哦。</p>]]></content>
       
       
       <categories>
