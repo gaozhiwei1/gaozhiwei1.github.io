@@ -6,7 +6,7 @@
   <link href="https://gaozhiwei1.github.io/atom.xml" rel="self"/>
   
   <link href="https://gaozhiwei1.github.io/"/>
-  <updated>2022-01-06T06:53:08.191Z</updated>
+  <updated>2022-01-18T15:11:37.822Z</updated>
   <id>https://gaozhiwei1.github.io/</id>
   
   <author>
@@ -15,6 +15,57 @@
   </author>
   
   <generator uri="https://hexo.io/">Hexo</generator>
+  
+  <entry>
+    <title>感悟</title>
+    <link href="https://gaozhiwei1.github.io/2022/01/18/gan-wu/"/>
+    <id>https://gaozhiwei1.github.io/2022/01/18/gan-wu/</id>
+    <published>2022-01-18T14:20:22.000Z</published>
+    <updated>2022-01-18T15:11:37.822Z</updated>
+    
+    
+      
+      
+        
+        
+    <summary type="html">&lt;p&gt;  最近寒假回家了，阔别一年，见到了爸妈，还是那么熟悉，但是不知不觉间感觉他们又苍老了许多，2021是不平凡的一年，对于身处武汉的爸妈，更是如此，这一年的中国经济可谓是先扬后抑，不断局部爆发的疫情很大程度上扰乱了经济发展的正常秩序，我们以极大的经济代价控制了疫情的进一步传播</summary>
+        
+      
+    
+    
+    
+    <category term="life" scheme="https://gaozhiwei1.github.io/categories/life/"/>
+    
+    
+    <category term="感悟" scheme="https://gaozhiwei1.github.io/tags/%E6%84%9F%E6%82%9F/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>latex技巧</title>
+    <link href="https://gaozhiwei1.github.io/2022/01/17/latex-ji-qiao/"/>
+    <id>https://gaozhiwei1.github.io/2022/01/17/latex-ji-qiao/</id>
+    <published>2022-01-17T11:32:36.000Z</published>
+    <updated>2022-01-18T14:21:43.853Z</updated>
+    
+    
+      
+      
+        
+        
+    <summary type="html">&lt;p&gt;Here I want to record some useful latex commands, which are summarized during my daily writing work using latex.&lt;/p&gt;
+&lt;h4</summary>
+        
+      
+    
+    
+    
+    <category term="latex" scheme="https://gaozhiwei1.github.io/categories/latex/"/>
+    
+    
+    <category term="技巧" scheme="https://gaozhiwei1.github.io/tags/%E6%8A%80%E5%B7%A7/"/>
+    
+  </entry>
   
   <entry>
     <title>c++ object oriented programming</title>
@@ -482,57 +533,6 @@ One form of variational inference minimizes the Kullback-Leibler divergence from
     <category term="python" scheme="https://gaozhiwei1.github.io/tags/python/"/>
     
     <category term="xml" scheme="https://gaozhiwei1.github.io/tags/xml/"/>
-    
-  </entry>
-  
-  <entry>
-    <title>Linux部分shell命令</title>
-    <link href="https://gaozhiwei1.github.io/2021/06/07/shell/"/>
-    <id>https://gaozhiwei1.github.io/2021/06/07/shell/</id>
-    <published>2021-06-07T14:38:45.000Z</published>
-    <updated>2021-08-18T06:12:11.451Z</updated>
-    
-    
-      
-      
-        
-        
-    <summary type="html">&lt;h3 id=&quot;vi-编辑器&quot;&gt;&lt;a class=&quot;markdownIt-Anchor&quot; href=&quot;#vi-编辑器&quot;&gt;&lt;/a&gt; Vi 编辑器&lt;/h3&gt;
-&lt;h4 id=&quot;1进入插入模式&quot;&gt;&lt;a class=&quot;markdownIt-Anchor&quot;</summary>
-        
-      
-    
-    
-    
-    <category term="Linux" scheme="https://gaozhiwei1.github.io/categories/Linux/"/>
-    
-    
-    <category term="shell" scheme="https://gaozhiwei1.github.io/tags/shell/"/>
-    
-  </entry>
-  
-  <entry>
-    <title>乌合之众</title>
-    <link href="https://gaozhiwei1.github.io/2021/06/07/wuhezhizhong/"/>
-    <id>https://gaozhiwei1.github.io/2021/06/07/wuhezhizhong/</id>
-    <published>2021-06-07T04:39:13.000Z</published>
-    <updated>2021-08-18T06:21:20.872Z</updated>
-    
-    
-      
-      
-        
-        
-    <summary type="html">&lt;p&gt;&lt;font face=&quot;kaiti&quot;</summary>
-        
-      
-    
-    
-    
-    <category term="读书" scheme="https://gaozhiwei1.github.io/categories/%E8%AF%BB%E4%B9%A6/"/>
-    
-    
-    <category term="摘抄" scheme="https://gaozhiwei1.github.io/tags/%E6%91%98%E6%8A%84/"/>
     
   </entry>
   
