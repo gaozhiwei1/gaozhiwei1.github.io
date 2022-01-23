@@ -6,7 +6,7 @@
   <link href="https://gaozhiwei1.github.io/atom.xml" rel="self"/>
   
   <link href="https://gaozhiwei1.github.io/"/>
-  <updated>2022-01-22T12:08:45.433Z</updated>
+  <updated>2022-01-23T00:34:02.896Z</updated>
   <id>https://gaozhiwei1.github.io/</id>
   
   <author>
@@ -15,6 +15,31 @@
   </author>
   
   <generator uri="https://hexo.io/">Hexo</generator>
+  
+  <entry>
+    <title>c++数值计算</title>
+    <link href="https://gaozhiwei1.github.io/2022/01/23/c-shu-zhi-ji-suan/"/>
+    <id>https://gaozhiwei1.github.io/2022/01/23/c-shu-zhi-ji-suan/</id>
+    <published>2022-01-23T00:27:36.000Z</published>
+    <updated>2022-01-23T00:34:02.896Z</updated>
+    
+    
+      
+      
+        
+        
+    <summary type="html">&lt;p&gt;不得不说，c&lt;ins&gt;还是快，但是很不好的一点就是太麻烦了，尤其是矩阵运算，需要导入eigen库才能够完成，而且对于画图相当不友好，后面考虑只是把c&lt;/ins&gt;当成一个求解器吧，毕竟用不到太高深的软件开发，用到了再学吧，不过用c&lt;ins&gt;写代码是真的具有一种美感，代码结构严</summary>
+        
+      
+    
+    
+    
+    <category term="c++" scheme="https://gaozhiwei1.github.io/categories/c/"/>
+    
+    
+    <category term="数值计算" scheme="https://gaozhiwei1.github.io/tags/%E6%95%B0%E5%80%BC%E8%AE%A1%E7%AE%97/"/>
+    
+  </entry>
   
   <entry>
     <title>np.einsum用法</title>
@@ -505,32 +530,6 @@ One form of variational inference minimizes the Kullback-Leibler divergence from
     <category term="Math" scheme="https://gaozhiwei1.github.io/tags/Math/"/>
     
     <category term="neural networks" scheme="https://gaozhiwei1.github.io/tags/neural-networks/"/>
-    
-  </entry>
-  
-  <entry>
-    <title>python遍历文件</title>
-    <link href="https://gaozhiwei1.github.io/2021/06/12/python/"/>
-    <id>https://gaozhiwei1.github.io/2021/06/12/python/</id>
-    <published>2021-06-12T07:59:59.000Z</published>
-    <updated>2021-08-18T06:13:37.750Z</updated>
-    
-    
-      
-      
-        
-        
-    <summary type="html">&lt;p&gt;这篇文章记录一下一个非常有用的python遍历文件目录的几种方法。以后可能用到，在这里记录一下。&lt;/p&gt;
-&lt;h3 id=&quot;1-oswalk遍历文件目录&quot;&gt;&lt;a class=&quot;markdownIt-Anchor&quot; href=&quot;#1-oswalk遍历文件目录&quot;&gt;&lt;/a&gt; 1</summary>
-        
-      
-    
-    
-    
-    <category term="python" scheme="https://gaozhiwei1.github.io/categories/python/"/>
-    
-    
-    <category term="文件系统" scheme="https://gaozhiwei1.github.io/tags/%E6%96%87%E4%BB%B6%E7%B3%BB%E7%BB%9F/"/>
     
   </entry>
   
