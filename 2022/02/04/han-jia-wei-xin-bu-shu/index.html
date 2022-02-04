@@ -4,7 +4,7 @@
 
 <head>
     <meta charset="utf-8">
-    <meta name="keywords" content="南京疫情防控, 要勇敢面对呀~">
+    <meta name="keywords" content="寒假微信步数, 要勇敢面对呀~">
     <meta name="description" content="">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
@@ -16,7 +16,7 @@
     <!-- Global site tag (gtag.js) - Google Analytics -->
 
 
-    <title>南京疫情防控 | 要勇敢面对呀~</title>
+    <title>寒假微信步数 | 要勇敢面对呀~</title>
     <link rel="icon" type="image/png" href="/favicon.png">
 
     <link rel="stylesheet" type="text/css" href="/libs/awesome/css/all.css">
@@ -315,12 +315,12 @@
 
 
 
-<div class="bg-cover pd-header post-cover" style="background-image: url('/images/nanjing.webp')">
+<div class="bg-cover pd-header post-cover" style="background-image: url('/medias/featureimages/19.jpg')">
     <div class="container" style="right: 0px;left: 0px;">
         <div class="row">
             <div class="col s12 m12 l12">
                 <div class="brand">
-                    <h1 class="description center-align post-title">南京疫情防控</h1>
+                    <h1 class="description center-align post-title">寒假微信步数</h1>
                 </div>
             </div>
         </div>
@@ -436,8 +436,8 @@
                     
                     <div class="article-tag">
                         
-                            <a href="/tags/%E7%96%AB%E6%83%85/">
-                                <span class="chip bg-color">疫情</span>
+                            <a href="/tags/%E5%BE%AE%E4%BF%A1%E6%AD%A5%E6%95%B0/">
+                                <span class="chip bg-color">微信步数</span>
                             </a>
                         
                     </div>
@@ -448,8 +448,8 @@
                     <div class="post-cate">
                         <i class="fas fa-bookmark fa-fw icon-category"></i>
                         
-                            <a href="/categories/%E7%94%9F%E6%B4%BB/" class="post-category">
-                                生活
+                            <a href="/categories/life/" class="post-category">
+                                life
                             </a>
                         
                     </div>
@@ -461,28 +461,28 @@
                 
                 <div class="post-date info-break-policy">
                     <i class="far fa-calendar-minus fa-fw"></i>发布日期:&nbsp;&nbsp;
-                    2021-07-31
+                    2022-02-04
                 </div>
                 
 
                 
                 <div class="post-date info-break-policy">
                     <i class="far fa-calendar-check fa-fw"></i>更新日期:&nbsp;&nbsp;
-                    2021-08-18
+                    2022-02-04
                 </div>
                 
 
                 
                 <div class="info-break-policy">
                     <i class="far fa-file-word fa-fw"></i>文章字数:&nbsp;&nbsp;
-                    1k
+                    283
                 </div>
                 
 
                 
                 <div class="info-break-policy">
                     <i class="far fa-clock fa-fw"></i>阅读时长:&nbsp;&nbsp;
-                    4 分
+                    1 分
                 </div>
                 
 
@@ -505,123 +505,104 @@
 
         <div class="card-content article-card-content">
             <div id="articleContent">
-                <p>本轮疫情自7月21日禄口机场首发以外，已经过去了快两个星期，期间疫情扩散至十几个省，由此本轮南京疫情成为自去年武汉疫情以来，扩散范围最广的一次，而这次疫情传播源为Delta病毒，该病毒传染力极强，病毒栽毒量为原始病毒的1670倍，故此次防疫绝不可掉以轻心，接下来我将利用python展示此次南京中高风险地区地图分布，希望南京政府能早日扑灭此次疫情。</p>
-<h3 id="数据准备"><a class="markdownIt-Anchor" href="#数据准备"></a> 数据准备</h3>
-<p>首先利用python中爬虫包requests和网页数据解析包bs4爬取中高风险地区名单，数据来源为<a target="_blank" rel="noopener" href="http://nj.bendibao.com/news/2021721/111024.shtm">南京本地宝</a>。python代码如下</p>
-<pre class="line-numbers language-python" data-language="python"><code class="language-python"><span class="token keyword">def</span> <span class="token function">get_risk_area</span><span class="token punctuation">(</span>self<span class="token punctuation">)</span><span class="token punctuation">:</span>
-        headers <span class="token operator">=</span> <span class="token punctuation">{</span><span class="token string">'User-Agent'</span><span class="token punctuation">:</span> 
-                    <span class="token string">'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/92.0.4515.107 Safari/537.36'</span><span class="token punctuation">}</span>
-        res <span class="token operator">=</span> requests<span class="token punctuation">.</span>get<span class="token punctuation">(</span>self<span class="token punctuation">.</span>url<span class="token punctuation">,</span> headers <span class="token operator">=</span> headers<span class="token punctuation">)</span>
-        res<span class="token punctuation">.</span>encoding <span class="token operator">=</span> <span class="token string">'utf-8'</span>
-        soup <span class="token operator">=</span> BeautifulSoup<span class="token punctuation">(</span>res<span class="token punctuation">.</span>text<span class="token punctuation">,</span> <span class="token string">'lxml'</span><span class="token punctuation">)</span>
-        risk_areas <span class="token operator">=</span> soup<span class="token punctuation">.</span>find<span class="token punctuation">(</span><span class="token string">'div'</span><span class="token punctuation">,</span> attrs <span class="token operator">=</span> <span class="token punctuation">{</span><span class="token string">'class'</span><span class="token punctuation">:</span><span class="token string">'content'</span><span class="token punctuation">}</span><span class="token punctuation">)</span>
-        P <span class="token operator">=</span> risk_areas<span class="token punctuation">.</span>findAll<span class="token punctuation">(</span><span class="token string">'p'</span><span class="token punctuation">)</span>
-        flag <span class="token operator">=</span><span class="token number">0</span>
-        <span class="token keyword">for</span> p <span class="token keyword">in</span> P<span class="token punctuation">:</span>
-            text <span class="token operator">=</span> ucd<span class="token punctuation">.</span>normalize<span class="token punctuation">(</span><span class="token string">'NFKC'</span><span class="token punctuation">,</span> p<span class="token punctuation">.</span>getText<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">.</span>replace<span class="token punctuation">(</span><span class="token string">' '</span><span class="token punctuation">,</span> <span class="token string">''</span><span class="token punctuation">)</span> 
-            <span class="token keyword">if</span> text<span class="token punctuation">.</span>split<span class="token punctuation">(</span><span class="token string">':'</span><span class="token punctuation">)</span><span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span> <span class="token operator">==</span> <span class="token string">'高风险'</span><span class="token punctuation">:</span>
-                flag <span class="token operator">=</span> <span class="token number">1</span>
-                level <span class="token operator">=</span> text<span class="token punctuation">.</span>split<span class="token punctuation">(</span><span class="token string">':'</span><span class="token punctuation">)</span><span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span>
-                self<span class="token punctuation">.</span>all_risk_areas<span class="token punctuation">[</span>level<span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token punctuation">[</span><span class="token punctuation">]</span>
-            <span class="token keyword">elif</span> text<span class="token punctuation">.</span>split<span class="token punctuation">(</span><span class="token string">':'</span><span class="token punctuation">)</span><span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span> <span class="token operator">==</span> <span class="token string">'中风险'</span><span class="token punctuation">:</span>
-                level <span class="token operator">=</span> text<span class="token punctuation">.</span>split<span class="token punctuation">(</span><span class="token string">':'</span><span class="token punctuation">)</span><span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span>
-                self<span class="token punctuation">.</span>all_risk_areas<span class="token punctuation">[</span>level<span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token punctuation">[</span><span class="token punctuation">]</span>
-            <span class="token keyword">elif</span> text <span class="token operator">==</span> <span class="token string">''</span><span class="token punctuation">:</span>
-                flag <span class="token operator">=</span> <span class="token number">0</span>
-            <span class="token keyword">else</span><span class="token punctuation">:</span>
-                <span class="token keyword">if</span> flag <span class="token operator">==</span> <span class="token number">1</span><span class="token punctuation">:</span>
-                    self<span class="token punctuation">.</span>all_risk_areas<span class="token punctuation">[</span>level<span class="token punctuation">]</span><span class="token punctuation">.</span>append<span class="token punctuation">(</span><span class="token string">'南京'</span> <span class="token operator">+</span> text<span class="token punctuation">)</span>
-<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
-<p>网页数据来源有高风险区域和中风险区域各一部分，我们先利用requests库爬取到原始页面html之后，再利用beautifulsoup进行解析，之后利用其他自带的findAll函数找到该页面的主要内容，在逐条提取其中的风险等级信息以及风险区域信息。</p>
-<h3 id="调用高德api获取经纬度"><a class="markdownIt-Anchor" href="#调用高德api获取经纬度"></a> 调用高德API获取经纬度</h3>
-<p>首先我们注册一个高德的API，然后点击链接<a target="_blank" rel="noopener" href="https://console.amap.com/dev/key/app">链接</a>，点击新建应用，然后为应用添加web服务，即可获得一个key，有了key之后，我们便进行爬取如下</p>
-<pre class="line-numbers language-python" data-language="python"><code class="language-python"><span class="token keyword">def</span> <span class="token function">getlocation</span><span class="token punctuation">(</span>self<span class="token punctuation">,</span> address<span class="token punctuation">)</span><span class="token punctuation">:</span>
-        url <span class="token operator">=</span> <span class="token string">'https://restapi.amap.com/v3/geocode/geo'</span>
-        params <span class="token operator">=</span> <span class="token punctuation">{</span><span class="token string">'key'</span><span class="token punctuation">:</span> mykey<span class="token punctuation">,</span> <span class="token string">'address'</span><span class="token punctuation">:</span> address<span class="token punctuation">}</span>
-        res <span class="token operator">=</span> requests<span class="token punctuation">.</span>get<span class="token punctuation">(</span>url<span class="token punctuation">,</span> params<span class="token punctuation">)</span>
-        result <span class="token operator">=</span> json<span class="token punctuation">.</span>loads<span class="token punctuation">(</span>res<span class="token punctuation">.</span>text<span class="token punctuation">)</span>
-        location <span class="token operator">=</span> result<span class="token punctuation">[</span><span class="token string">'geocodes'</span><span class="token punctuation">]</span><span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">[</span><span class="token string">'location'</span><span class="token punctuation">]</span>
-        <span class="token keyword">return</span> <span class="token builtin">list</span><span class="token punctuation">(</span><span class="token builtin">map</span><span class="token punctuation">(</span><span class="token builtin">float</span><span class="token punctuation">,</span> location<span class="token punctuation">.</span>split<span class="token punctuation">(</span><span class="token string">','</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">[</span><span class="token punctuation">:</span><span class="token punctuation">:</span><span class="token operator">-</span><span class="token number">1</span><span class="token punctuation">]</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
-<p>以上即是我们获取风险地区经纬度的代码</p>
-<h3 id="利用folium进行绘图"><a class="markdownIt-Anchor" href="#利用folium进行绘图"></a> 利用folium进行绘图</h3>
-<p>在这里我们调用python中的folium库进行绘制地图，我们以南京为中心，放大倍数为11倍，同时我们将高风险区域标记为红色，将中风险地区标记为橙色，代码如下</p>
-<pre class="line-numbers language-python" data-language="python"><code class="language-python">
-<span class="token keyword">def</span> <span class="token function">plotters</span><span class="token punctuation">(</span>self<span class="token punctuation">)</span><span class="token punctuation">:</span>
-        self<span class="token punctuation">.</span>get_risk_area<span class="token punctuation">(</span><span class="token punctuation">)</span>
-        nanjing_location <span class="token operator">=</span> self<span class="token punctuation">.</span>getlocation<span class="token punctuation">(</span><span class="token string">'南京'</span><span class="token punctuation">)</span>
-        mylocation <span class="token operator">=</span> <span class="token string">'你的所在地'</span>
-        Map <span class="token operator">=</span> folium<span class="token punctuation">.</span>Map<span class="token punctuation">(</span>location <span class="token operator">=</span> nanjing_location<span class="token punctuation">,</span> zoom_start <span class="token operator">=</span> <span class="token number">9</span><span class="token punctuation">)</span>
-        tooltip <span class="token operator">=</span><span class="token string">'请点击我查看该点信息'</span>
-        <span class="token keyword">for</span> area <span class="token keyword">in</span> self<span class="token punctuation">.</span>all_risk_areas<span class="token punctuation">[</span><span class="token string">'高风险'</span><span class="token punctuation">]</span><span class="token punctuation">:</span>
-            folium<span class="token punctuation">.</span>Marker<span class="token punctuation">(</span>self<span class="token punctuation">.</span>getlocation<span class="token punctuation">(</span>area<span class="token punctuation">)</span><span class="token punctuation">,</span> popup <span class="token operator">=</span> area<span class="token punctuation">,</span> tooltip <span class="token operator">=</span> tooltip<span class="token punctuation">,</span>
-             icon <span class="token operator">=</span> folium<span class="token punctuation">.</span>Icon<span class="token punctuation">(</span>color <span class="token operator">=</span> <span class="token string">'red'</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">.</span>add_to<span class="token punctuation">(</span>Map<span class="token punctuation">)</span>
-        <span class="token keyword">for</span> area <span class="token keyword">in</span> self<span class="token punctuation">.</span>all_risk_areas<span class="token punctuation">[</span><span class="token string">'中风险'</span><span class="token punctuation">]</span><span class="token punctuation">:</span>
-            folium<span class="token punctuation">.</span>Marker<span class="token punctuation">(</span>self<span class="token punctuation">.</span>getlocation<span class="token punctuation">(</span>area<span class="token punctuation">)</span><span class="token punctuation">,</span> popup <span class="token operator">=</span> area<span class="token punctuation">,</span> tooltip <span class="token operator">=</span> tooltip<span class="token punctuation">,</span>
-             icon <span class="token operator">=</span> folium<span class="token punctuation">.</span>Icon<span class="token punctuation">(</span>color <span class="token operator">=</span> <span class="token string">'lightred'</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">.</span>add_to<span class="token punctuation">(</span>Map<span class="token punctuation">)</span>
-        folium<span class="token punctuation">.</span>Circle<span class="token punctuation">(</span>self<span class="token punctuation">.</span>getlocation<span class="token punctuation">(</span>mylocation<span class="token punctuation">)</span><span class="token punctuation">,</span> radius <span class="token operator">=</span> <span class="token number">900</span><span class="token punctuation">,</span>  popup <span class="token operator">=</span> <span class="token string">'我也太惨了'</span><span class="token punctuation">,</span> tooltip <span class="token operator">=</span> tooltip<span class="token punctuation">,</span> 
-             color <span class="token operator">=</span> <span class="token string">'green'</span><span class="token punctuation">,</span> fill <span class="token operator">=</span> <span class="token boolean">True</span><span class="token punctuation">)</span><span class="token punctuation">.</span>add_to<span class="token punctuation">(</span>Map<span class="token punctuation">)</span>
-        Map<span class="token punctuation">.</span>save<span class="token punctuation">(</span><span class="token string">'Map.html'</span><span class="token punctuation">)</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
-<p>完整代码如下</p>
-<pre class="line-numbers language-python" data-language="python"><code class="language-python"><span class="token keyword">import</span> requests
-<span class="token keyword">import</span> json
-<span class="token keyword">import</span> unicodedata <span class="token keyword">as</span> ucd
-<span class="token keyword">import</span> folium
-<span class="token keyword">from</span> bs4 <span class="token keyword">import</span> BeautifulSoup
+                <p>最近闲来无事，记录一下和宝贝的寒假微信步数，宝贝要加油哦</p>
+<script src="https://cdn.jsdelivr.net/npm/echarts@4.9.0/dist/echarts.min.js">
+</script>
+<div id="main" style="height: 500px;width:800px;"></div>
+<script>
+//3.初始化实例对象 echarts.init(dom容器)
+var chartDom = document.getElementById('main');
+var myChart = echarts.init(chartDom);
+var option;
+option = {
+  title: {
+    text: '微信步数',
+    top: "bottom",
+    left: "center"
+  },
+  tooltip: {
+    trigger: 'axis',
+    axisPointer: {
+      type: 'cross',
+      label: {
+        backgroundColor: '#6a7985'
+      }
+    }
+  },
+  legend: {
+    data: ['萌萌', '伟伟']
+  },
+  toolbox: {
+    feature: {
+      saveAsImage: {}
+    }
+  },
+  grid: {
+    left: '3%',
+    right: '4%',
+    bottom: '7%',
+    containLabel: true
+  },
+  xAxis: [
+    {
+      type: 'category',
+      boundaryGap: false,
+      data: ['1.9', '1.10', '1.11', '1.12', '1.13', '1.14', '1.15', '1.16','1.17','1.18','1.19','1.20','1.21', '1.22', '1.23', '1.24', '1.25', '1.26', '1.27', '1.28', '1.29','1.30','1.31','2.1','2.2','2.3','2.4']
+    }
+  ],
+  yAxis: [
+    {
+      type: 'value'
+    }
+  ],
+  series: [
+    {
+      name: '伟伟',
+      type: 'line',
+      areaStyle: {
+        opacity: 0.8,
+        color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+          {
+            offset: 0,
+            color: 'rgb(255, 0, 135)'
+          },
+          {
+            offset: 1,
+            color: 'rgb(135, 0, 157)'
+          }
+        ])},
+      emphasis: {
+        focus: 'series'
+      },
+      data: [15820, 6887, 7748, 5949, 8807, 12428, 17328, 1565, 8460, 14587, 1462, 3531, 1669, 453, 5524, 1270, 2113, 5993, 1669, 1794, 6124, 6131, 6049, 2360, 4689, 17138, 4344]
+    },
+    {
+      name: '萌萌',
+      type: 'line',
+      areaStyle: {
+        opacity: 0.8,
+        color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+          {
+            offset: 0,
+            color: 'rgb(255, 191, 0)'
+          },
+          {
+            offset: 1,
+            color: 'rgb(224, 62, 76)'
+          }
+        ])
+      },
+      emphasis: {
+        focus: 'series'
+      },
+      data: [9407, 389, 1380, 5655, 349, 2650, 5207, 5537, 856, 1309, 5970, 801, 837, 49, 1247, 111, 1013, 749, 1115, 39, 3882, 5892, 1074, 2102, 1291, 869,80]
+    }
+  ]
+};
+option && myChart.setOption(option);
 
-<span class="token keyword">class</span> <span class="token class-name">Risk_areas</span><span class="token punctuation">:</span>
-    <span class="token keyword">def</span> <span class="token function">__init__</span><span class="token punctuation">(</span>self<span class="token punctuation">,</span> url<span class="token punctuation">)</span><span class="token punctuation">:</span>
-        self<span class="token punctuation">.</span>url <span class="token operator">=</span> url
-        self<span class="token punctuation">.</span>all_risk_areas <span class="token operator">=</span> <span class="token punctuation">{</span><span class="token punctuation">}</span>
-    <span class="token keyword">def</span> <span class="token function">getlocation</span><span class="token punctuation">(</span>self<span class="token punctuation">,</span> address<span class="token punctuation">)</span><span class="token punctuation">:</span>
-        url <span class="token operator">=</span> <span class="token string">'https://restapi.amap.com/v3/geocode/geo'</span>
-        params <span class="token operator">=</span> <span class="token punctuation">{</span><span class="token string">'key'</span><span class="token punctuation">:</span> <span class="token string">'8a429ec1a9d52439b8a1345200d33ac0'</span><span class="token punctuation">,</span> <span class="token string">'address'</span><span class="token punctuation">:</span> address<span class="token punctuation">}</span>
-        res <span class="token operator">=</span> requests<span class="token punctuation">.</span>get<span class="token punctuation">(</span>url<span class="token punctuation">,</span> params<span class="token punctuation">)</span>
-        result <span class="token operator">=</span> json<span class="token punctuation">.</span>loads<span class="token punctuation">(</span>res<span class="token punctuation">.</span>text<span class="token punctuation">)</span>
-        location <span class="token operator">=</span> result<span class="token punctuation">[</span><span class="token string">'geocodes'</span><span class="token punctuation">]</span><span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">[</span><span class="token string">'location'</span><span class="token punctuation">]</span>
-        <span class="token keyword">return</span> <span class="token builtin">list</span><span class="token punctuation">(</span><span class="token builtin">map</span><span class="token punctuation">(</span><span class="token builtin">float</span><span class="token punctuation">,</span> location<span class="token punctuation">.</span>split<span class="token punctuation">(</span><span class="token string">','</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">[</span><span class="token punctuation">:</span><span class="token punctuation">:</span><span class="token operator">-</span><span class="token number">1</span><span class="token punctuation">]</span>
-    <span class="token keyword">def</span> <span class="token function">get_risk_area</span><span class="token punctuation">(</span>self<span class="token punctuation">)</span><span class="token punctuation">:</span>
-        headers <span class="token operator">=</span> <span class="token punctuation">{</span><span class="token string">'User-Agent'</span><span class="token punctuation">:</span> 
-                    <span class="token string">'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/92.0.4515.107 Safari/537.36'</span><span class="token punctuation">}</span>
-        res <span class="token operator">=</span> requests<span class="token punctuation">.</span>get<span class="token punctuation">(</span>self<span class="token punctuation">.</span>url<span class="token punctuation">,</span> headers <span class="token operator">=</span> headers<span class="token punctuation">)</span>
-        res<span class="token punctuation">.</span>encoding <span class="token operator">=</span> <span class="token string">'utf-8'</span>
-        soup <span class="token operator">=</span> BeautifulSoup<span class="token punctuation">(</span>res<span class="token punctuation">.</span>text<span class="token punctuation">,</span> <span class="token string">'lxml'</span><span class="token punctuation">)</span>
-        risk_areas <span class="token operator">=</span> soup<span class="token punctuation">.</span>find<span class="token punctuation">(</span><span class="token string">'div'</span><span class="token punctuation">,</span> attrs <span class="token operator">=</span> <span class="token punctuation">{</span><span class="token string">'class'</span><span class="token punctuation">:</span><span class="token string">'content'</span><span class="token punctuation">}</span><span class="token punctuation">)</span>
-        P <span class="token operator">=</span> risk_areas<span class="token punctuation">.</span>findAll<span class="token punctuation">(</span><span class="token string">'p'</span><span class="token punctuation">)</span>
-        flag <span class="token operator">=</span><span class="token number">0</span>
-        <span class="token keyword">for</span> p <span class="token keyword">in</span> P<span class="token punctuation">:</span>
-            text <span class="token operator">=</span> ucd<span class="token punctuation">.</span>normalize<span class="token punctuation">(</span><span class="token string">'NFKC'</span><span class="token punctuation">,</span> p<span class="token punctuation">.</span>getText<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">.</span>replace<span class="token punctuation">(</span><span class="token string">' '</span><span class="token punctuation">,</span> <span class="token string">''</span><span class="token punctuation">)</span> 
-            <span class="token keyword">if</span> text<span class="token punctuation">.</span>split<span class="token punctuation">(</span><span class="token string">':'</span><span class="token punctuation">)</span><span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span> <span class="token operator">==</span> <span class="token string">'高风险'</span><span class="token punctuation">:</span>
-                flag <span class="token operator">=</span> <span class="token number">1</span>
-                level <span class="token operator">=</span> text<span class="token punctuation">.</span>split<span class="token punctuation">(</span><span class="token string">':'</span><span class="token punctuation">)</span><span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span>
-                self<span class="token punctuation">.</span>all_risk_areas<span class="token punctuation">[</span>level<span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token punctuation">[</span><span class="token punctuation">]</span>
-            <span class="token keyword">elif</span> text<span class="token punctuation">.</span>split<span class="token punctuation">(</span><span class="token string">':'</span><span class="token punctuation">)</span><span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span> <span class="token operator">==</span> <span class="token string">'中风险'</span><span class="token punctuation">:</span>
-                level <span class="token operator">=</span> text<span class="token punctuation">.</span>split<span class="token punctuation">(</span><span class="token string">':'</span><span class="token punctuation">)</span><span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span>
-                self<span class="token punctuation">.</span>all_risk_areas<span class="token punctuation">[</span>level<span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token punctuation">[</span><span class="token punctuation">]</span>
-            <span class="token keyword">elif</span> text <span class="token operator">==</span> <span class="token string">''</span><span class="token punctuation">:</span>
-                flag <span class="token operator">=</span> <span class="token number">0</span>
-            <span class="token keyword">else</span><span class="token punctuation">:</span>
-                <span class="token keyword">if</span> flag <span class="token operator">==</span> <span class="token number">1</span><span class="token punctuation">:</span>
-                    self<span class="token punctuation">.</span>all_risk_areas<span class="token punctuation">[</span>level<span class="token punctuation">]</span><span class="token punctuation">.</span>append<span class="token punctuation">(</span><span class="token string">'南京'</span> <span class="token operator">+</span> text<span class="token punctuation">)</span>
-    <span class="token keyword">def</span> <span class="token function">plotters</span><span class="token punctuation">(</span>self<span class="token punctuation">)</span><span class="token punctuation">:</span>
-        self<span class="token punctuation">.</span>get_risk_area<span class="token punctuation">(</span><span class="token punctuation">)</span>
-        nanjing_location <span class="token operator">=</span> self<span class="token punctuation">.</span>getlocation<span class="token punctuation">(</span><span class="token string">'南京'</span><span class="token punctuation">)</span>
-        mylocation <span class="token operator">=</span> <span class="token string">'南京市江宁区驼村新寓'</span>
-        Map <span class="token operator">=</span> folium<span class="token punctuation">.</span>Map<span class="token punctuation">(</span>location <span class="token operator">=</span> self<span class="token punctuation">.</span>getlocation<span class="token punctuation">(</span>mylocation<span class="token punctuation">)</span><span class="token punctuation">,</span> zoom_start <span class="token operator">=</span> <span class="token number">9</span><span class="token punctuation">)</span>
-        tooltip <span class="token operator">=</span><span class="token string">'请点击我查看该点信息'</span>
-        <span class="token keyword">for</span> area <span class="token keyword">in</span> self<span class="token punctuation">.</span>all_risk_areas<span class="token punctuation">[</span><span class="token string">'高风险'</span><span class="token punctuation">]</span><span class="token punctuation">:</span>
-            folium<span class="token punctuation">.</span>Marker<span class="token punctuation">(</span>self<span class="token punctuation">.</span>getlocation<span class="token punctuation">(</span>area<span class="token punctuation">)</span><span class="token punctuation">,</span> popup <span class="token operator">=</span> area<span class="token punctuation">,</span> tooltip <span class="token operator">=</span> tooltip<span class="token punctuation">,</span>
-             icon <span class="token operator">=</span> folium<span class="token punctuation">.</span>Icon<span class="token punctuation">(</span>color <span class="token operator">=</span> <span class="token string">'red'</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">.</span>add_to<span class="token punctuation">(</span>Map<span class="token punctuation">)</span>
-        <span class="token keyword">for</span> area <span class="token keyword">in</span> self<span class="token punctuation">.</span>all_risk_areas<span class="token punctuation">[</span><span class="token string">'中风险'</span><span class="token punctuation">]</span><span class="token punctuation">:</span>
-            folium<span class="token punctuation">.</span>Marker<span class="token punctuation">(</span>self<span class="token punctuation">.</span>getlocation<span class="token punctuation">(</span>area<span class="token punctuation">)</span><span class="token punctuation">,</span> popup <span class="token operator">=</span> area<span class="token punctuation">,</span> tooltip <span class="token operator">=</span> tooltip<span class="token punctuation">,</span>
-             icon <span class="token operator">=</span> folium<span class="token punctuation">.</span>Icon<span class="token punctuation">(</span>color <span class="token operator">=</span> <span class="token string">'lightred'</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">.</span>add_to<span class="token punctuation">(</span>Map<span class="token punctuation">)</span>
-        folium<span class="token punctuation">.</span>Circle<span class="token punctuation">(</span>self<span class="token punctuation">.</span>getlocation<span class="token punctuation">(</span>mylocation<span class="token punctuation">)</span><span class="token punctuation">,</span> radius <span class="token operator">=</span> <span class="token number">900</span><span class="token punctuation">,</span>  popup <span class="token operator">=</span> <span class="token string">'我也太惨了'</span><span class="token punctuation">,</span> tooltip <span class="token operator">=</span> tooltip<span class="token punctuation">,</span> 
-             color <span class="token operator">=</span> <span class="token string">'green'</span><span class="token punctuation">,</span> fill <span class="token operator">=</span> <span class="token boolean">True</span><span class="token punctuation">)</span><span class="token punctuation">.</span>add_to<span class="token punctuation">(</span>Map<span class="token punctuation">)</span>
-        Map<span class="token punctuation">.</span>save<span class="token punctuation">(</span><span class="token string">'Map.html'</span><span class="token punctuation">)</span>
+</script>
 
-url <span class="token operator">=</span> <span class="token string">'http://nj.bendibao.com/news/2021721/111024.shtm'</span>
-risk_areas <span class="token operator">=</span> Risk_areas<span class="token punctuation">(</span>url<span class="token punctuation">)</span>
-risk_areas<span class="token punctuation">.</span>plotters<span class="token punctuation">(</span><span class="token punctuation">)</span>
-<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
 
                 
             </div>
@@ -648,7 +629,7 @@ risk_areas<span class="token punctuation">.</span>plotters<span class="token pun
                     </i>
                 </span>
                 <span class="reprint-info">
-                    <a href="https://gaozhiwei1.github.io/2021/07/31/nanjing/">https://gaozhiwei1.github.io/2021/07/31/nanjing/</a>
+                    <a href="https://gaozhiwei1.github.io/2022/02/04/han-jia-wei-xin-bu-shu/">https://gaozhiwei1.github.io/2022/02/04/han-jia-wei-xin-bu-shu/</a>
                 </span>
             </div>
             <div class="reprint__notice">
@@ -686,8 +667,8 @@ risk_areas<span class="token punctuation">.</span>plotters<span class="token pun
                     
                         <div class="article-tag">
                             
-                                <a href="/tags/%E7%96%AB%E6%83%85/">
-                                    <span class="chip bg-color">疫情</span>
+                                <a href="/tags/%E5%BE%AE%E4%BF%A1%E6%AD%A5%E6%95%B0/">
+                                    <span class="chip bg-color">微信步数</span>
                                 </a>
                             
                         </div>
@@ -1125,16 +1106,18 @@ risk_areas<span class="token punctuation">.</span>plotters<span class="token pun
 <article id="prenext-posts" class="prev-next articles">
     <div class="row article-row">
         
-        <div class="article col s12 m6" data-aos="fade-up">
+        <div class="article col s12 m6" data-aos="fade-up" data-aos="fade-up">
             <div class="article-badge left-badge text-color">
-                <i class="fas fa-chevron-left"></i>&nbsp;上一篇</div>
+                <i class="far fa-dot-circle"></i>&nbsp;本篇
+            </div>
             <div class="card">
-                <a href="/2021/08/10/normlizing-flows/">
+                <a href="/2022/02/04/han-jia-wei-xin-bu-shu/">
                     <div class="card-image">
                         
-                        <img src="/images/normalizing-flow.png" class="responsive-img" alt="Normalizing Flows">
                         
-                        <span class="card-title">Normalizing Flows</span>
+                        <img src="/medias/featureimages/19.jpg" class="responsive-img" alt="寒假微信步数">
+                        
+                        <span class="card-title">寒假微信步数</span>
                     </div>
                 </a>
                 <div class="card-content article-content">
@@ -1144,30 +1127,27 @@ risk_areas<span class="token punctuation">.</span>plotters<span class="token pun
                         
                     </div>
                     <div class="publish-info">
-                        <span class="publish-date">
-                            <i class="far fa-clock fa-fw icon-date"></i>2021-08-10
-                        </span>
+                            <span class="publish-date">
+                                <i class="far fa-clock fa-fw icon-date"></i>2022-02-04
+                            </span>
                         <span class="publish-author">
                             
                             <i class="fas fa-bookmark fa-fw icon-category"></i>
                             
-                            <a href="/categories/math/" class="post-category">
-                                    math
+                            <a href="/categories/life/" class="post-category">
+                                    life
                                 </a>
                             
                             
                         </span>
                     </div>
                 </div>
+
                 
                 <div class="card-action article-tags">
                     
-                    <a href="/tags/math/">
-                        <span class="chip bg-color">math</span>
-                    </a>
-                    
-                    <a href="/tags/normalizing-flows/">
-                        <span class="chip bg-color">normalizing-flows</span>
+                    <a href="/tags/%E5%BE%AE%E4%BF%A1%E6%AD%A5%E6%95%B0/">
+                        <span class="chip bg-color">微信步数</span>
                     </a>
                     
                 </div>
@@ -1181,12 +1161,12 @@ risk_areas<span class="token punctuation">.</span>plotters<span class="token pun
                 下一篇&nbsp;<i class="fas fa-chevron-right"></i>
             </div>
             <div class="card">
-                <a href="/2021/07/24/kl/">
+                <a href="/2022/01/23/c-shu-zhi-ji-suan/">
                     <div class="card-image">
                         
-                        <img src="/images/KL.jpg" class="responsive-img" alt="KL $(p\|q)$ Minimization">
+                        <img src="/images/c++.webp" class="responsive-img" alt="c++数值计算">
                         
-                        <span class="card-title">KL $(p\|q)$ Minimization</span>
+                        <span class="card-title">c++数值计算</span>
                     </div>
                 </a>
                 <div class="card-content article-content">
@@ -1197,14 +1177,14 @@ risk_areas<span class="token punctuation">.</span>plotters<span class="token pun
                     </div>
                     <div class="publish-info">
                             <span class="publish-date">
-                                <i class="far fa-clock fa-fw icon-date"></i>2021-07-24
+                                <i class="far fa-clock fa-fw icon-date"></i>2022-01-23
                             </span>
                         <span class="publish-author">
                             
                             <i class="fas fa-bookmark fa-fw icon-category"></i>
                             
-                            <a href="/categories/math/" class="post-category">
-                                    math
+                            <a href="/categories/c/" class="post-category">
+                                    c++
                                 </a>
                             
                             
@@ -1214,12 +1194,8 @@ risk_areas<span class="token punctuation">.</span>plotters<span class="token pun
                 
                 <div class="card-action article-tags">
                     
-                    <a href="/tags/Math/">
-                        <span class="chip bg-color">Math</span>
-                    </a>
-                    
-                    <a href="/tags/neural-networks/">
-                        <span class="chip bg-color">neural networks</span>
+                    <a href="/tags/%E6%95%B0%E5%80%BC%E8%AE%A1%E7%AE%97/">
+                        <span class="chip bg-color">数值计算</span>
                     </a>
                     
                 </div>

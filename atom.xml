@@ -6,7 +6,7 @@
   <link href="https://gaozhiwei1.github.io/atom.xml" rel="self"/>
   
   <link href="https://gaozhiwei1.github.io/"/>
-  <updated>2022-01-23T00:34:02.896Z</updated>
+  <updated>2022-02-04T12:22:18.792Z</updated>
   <id>https://gaozhiwei1.github.io/</id>
   
   <author>
@@ -17,11 +17,39 @@
   <generator uri="https://hexo.io/">Hexo</generator>
   
   <entry>
+    <title>寒假微信步数</title>
+    <link href="https://gaozhiwei1.github.io/2022/02/04/han-jia-wei-xin-bu-shu/"/>
+    <id>https://gaozhiwei1.github.io/2022/02/04/han-jia-wei-xin-bu-shu/</id>
+    <published>2022-02-04T10:44:19.000Z</published>
+    <updated>2022-02-04T12:22:18.792Z</updated>
+    
+    
+      
+      
+        
+        
+    <summary type="html">&lt;p&gt;最近闲来无事，记录一下和宝贝的寒假微信步数，宝贝要加油哦&lt;/p&gt;
+&lt;script src=&quot;https://cdn.jsdelivr.net/npm/echarts@4.9.0/dist/echarts.min.js&quot;&gt;
+&lt;/script&gt;
+&lt;div id=&quot;main&quot;</summary>
+        
+      
+    
+    
+    
+    <category term="life" scheme="https://gaozhiwei1.github.io/categories/life/"/>
+    
+    
+    <category term="微信步数" scheme="https://gaozhiwei1.github.io/tags/%E5%BE%AE%E4%BF%A1%E6%AD%A5%E6%95%B0/"/>
+    
+  </entry>
+  
+  <entry>
     <title>c++数值计算</title>
     <link href="https://gaozhiwei1.github.io/2022/01/23/c-shu-zhi-ji-suan/"/>
     <id>https://gaozhiwei1.github.io/2022/01/23/c-shu-zhi-ji-suan/</id>
     <published>2022-01-23T00:27:36.000Z</published>
-    <updated>2022-01-23T00:34:02.896Z</updated>
+    <updated>2022-01-23T03:53:52.416Z</updated>
     
     
       
@@ -224,7 +252,7 @@
     <link href="https://gaozhiwei1.github.io/2022/01/01/tuo-fu-ci-hui-duan-yu/"/>
     <id>https://gaozhiwei1.github.io/2022/01/01/tuo-fu-ci-hui-duan-yu/</id>
     <published>2022-01-01T01:13:59.000Z</published>
-    <updated>2022-01-20T07:20:02.940Z</updated>
+    <updated>2022-02-04T10:59:25.947Z</updated>
     
     
       
@@ -502,34 +530,6 @@
     
     
     <category term="疫情" scheme="https://gaozhiwei1.github.io/tags/%E7%96%AB%E6%83%85/"/>
-    
-  </entry>
-  
-  <entry>
-    <title>KL $(p\|q)$ Minimization</title>
-    <link href="https://gaozhiwei1.github.io/2021/07/24/kl/"/>
-    <id>https://gaozhiwei1.github.io/2021/07/24/kl/</id>
-    <published>2021-07-24T02:15:19.000Z</published>
-    <updated>2021-08-18T06:11:29.102Z</updated>
-    
-    
-      
-      
-        
-        
-    <summary type="html">&lt;font face=&quot;Times New Roman&quot; size=&quot;4&quot;&gt; 
-One form of variational inference minimizes the Kullback-Leibler divergence from</summary>
-        
-      
-    
-    
-    
-    <category term="math" scheme="https://gaozhiwei1.github.io/categories/math/"/>
-    
-    
-    <category term="Math" scheme="https://gaozhiwei1.github.io/tags/Math/"/>
-    
-    <category term="neural networks" scheme="https://gaozhiwei1.github.io/tags/neural-networks/"/>
     
   </entry>
   
