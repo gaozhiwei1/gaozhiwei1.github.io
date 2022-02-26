@@ -466,7 +466,7 @@
                 
                 <div class="info-break-policy">
                     <i class="far fa-file-word fa-fw"></i>文章字数:&nbsp;&nbsp;
-                    792
+                    789
                 </div>
                 
 
@@ -496,17 +496,12 @@
 
         <div class="card-content article-card-content">
             <div id="articleContent">
-                <h3 id="1-batch-normalization-and-layer-normalization"><a class="markdownIt-Anchor" href="#1-batch-normalization-and-layer-normalization"></a> 1. Batch normalization and layer normalization</h3>
-<p>Batch normalization operates a batch of sampels, which normalizes the features of the same dimension of this batch of samples,  while for the layer normalization, it process a single sample once, normolizing all of the features of this sample. The principle is displayed in the following figure.
-<img src="/images/batch.jpg" alt=""></p>
-<p>For a summary:<br>
-BN and CN can be regarded as the difference of potrait and landscape. The output values after normalization and activation function would mostly fall into the linear area of non-linear functions, which prevents the gradient from vanishing and acclerates the training process.</p>
-<p>The purpose of such kind of normalizing methods like bn is to stablize the distribution of the current layer, making the later layer learn the knowledge in a more secure environment.</p>
-<h3 id="2unet-framework"><a class="markdownIt-Anchor" href="#2unet-framework"></a> 2.Unet framework</h3>
-<p>The structure of a Unet framework is displayed as follow</p>
+                <h3 id="1-Batch-normalization-and-layer-normalization"><a href="#1-Batch-normalization-and-layer-normalization" class="headerlink" title="1. Batch normalization and layer normalization"></a>1. Batch normalization and layer normalization</h3><p>Batch normalization operates a batch of sampels, which normalizes the features of the same dimension of this batch of samples,  while for the layer normalization, it process a single sample once, normolizing all of the features of this sample. The principle is displayed in the following figure.<br><img src="/images/batch.jpg" alt=""></p>
+<p>For a summary:<br>BN and CN can be regarded as the difference of potrait and landscape. The output values after normalization and activation function would mostly fall into the linear area of non-linear functions, which prevents the gradient from vanishing and acclerates the training process.  </p>
+<p>The purpose of such kind of normalizing methods like bn is to stablize the distribution of the current layer, making the later layer learn the knowledge in a more secure environment. </p>
+<h3 id="2-Unet-framework"><a href="#2-Unet-framework" class="headerlink" title="2.Unet framework"></a>2.Unet framework</h3><p>The structure of a Unet framework is displayed as follow</p>
 <p><img src="/images/unet-1.png" alt=""></p>
-<p>The codes which implements the network using pytorch is stated as follow</p>
-<pre class="line-numbers language-python" data-language="python"><code class="language-python"><span class="token keyword">from</span> dataclasses <span class="token keyword">import</span> replace
+<p>The codes which implements the network using pytorch is stated as follow<br></p><pre class="line-numbers language-python" data-language="python"><code class="language-python"><span class="token keyword">from</span> dataclasses <span class="token keyword">import</span> replace
 <span class="token keyword">import</span> torch 
 <span class="token keyword">import</span> torch<span class="token punctuation">.</span>nn <span class="token keyword">as</span> nn
 <span class="token keyword">import</span> numpy <span class="token keyword">as</span> np
@@ -614,36 +609,28 @@ BN and CN can be regarded as the difference of potrait and landscape. The output
     <span class="token keyword">def</span> <span class="token function">forward</span><span class="token punctuation">(</span>self<span class="token punctuation">,</span> x<span class="token punctuation">)</span><span class="token punctuation">:</span>
         <span class="token keyword">return</span> self<span class="token punctuation">.</span>conv<span class="token punctuation">(</span>x<span class="token punctuation">)</span>
     
-<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
-<h3 id="3nnconv-and-nnconvtranspose"><a class="markdownIt-Anchor" href="#3nnconv-and-nnconvtranspose"></a> 3.nn.Conv and nn.ConvTranspose</h3>
-<p>Here we first specify the parameters of input feature map:</p>
-<p>shape:</p>
+<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre><p></p>
+<h3 id="3-nn-Conv-and-nn-ConvTranspose"><a href="#3-nn-Conv-and-nn-ConvTranspose" class="headerlink" title="3.nn.Conv and nn.ConvTranspose"></a>3.nn.Conv and nn.ConvTranspose</h3><p>Here we first specify the parameters of input feature map:</p>
+<p>shape:  </p>
 <ol>
-<li>Input:($$N, C_{in}, H_{in}, W_{in}$$).</li>
-<li>Output: ($$N, C_{out }, H_{out}, W_{out}$$)</li>
+<li>Input:($N, C<em>{in}, H</em>{in}, W_{in}$).</li>
+<li>Output: ($N, C<em>{out }, H</em>{out}, W_{out}$)  </li>
 </ol>
-<p>Then after the forward conv operation, the size of the feature map becomes</p>
-<p class="katex-block katex-error" title="ParseError: KaTeX parse error: No such environment: equation* at position 7: \begin{̲e̲q̲u̲a̲t̲i̲o̲n̲*̲}̲
+<p>Then after the forward conv operation, the size of the feature map becomes </p>
+<script type="math/tex; mode=display">
+\begin{equation*}
 \begin{split}
-…">\begin{equation*}
-\begin{split}
-&amp;H_{out}=(H_{in}-1)*stride[0]-2*padding[0]+kernel\_size[0]+output_padding[0]\\
+&H_{out}=(H_{in}-1)*stride[0]-2*padding[0]+kernel\_size[0]+output\_padding[0]\\
 
-&amp;W_{out}=(W_{in}-1)*stride[1]-2*padding[1]+kernel\_size[1]+output_padding[1]
+&W_{out}=(W_{in}-1)*stride[1]-2*padding[1]+kernel\_size[1]+output\_padding[1]
 \end{split}
-\end{equation*}
-</p>
-<p>Where the <span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi>o</mi><mi>u</mi><mi>t</mi><mi>p</mi><mi>u</mi><msub><mi>t</mi><mi>p</mi></msub><mi>a</mi><mi>d</mi><mi>d</mi><mi>i</mi><mi>n</mi><mi>g</mi></mrow><annotation encoding="application/x-tex">output_padding</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.980548em;vertical-align:-0.286108em;"></span><span class="mord mathdefault">o</span><span class="mord mathdefault">u</span><span class="mord mathdefault">t</span><span class="mord mathdefault">p</span><span class="mord mathdefault">u</span><span class="mord"><span class="mord mathdefault">t</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.15139200000000003em;"><span style="top:-2.5500000000000003em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathdefault mtight">p</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.286108em;"><span></span></span></span></span></span></span><span class="mord mathdefault">a</span><span class="mord mathdefault">d</span><span class="mord mathdefault">d</span><span class="mord mathdefault">i</span><span class="mord mathdefault">n</span><span class="mord mathdefault" style="margin-right:0.03588em;">g</span></span></span></span> parameter means to add padding the output feature map, default as 0. Then we derive from the above equation to get the size of the feature map after the transposed conv operation.</p>
-<p class="katex-block katex-error" title="ParseError: KaTeX parse error: No such environment: equation* at position 7: \begin{̲e̲q̲u̲a̲t̲i̲o̲n̲*̲}̲
-H_{out} = (H_{…">\begin{equation*}
+\end{equation*}</script><p>Where the $output_padding$ parameter means to add padding the output feature map, default as 0. Then we derive from the above equation to get the size of the feature map after the transposed conv operation.</p>
+<script type="math/tex; mode=display">
+\begin{equation*}
 H_{out} = (H_{in} -1)* stride + kernel\_size - 2*padding + output\_padding
-\end{equation*}
-</p>
-<h3 id="4-nnupsample-and-nnconvtranspose"><a class="markdownIt-Anchor" href="#4-nnupsample-and-nnconvtranspose"></a> 4. nn.Upsample and nn.ConvTranspose</h3>
-<p>The difference bewteen these two upsampling methods is the there parameters which can be learned in the later function, while the former one just a dead method with no parameters to update.</p>
-<h3 id="5-transformstotensor-and-transformsnormalize"><a class="markdownIt-Anchor" href="#5-transformstotensor-and-transformsnormalize"></a> 5. transforms.toTensor() and transforms.normalize()</h3>
-<p>The function <code>toTensor()</code> will change the values of the pixel from 0-255 to 0-1, then assign mean and variance to each channel through the <code>normalzie()</code> function will accomplish the nomalizing process.</p>
-
+\end{equation*}</script><h3 id="4-nn-Upsample-and-nn-ConvTranspose"><a href="#4-nn-Upsample-and-nn-ConvTranspose" class="headerlink" title="4. nn.Upsample and nn.ConvTranspose"></a>4. nn.Upsample and nn.ConvTranspose</h3><p>The difference bewteen these two upsampling methods is the there parameters which can be learned in the later function, while the former one just a dead method with no parameters to update.</p>
+<h3 id="5-transforms-toTensor-and-transforms-normalize"><a href="#5-transforms-toTensor-and-transforms-normalize" class="headerlink" title="5. transforms.toTensor() and transforms.normalize()"></a>5. transforms.toTensor() and transforms.normalize()</h3><p>The function <code>toTensor()</code> will change the values of the pixel from 0-255 to 0-1, then assign mean and variance to each channel through the <code>normalzie()</code> function will accomplish the nomalizing process.</p>
+<h3 id="6-nn-dorpout"><a href="#6-nn-dorpout" class="headerlink" title="6. nn.dorpout()"></a>6. nn.dorpout()</h3>
                 
             </div>
             <hr/>
@@ -1197,7 +1184,7 @@ H_{out} = (H_{in} -1)* stride + kernel\_size - 2*padding + output\_padding
                 <a href="/2022/02/15/kuai-jie-jian-shi-yong/">
                     <div class="card-image">
                         
-                        <img src="/imagess/windows.jpg" class="responsive-img" alt="快捷建使用">
+                        <img src="/images/windows.jpg" class="responsive-img" alt="快捷建使用">
                         
                         <span class="card-title">快捷建使用</span>
                     </div>
@@ -1440,7 +1427,7 @@ H_{out} = (H_{in} -1)* stride + kernel\_size - 2*padding + output\_padding
             <br>
             
                 &nbsp;<i class="fas fa-chart-area"></i>&nbsp;站点总字数:&nbsp;<span
-                        class="white-color">29.8k</span>
+                        class="white-color">30k</span>
             
             
             
