@@ -459,14 +459,14 @@
                 
                 <div class="post-date info-break-policy">
                     <i class="far fa-calendar-check fa-fw"></i>更新日期:&nbsp;&nbsp;
-                    2022-02-25
+                    2022-02-26
                 </div>
                 
 
                 
                 <div class="info-break-policy">
                     <i class="far fa-file-word fa-fw"></i>文章字数:&nbsp;&nbsp;
-                    775
+                    792
                 </div>
                 
 
@@ -502,9 +502,7 @@
 <p>For a summary:<br>
 BN and CN can be regarded as the difference of potrait and landscape. The output values after normalization and activation function would mostly fall into the linear area of non-linear functions, which prevents the gradient from vanishing and acclerates the training process.</p>
 <p>The purpose of such kind of normalizing methods like bn is to stablize the distribution of the current layer, making the later layer learn the knowledge in a more secure environment.</p>
-<h3 id="2vgg-network"><a class="markdownIt-Anchor" href="#2vgg-network"></a> 2.VGG network</h3>
-<p>You can obtain a detailed introduction in this blog[<a target="_blank" rel="noopener" href="https://viso.ai/deep-learning/vgg-very-deep-convolutional-networks/">https://viso.ai/deep-learning/vgg-very-deep-convolutional-networks/</a>]</p>
-<h3 id="3unet-framework"><a class="markdownIt-Anchor" href="#3unet-framework"></a> 3.Unet framework</h3>
+<h3 id="2unet-framework"><a class="markdownIt-Anchor" href="#2unet-framework"></a> 2.Unet framework</h3>
 <p>The structure of a Unet framework is displayed as follow</p>
 <p><img src="/images/unet-1.png" alt=""></p>
 <p>The codes which implements the network using pytorch is stated as follow</p>
@@ -617,7 +615,7 @@ BN and CN can be regarded as the difference of potrait and landscape. The output
         <span class="token keyword">return</span> self<span class="token punctuation">.</span>conv<span class="token punctuation">(</span>x<span class="token punctuation">)</span>
     
 <span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
-<h3 id="4nnconv-and-nnconvtranspose"><a class="markdownIt-Anchor" href="#4nnconv-and-nnconvtranspose"></a> 4.nn.Conv and nn.ConvTranspose</h3>
+<h3 id="3nnconv-and-nnconvtranspose"><a class="markdownIt-Anchor" href="#3nnconv-and-nnconvtranspose"></a> 3.nn.Conv and nn.ConvTranspose</h3>
 <p>Here we first specify the parameters of input feature map:</p>
 <p>shape:</p>
 <ol>
@@ -641,8 +639,10 @@ H_{out} = (H_{…">\begin{equation*}
 H_{out} = (H_{in} -1)* stride + kernel\_size - 2*padding + output\_padding
 \end{equation*}
 </p>
-<h3 id="5-nnupsample-and-nnconvtranspose"><a class="markdownIt-Anchor" href="#5-nnupsample-and-nnconvtranspose"></a> 5. nn.Upsample and nn.ConvTranspose</h3>
+<h3 id="4-nnupsample-and-nnconvtranspose"><a class="markdownIt-Anchor" href="#4-nnupsample-and-nnconvtranspose"></a> 4. nn.Upsample and nn.ConvTranspose</h3>
 <p>The difference bewteen these two upsampling methods is the there parameters which can be learned in the later function, while the former one just a dead method with no parameters to update.</p>
+<h3 id="5-transformstotensor-and-transformsnormalize"><a class="markdownIt-Anchor" href="#5-transformstotensor-and-transformsnormalize"></a> 5. transforms.toTensor() and transforms.normalize()</h3>
+<p>The function <code>toTensor()</code> will change the values of the pixel from 0-255 to 0-1, then assign mean and variance to each channel through the <code>normalzie()</code> function will accomplish the nomalizing process.</p>
 
                 
             </div>
@@ -1146,17 +1146,16 @@ H_{out} = (H_{in} -1)* stride + kernel\_size - 2*padding + output\_padding
 <article id="prenext-posts" class="prev-next articles">
     <div class="row article-row">
         
-        <div class="article col s12 m6" data-aos="fade-up" data-aos="fade-up">
+        <div class="article col s12 m6" data-aos="fade-up">
             <div class="article-badge left-badge text-color">
-                <i class="far fa-dot-circle"></i>&nbsp;本篇
-            </div>
+                <i class="fas fa-chevron-left"></i>&nbsp;上一篇</div>
             <div class="card">
-                <a href="/2022/02/25/deep-learning-fundation/">
+                <a href="/2022/02/26/cnn-networks/">
                     <div class="card-image">
                         
-                        <img src="/images/xml.jpg" class="responsive-img" alt="deep_learning_fundation">
+                        <img src="/images/xml.jpg" class="responsive-img" alt="cnn_networks">
                         
-                        <span class="card-title">deep_learning_fundation</span>
+                        <span class="card-title">cnn_networks</span>
                     </div>
                 </a>
                 <div class="card-content article-content">
@@ -1166,9 +1165,9 @@ H_{out} = (H_{in} -1)* stride + kernel\_size - 2*padding + output\_padding
                         
                     </div>
                     <div class="publish-info">
-                            <span class="publish-date">
-                                <i class="far fa-clock fa-fw icon-date"></i>2022-02-25
-                            </span>
+                        <span class="publish-date">
+                            <i class="far fa-clock fa-fw icon-date"></i>2022-02-26
+                        </span>
                         <span class="publish-author">
                             
                             <i class="fas fa-user fa-fw"></i>
@@ -1177,12 +1176,11 @@ H_{out} = (H_{in} -1)* stride + kernel\_size - 2*padding + output\_padding
                         </span>
                     </div>
                 </div>
-
                 
                 <div class="card-action article-tags">
                     
-                    <a href="/tags/%E6%B7%B1%E5%BA%A6%E5%AD%A6%E4%B9%A0/">
-                        <span class="chip bg-color">深度学习</span>
+                    <a href="/tags/cnn/">
+                        <span class="chip bg-color">cnn</span>
                     </a>
                     
                 </div>
@@ -1442,7 +1440,7 @@ H_{out} = (H_{in} -1)* stride + kernel\_size - 2*padding + output\_padding
             <br>
             
                 &nbsp;<i class="fas fa-chart-area"></i>&nbsp;站点总字数:&nbsp;<span
-                        class="white-color">27.9k</span>
+                        class="white-color">29.8k</span>
             
             
             
