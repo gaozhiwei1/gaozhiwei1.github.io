@@ -6,7 +6,7 @@
   <link href="https://gaozhiwei1.github.io/atom.xml" rel="self"/>
   
   <link href="https://gaozhiwei1.github.io/"/>
-  <updated>2022-03-02T09:08:25.808Z</updated>
+  <updated>2022-03-11T00:40:25.523Z</updated>
   <id>https://gaozhiwei1.github.io/</id>
   
   <author>
@@ -15,6 +15,32 @@
   </author>
   
   <generator uri="https://hexo.io/">Hexo</generator>
+  
+  <entry>
+    <title>利用ssh传输文件到服务器</title>
+    <link href="https://gaozhiwei1.github.io/2022/03/11/ssh/"/>
+    <id>https://gaozhiwei1.github.io/2022/03/11/ssh/</id>
+    <published>2022-03-11T00:31:25.000Z</published>
+    <updated>2022-03-11T00:40:25.523Z</updated>
+    
+    
+      
+      
+        
+        
+    <summary type="html">&lt;ol&gt;
+&lt;li&gt;从服务器上下载文件&lt;br&gt;&lt;font color=&quot;blue&quot;&gt;scp username@servername:/path/filename /var/www/local_dir（本地目录）}&lt;/font&gt;&lt;br&gt;例如scp</summary>
+        
+      
+    
+    
+    
+    <category term="计算机" scheme="https://gaozhiwei1.github.io/categories/%E8%AE%A1%E7%AE%97%E6%9C%BA/"/>
+    
+    
+    <category term="ssh" scheme="https://gaozhiwei1.github.io/tags/ssh/"/>
+    
+  </entry>
   
   <entry>
     <title>cnn_networks</title>
@@ -40,18 +66,18 @@
   </entry>
   
   <entry>
-    <title>deep_learning_fundation</title>
+    <title>deep learning fundation</title>
     <link href="https://gaozhiwei1.github.io/2022/02/25/deep-learning-fundation/"/>
     <id>https://gaozhiwei1.github.io/2022/02/25/deep-learning-fundation/</id>
     <published>2022-02-25T02:18:10.000Z</published>
-    <updated>2022-03-03T12:32:11.897Z</updated>
+    <updated>2022-03-06T12:10:23.070Z</updated>
     
     
       
       
         
         
-    <summary type="html">&lt;h3 id=&quot;1-batch-normalization-and-layer-normalization&quot;&gt;&lt;a class=&quot;markdownIt-Anchor&quot;</summary>
+    <summary type="html">&lt;h3 id=&quot;1-Batch-normalization-and-layer-normalization&quot;&gt;&lt;a href=&quot;#1-Batch-normalization-and-layer-normalization&quot; class=&quot;headerlink&quot;</summary>
         
       
     
@@ -221,7 +247,7 @@
     <link href="https://gaozhiwei1.github.io/2022/01/17/latex-ji-qiao/"/>
     <id>https://gaozhiwei1.github.io/2022/01/17/latex-ji-qiao/</id>
     <published>2022-01-17T11:32:36.000Z</published>
-    <updated>2022-01-19T10:57:35.544Z</updated>
+    <updated>2022-03-11T00:30:28.497Z</updated>
     
     
       
@@ -268,11 +294,11 @@
   </entry>
   
   <entry>
-    <title>function_programming</title>
+    <title>function programming</title>
     <link href="https://gaozhiwei1.github.io/2022/01/05/function-programming/"/>
     <id>https://gaozhiwei1.github.io/2022/01/05/function-programming/</id>
     <published>2022-01-05T01:10:58.000Z</published>
-    <updated>2022-01-18T23:43:33.072Z</updated>
+    <updated>2022-03-06T12:10:13.265Z</updated>
     
     
       
@@ -492,32 +518,6 @@
     
     
     <category term="hexo transmit" scheme="https://gaozhiwei1.github.io/tags/hexo-transmit/"/>
-    
-  </entry>
-  
-  <entry>
-    <title>mmdet框架搭建过程</title>
-    <link href="https://gaozhiwei1.github.io/2021/12/26/hello-world/"/>
-    <id>https://gaozhiwei1.github.io/2021/12/26/hello-world/</id>
-    <published>2021-12-26T13:05:24.250Z</published>
-    <updated>2021-08-14T06:53:44.340Z</updated>
-    
-    
-      
-      
-        
-        
-    <summary type="html">&lt;p&gt;本篇博客我将介绍如何在WSL2环境下利用vscode搭建mmdet环境，该环境是用来执行深度学习目标检测任务，常见算法由faster-rcnn以及yolo目标检测算法系列，在阅读本博客之前，你的配置应当包括wsl2系统以及python编译环境。&lt;/p&gt;
-&lt;h2</summary>
-        
-      
-    
-    
-    
-    <category term="深度学习" scheme="https://gaozhiwei1.github.io/categories/%E6%B7%B1%E5%BA%A6%E5%AD%A6%E4%B9%A0/"/>
-    
-    
-    <category term="目标检测" scheme="https://gaozhiwei1.github.io/tags/%E7%9B%AE%E6%A0%87%E6%A3%80%E6%B5%8B/"/>
     
   </entry>
   
