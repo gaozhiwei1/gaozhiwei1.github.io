@@ -6,7 +6,7 @@
   <link href="https://gaozhiwei1.github.io/atom.xml" rel="self"/>
   
   <link href="https://gaozhiwei1.github.io/"/>
-  <updated>2022-03-11T00:40:25.523Z</updated>
+  <updated>2022-03-12T01:50:08.673Z</updated>
   <id>https://gaozhiwei1.github.io/</id>
   
   <author>
@@ -15,6 +15,31 @@
   </author>
   
   <generator uri="https://hexo.io/">Hexo</generator>
+  
+  <entry>
+    <title>剑指offer刷题第一天</title>
+    <link href="https://gaozhiwei1.github.io/2022/03/12/jian-zhi-offer-shua-ti-di-yi-tian/"/>
+    <id>https://gaozhiwei1.github.io/2022/03/12/jian-zhi-offer-shua-ti-di-yi-tian/</id>
+    <published>2022-03-12T00:42:41.000Z</published>
+    <updated>2022-03-12T01:50:08.673Z</updated>
+    
+    
+      
+      
+        
+        
+    <summary type="html">&lt;p&gt;时隔半年，在百忙之中又开始刷起来了leetcode，这一次打算坚持下去，每天开始刷一两道剑指offer，第一次的两道题还是比较简单的，自己虽然都实现了，但是感觉效率还是不行，也没有达到人家的时间要求，更没有用到核心的辅助工具那就是辅助栈，特别是在python中这个工具显得更</summary>
+        
+      
+    
+    
+    
+    <category term="leetcode" scheme="https://gaozhiwei1.github.io/categories/leetcode/"/>
+    
+    
+    <category term="剑指offer" scheme="https://gaozhiwei1.github.io/tags/%E5%89%91%E6%8C%87offer/"/>
+    
+  </entry>
   
   <entry>
     <title>利用ssh传输文件到服务器</title>
@@ -493,31 +518,6 @@
     
     
     <category term="record" scheme="https://gaozhiwei1.github.io/tags/record/"/>
-    
-  </entry>
-  
-  <entry>
-    <title>hexo-transmit</title>
-    <link href="https://gaozhiwei1.github.io/2021/12/26/hexo-transmit/"/>
-    <id>https://gaozhiwei1.github.io/2021/12/26/hexo-transmit/</id>
-    <published>2021-12-26T13:37:09.000Z</published>
-    <updated>2021-12-26T14:47:32.109Z</updated>
-    
-    
-      
-      
-        
-        
-    <summary type="html">&lt;p&gt;Here I want to record the process of migrating the hexo blog to another computer since I purchase a new computer for personal needs,</summary>
-        
-      
-    
-    
-    
-    <category term="hexo" scheme="https://gaozhiwei1.github.io/categories/hexo/"/>
-    
-    
-    <category term="hexo transmit" scheme="https://gaozhiwei1.github.io/tags/hexo-transmit/"/>
     
   </entry>
   
