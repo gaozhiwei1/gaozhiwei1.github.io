@@ -4,6 +4,31 @@
   
     
     <entry>
+      <title>剑指offer刷题第二天</title>
+      <link href="2022/03/13/jian-zhi-offer-shua-ti-di-er-tian/"/>
+      <url>2022/03/13/jian-zhi-offer-shua-ti-di-er-tian/</url>
+      
+        <content type="html"><![CDATA[<p>这是第二次来刷这个链表的题，感觉自从寒假重新看了一遍c++的链表之后，我对于这个链表的结构有了更进一步的理解，然而做题还是因为方法掌握的不够，所以代码效率始终不是特别高，下面来看今天刷的两道题。</p><h3 id="1-输入一个链表的头节点从尾到头反过来返回每个节点的值用数组返回"><a class="markdownIt-Anchor" href="#1-输入一个链表的头节点从尾到头反过来返回每个节点的值用数组返回"></a> 1. 输入一个链表的头节点，从尾到头反过来返回每个节点的值（用数组返回）。</h3><p>这题本身就是要用一个辅助性的栈存储链表中的值，这样才比较好进行返回，不多说了直接上代码</p><pre class="line-numbers language-python" data-language="python"><code class="language-python"><span class="token keyword">class</span> <span class="token class-name">Solution</span><span class="token punctuation">:</span>    <span class="token keyword">def</span> <span class="token function">reversePrint</span><span class="token punctuation">(</span>self<span class="token punctuation">,</span> head<span class="token punctuation">:</span> ListNode<span class="token punctuation">)</span> <span class="token operator">-</span><span class="token operator">&gt;</span> List<span class="token punctuation">[</span><span class="token builtin">int</span><span class="token punctuation">]</span><span class="token punctuation">:</span>        stack <span class="token operator">=</span> <span class="token punctuation">[</span><span class="token punctuation">]</span>        <span class="token keyword">while</span> head<span class="token punctuation">:</span>            stack<span class="token punctuation">.</span>append<span class="token punctuation">(</span>head<span class="token punctuation">.</span>val<span class="token punctuation">)</span>            head <span class="token operator">=</span> head<span class="token punctuation">.</span><span class="token builtin">next</span>        <span class="token keyword">return</span> stack<span class="token punctuation">[</span><span class="token punctuation">:</span><span class="token punctuation">:</span><span class="token operator">-</span><span class="token number">1</span><span class="token punctuation">]</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre><h3 id="2-定义一个函数输入一个链表的头节点反转该链表并输出反转后链表的头节点"><a class="markdownIt-Anchor" href="#2-定义一个函数输入一个链表的头节点反转该链表并输出反转后链表的头节点"></a> 2. 定义一个函数，输入一个链表的头节点，反转该链表并输出反转后链表的头节点。</h3><p>这里面就涉及到使用我们所谓的双指针来进行求解问题了，一般来说双指针第一个是指向链表的头部的，第二个是指向空的，位的就是进行链表的反转，那我们来仔细研究一下代码就知道其中的含义了</p><pre class="line-numbers language-python" data-language="python"><code class="language-python"><span class="token keyword">class</span> <span class="token class-name">Solution</span><span class="token punctuation">:</span>    <span class="token keyword">def</span> <span class="token function">reverseList</span><span class="token punctuation">(</span>self<span class="token punctuation">,</span> head<span class="token punctuation">:</span> ListNode<span class="token punctuation">)</span> <span class="token operator">-</span><span class="token operator">&gt;</span> ListNode<span class="token punctuation">:</span>        cur<span class="token punctuation">,</span> pre <span class="token operator">=</span> head<span class="token punctuation">,</span> <span class="token boolean">None</span>        <span class="token keyword">while</span> cur<span class="token punctuation">:</span>            tmp <span class="token operator">=</span> cur<span class="token punctuation">.</span><span class="token builtin">next</span> <span class="token comment"># 暂存后继节点 cur.next</span>            cur<span class="token punctuation">.</span><span class="token builtin">next</span> <span class="token operator">=</span> pre <span class="token comment"># 修改 next 引用指向</span>            pre <span class="token operator">=</span> cur      <span class="token comment"># pre 暂存 cur</span>            cur <span class="token operator">=</span> tmp      <span class="token comment"># cur 访问下一节点</span>        <span class="token keyword">return</span> pre<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre><p>这里我们先将第一个Pre指针指向cur的第一个元素，然后依次遍历cur的每一个元素，先用temp来保存截断的指针，然后再将cur的下一个元素指向pre,接着再将temp赋给cur,接着再将temp保存截断下来的cur,然后循环往复，直到cur指针为空为止，这个题很巧妙地运用了双指针地含义，比较巧妙地节省了很多时间和内存。</p>]]></content>
+      
+      
+      <categories>
+          
+          <category> leetcode </category>
+          
+      </categories>
+      
+      
+        <tags>
+            
+            <tag> 剑指offer </tag>
+            
+        </tags>
+      
+    </entry>
+    
+    
+    
+    <entry>
       <title>剑指offer刷题第一天</title>
       <link href="2022/03/12/jian-zhi-offer-shua-ti-di-yi-tian/"/>
       <url>2022/03/12/jian-zhi-offer-shua-ti-di-yi-tian/</url>
