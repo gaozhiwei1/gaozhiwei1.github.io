@@ -6,7 +6,7 @@
   <link href="https://gaozhiwei1.github.io/atom.xml" rel="self"/>
   
   <link href="https://gaozhiwei1.github.io/"/>
-  <updated>2022-08-21T03:24:47.520Z</updated>
+  <updated>2022-12-26T14:36:36.018Z</updated>
   <id>https://gaozhiwei1.github.io/</id>
   
   <author>
@@ -15,6 +15,29 @@
   </author>
   
   <generator uri="https://hexo.io/">Hexo</generator>
+  
+  <entry>
+    <title>The discrete adjoint method for PDE-constrained bayesian inverse problems</title>
+    <link href="https://gaozhiwei1.github.io/2022/12/26/adm/"/>
+    <id>https://gaozhiwei1.github.io/2022/12/26/adm/</id>
+    <published>2022-12-26T13:02:19.000Z</published>
+    <updated>2022-12-26T14:36:36.018Z</updated>
+    
+    
+      
+      
+        
+        
+    <summary type="html">&lt;h3 id=&quot;1-Problem-statement&quot;&gt;&lt;a href=&quot;#1-Problem-statement&quot; class=&quot;headerlink&quot; title=&quot;1. Problem statement&quot;&gt;&lt;/a&gt;1. Problem</summary>
+        
+      
+    
+    
+    
+    
+    <category term="computation" scheme="https://gaozhiwei1.github.io/tags/computation/"/>
+    
+  </entry>
   
   <entry>
     <title>machine learning foundation</title>
@@ -493,31 +516,6 @@
     
     
     <category term="words" scheme="https://gaozhiwei1.github.io/tags/words/"/>
-    
-  </entry>
-  
-  <entry>
-    <title>托福写作初试</title>
-    <link href="https://gaozhiwei1.github.io/2021/12/29/writing/"/>
-    <id>https://gaozhiwei1.github.io/2021/12/29/writing/</id>
-    <published>2021-12-29T14:48:04.000Z</published>
-    <updated>2022-01-02T06:36:43.766Z</updated>
-    
-    
-      
-      
-        
-        
-    <summary type="html">&lt;p&gt;这次我第一次在批改网上进行托福作文的撰写，个人感觉没有那么难，也很有套路，第一遍写下来没有太大的难处，逻辑结构都挺清楚的，最终修改了几遍单词拼写错误就达到了88.5，但是最终令我意外的是和主题相关性竟然不是特别高，可能说理的时候应该更加切合主题，多提一些关键词会比较好，总的</summary>
-        
-      
-    
-    
-    
-    <category term="TOEFL" scheme="https://gaozhiwei1.github.io/categories/TOEFL/"/>
-    
-    
-    <category term="writing" scheme="https://gaozhiwei1.github.io/tags/writing/"/>
     
   </entry>
   

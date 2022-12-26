@@ -4,6 +4,25 @@
   
     
     <entry>
+      <title>The discrete adjoint method for PDE-constrained bayesian inverse problems</title>
+      <link href="2022/12/26/adm/"/>
+      <url>2022/12/26/adm/</url>
+      
+        <content type="html"><![CDATA[<h3 id="1-Problem-statement"><a href="#1-Problem-statement" class="headerlink" title="1. Problem statement"></a>1. Problem statement</h3><p>In today’s world, many problems can be attributed to a forward model </p><script type="math/tex; mode=display">\mathcal{F}(u,m) = 0,</script><p>where $\mathcal{F}$ is the forward operator, concerning two variables, the state variable $u$ and the parameter $m$. Generally, $\mathcal{A}$ will serve as a partial differential operator, linear or non-linear. From the perspective of Bayesian analysis, we want to analyze the property of the parameter $m\in \mathbb{R}^{d}$ from a countable of observations ${u<em>{obs}}</em>{i=1}^{n}$. In practical, $n=1$, means that there is only one measurement as the measure process is very expensive. After all,  This phenomenon can be formulated as </p><script type="math/tex; mode=display">u_{obs} = \mathcal{A}(m) + \epsilon,\quad \epsilon\sim \mathcal{N}(0, \Gamma_{noise}),</script><p>where $\mathcal{A}$ is the observe operator connected to the governing equation stated above. Then, to inversion the parameters, we need first to specify a prior distribution </p><script type="math/tex; mode=display">p(m) = \mathcal{N}(0, \Gamma_{prior}).</script><p>Apply the Bayesian rule, we can get </p><script type="math/tex; mode=display">\begin{split}p(m|u_{obs})\propto p(u_{obs}|m)p(m),\end{split}</script><p>where $p(u<em>{obs}|m)$ is the likelihood function determined by the distribution of the noise. The form of $p(u</em>{obs}|m)$ is</p><script type="math/tex; mode=display">  p(u_{obs}|m) \propto \exp(-\frac{(u-u_{obs})^{T}\Gamma_{noise}^{-1}(u-u_{obs})}{2}).</script><p>Together, the posterior can be given as </p><script type="math/tex; mode=display">\begin{split}  p(m|u_{obs}) &\propto  \exp(-\frac{(u-u_{obs})^{T}\Gamma_{noise}^{-1}(u-u_{obs})+m^{T}\Gamma_{pr}^{-1}m}{2})\\   &= \exp(J(u, m)).\end{split}</script><p>Here the $J(u,m)$ is the potential function of the posterior distribution. It consists of the least square cost and the corresponding regularity norm, which is $L_{2}$ norm here.  </p><p> In practical, if both the likelihood and the prior are normal, then the posterior is normal as well. While the linearity of the observe operator $\mathcal{A}$ determines whether the likelihood is Gaussian or not. In our problem, the operator is mostly non-linear, which leads to great challenge to compute it effectively. </p><h3 id="2-Gadient-based-adjoint-MCMC-method"><a href="#2-Gadient-based-adjoint-MCMC-method" class="headerlink" title="2. Gadient-based adjoint MCMC method"></a>2. Gadient-based adjoint MCMC method</h3><p> To exploit the posterior distribution, we need to generate samples from it. The common way is to use markov chain monte carlo method to generate a chain sequentially. While this method is suboptimal especially in high dimensional cases as the posterior distribution will be very concentrated. As a consequence, the acceptance rate will be will small and is hard to improve. Due to this, many gradient based sampling methods has been proposed, such as the Langevin dynamics from the SDE, with the basic form as </p><script type="math/tex; mode=display"> x_{i+1} = x_{i} + \alpha \nabla_{x} \log p(x) + \sqrt{2\alpha}\epsilon, \quad \epsilon\sim \mathcal{N}(0,I).</script><p> The key challenge here is to find the gradient of the log posterior distribution as it embed the PDE operator $\mathcal{F}$ in the observe operator $\mathcal{A}$</p>]]></content>
+      
+      
+      
+        <tags>
+            
+            <tag> computation </tag>
+            
+        </tags>
+      
+    </entry>
+    
+    
+    
+    <entry>
       <title>machine learning foundation</title>
       <link href="2022/08/21/machine-learning/"/>
       <url>2022/08/21/machine-learning/</url>
