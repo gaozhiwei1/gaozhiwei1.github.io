@@ -1,0 +1,306 @@
+\part{现代 Transformer 改进}
+
+\chapter{位置、归一化与前馈网络}
+
+\section{RMSNorm}
+\label{sec:normalization}
+
+\begin{motivationbox}{更低成本地稳定残差流尺度}
+层归一化（LayerNorm）同时计算均值和方差，在每层、每个词元上都要执行。现代仅解码器（decoder-only）模型层数深、调用归一化频繁，因此希望保留“控制向量尺度”这一主要收益，同时减少中心化计算和参数。RMSNorm 正是对这一需求的简化：只按均方根缩放，不再减均值。
+\end{motivationbox}
+
+RMSNorm 对向量 $x\in\mathbb R^d$ 做：
+\[
+\operatorname{RMSNorm}(x)=g\odot\frac{x}{\sqrt{\frac{1}{d}\sum_{i=1}^d x_i^2+\epsilon}},
+\]
+其中 $x=(x_1,\ldots,x_d)$ 是待归一化向量，$d$ 是特征维数，$i$ 是特征下标；$g\in\mathbb R^d$ 是逐维可学习缩放向量，$\odot$ 表示逐元素相乘，$\epsilon$ 是防止除零的小常数。它不减均值，计算更省，在仅解码器 LLM 中非常常见。
+
+\begin{examplebox}{手算一个二维 RMSNorm}
+取 $x=(3,4)$、$g=(1,1)$，暂时忽略很小的 $\epsilon$。均方根为
+\[
+\operatorname{RMS}(x)=\sqrt{\frac{3^2+4^2}{2}}
+=\sqrt{12.5}\approx3.536.
+\]
+因此归一化结果约为
+\[
+\frac{x}{\operatorname{RMS}(x)}=(0.849,1.131).
+\]
+它没有先减均值，所以两个分量仍为正，方向比例 $3:4$ 也保持不变；它只把整体尺度拉回稳定范围。可学习的 $g$ 随后允许模型重新放大或缩小每个维度。
+\end{examplebox}
+
+“不减均值”意味着 RMSNorm 不强制特征以 $0$ 为中心，只控制向量的整体能量。分母中的均方根可理解为向量长度的按维归一化版本；除以它以后，向量方向基本保留，而尺度被稳定到可控范围。$\epsilon$ 不是训练超参数意义上的正则项，它只是防止全零或极小输入导致除零和数值爆炸。
+
+\codesubsection{对应实现：RMSNorm}
+
+\begin{lstlisting}
+import torch
+import torch.nn as nn
+
+class RMSNorm(nn.Module):
+    def __init__(self, dim, eps=1e-6):
+        super().__init__()
+        # 每个 hidden 维度都有独立的可学习缩放系数。
+        self.weight = nn.Parameter(torch.ones(dim))
+        self.eps = eps
+
+    def forward(self, x):
+        # x: [..., C]，只沿最后一个 hidden 维归一化。
+        input_dtype = x.dtype
+
+        # FP16 平方可能溢出，因此统计量通常用 FP32 计算。
+        x_float = x.float()
+        mean_square = x_float.pow(2).mean(dim=-1, keepdim=True)
+
+        # rsqrt(a) 等价于 1 / sqrt(a)，但表达更直接。
+        inv_rms = torch.rsqrt(mean_square + self.eps)
+        normalized = (x_float * inv_rms).to(input_dtype)
+
+        # weight 的 shape 为 [C]，会广播到 batch 和序列维。
+        return normalized * self.weight
+\end{lstlisting}
+
+RMSNorm 与 LayerNorm 最容易混淆之处是统计量：LayerNorm 使用 $x-\mu$ 的方差，RMSNorm 使用原始 $x$ 的均方。两者都不会在 batch 维混合样本，因此不同于 BatchNorm。
+
+对输入 $X\in\mathbb R^{B\times T\times d}$，LayerNorm 与 RMSNorm 通常都沿最后的隐藏维 $d$ 独立计算统计量。不同批次样本、不同序列位置不会互相参与均值或均方计算。LayerNorm 的减均值使归一化结果显式零中心；RMSNorm 不保证均值为 $0$，它保留方向关系，只约束整体均方根尺度。
+
+Transformer 不主要使用 BatchNorm，是因为 BatchNorm 依赖批次统计量：小批次、变长序列、补齐位置和训练/推理模式切换都会使统计量更难控制，自回归推理还常只有极小批次。按单个词元隐藏维归一化，不依赖其他样本，行为更稳定且自然适配变长输入。
+
+若隐藏维为 $d$，RMSNorm 通常只有 $d$ 个可学习缩放参数；LayerNorm 常有 $d$ 个缩放和 $d$ 个偏置参数。两者的参数量相对主干矩阵很小，但它们位于每层关键入口，会直接影响残差流尺度、softmax 分数和半精度数值范围，所以“小模块”不等于“不重要”。
+
+\begin{interviewbox}{RMSNorm 为什么可以不减均值？}
+\textbf{20 秒回答：}RMSNorm 的目标主要是控制残差流的尺度，而不是强制特征零中心。它用均方根归一化向量能量，保留方向并减少均值统计；经验上这种尺度控制足以支持许多仅解码器 LLM 的稳定训练。
+
+\textbf{深入解释：}LayerNorm 同时消除平移和缩放，RMSNorm 只消除整体缩放。RMSNorm 输出的均方根接近由 $g$ 决定的尺度，但均值可以非零。$\epsilon$ 只是数值稳定项，不是鼓励小权重或小激活的正则化系数。
+
+\textbf{面试官继续追问：}
+\begin{enumerate}
+  \item 归一化沿 batch、sequence 还是 hidden 维做？
+  \item RMSNorm 是否保证输出均值为 $0$？
+  \item 为什么 Transformer 不主要使用 BatchNorm？
+  \item Pre-Norm 与 Post-Norm 的梯度路径有何区别？
+\end{enumerate}
+\end{interviewbox}
+
+\section{RoPE}
+\label{sec:rope}
+
+\figRoPE
+
+\begin{motivationbox}{让位置关系直接进入注意力内积}
+绝对位置嵌入把“位置 $m$”作为附加向量写入隐藏状态，但 attention 真正需要的往往是两个词元相隔多远。固定长度的位置表也不自然支持超出训练长度的位置。旋转位置编码（Rotary Position Embedding，RoPE）把位置编码改写为对查询和键的旋转，使二者内积能够显式化为相对位移，同时不增加每个位置的可学习嵌入表。
+\end{motivationbox}
+
+RoPE 把每两个维度视为一个二维平面。对当前这一对坐标，位置 $m$ 对应旋转角 $\theta_m$，旋转矩阵为
+\[
+R_m=\begin{bmatrix}\cos\theta_m&-\sin\theta_m\\ \sin\theta_m&\cos\theta_m\end{bmatrix}.
+\]
+设 $q,k\in\mathbb R^2$ 分别是这一坐标对上的查询和键，$m,n$ 是它们所在的位置。分别旋转后：
+\[
+(R_m q)^\top(R_n k)=q^\top R_m^\top R_n k=q^\top R_{n-m}k.
+\]
+其中 $R_{n-m}$ 表示由位置差决定的相对旋转。因此注意力分数显式依赖相对位置 $n-m$，这解释了 RoPE 为什么适合自回归模型，也解释了长上下文外推会涉及频率缩放。
+
+\begin{examplebox}{旋转后为什么只剩相对距离}
+只看一个二维坐标对，并假设每前进一个位置旋转 $30^\circ$。令原始 $q=k=(1,0)$，位置 $m=2$ 的查询旋转到 $60^\circ$，位置 $n=5$ 的键旋转到 $150^\circ$。两者内积为
+\[
+\cos(150^\circ-60^\circ)=\cos90^\circ=0.
+\]
+若把两个词元同时向后移动十个位置，角度变成 $360^\circ$ 与 $450^\circ$，差仍是 $90^\circ$，内积仍为 $0$。绝对位置变了但相对距离 $n-m=3$ 未变，这就是 $R_m^\top R_n=R_{n-m}$ 的几何含义。
+\end{examplebox}
+
+实际模型不会让所有二维平面使用同一个角速度。第 $j$ 对维度通常使用角频率 $\theta_j=\mathrm{base}^{-2j/d_h}$，位置 $m$ 的旋转角为 $m\theta_j$。这里 $j=0,1,\ldots,d_h/2-1$ 是坐标对编号，$d_h$ 是单个注意力头的维度，$\mathrm{base}$ 是控制频率跨度的常数。高频维度更敏感于相邻位置，低频维度变化更慢、覆盖距离更长。因为每次旋转必须取两个坐标，所以头维度必须为偶数。
+
+\codesubsection{对应实现：RoPE 二维旋转}
+
+\begin{lstlisting}
+import torch
+
+def apply_rope(x, cos, sin):
+    # x: [B, H, T, D]，最后一维必须能两两配对。
+    # cos/sin: [1, 1, T, D/2]，已包含各位置和频率。
+    if x.size(-1) % 2 != 0:
+        raise ValueError("RoPE requires an even head dimension")
+
+    # 把 (x0, x1), (x2, x3), ... 拆成二维坐标对。
+    x_even = x[..., 0::2]  # 每对的第一个坐标
+    x_odd = x[..., 1::2]   # 每对的第二个坐标
+
+    # [a, b] 乘旋转矩阵后得到
+    # [a*cos - b*sin, a*sin + b*cos]。
+    rotated_even = x_even * cos - x_odd * sin
+    rotated_odd = x_even * sin + x_odd * cos
+
+    # stack 后为 [..., D/2, 2]；flatten 恢复交错的 D 维。
+    return torch.stack(
+        (rotated_even, rotated_odd), dim=-1
+    ).flatten(-2)
+\end{lstlisting}
+
+代码中的 $\cos$ 和 $\sin$ 只在位置与维度上变化，在批次与注意力头维度通过广播机制复用。通常只对查询和键应用 RoPE，不旋转值向量，因为位置关系需要进入注意力分数 $QK^\top$，而值向量负责承载被汇聚的内容。
+
+RoPE 不需要为每个位置学习一行嵌入参数，也不改变 $Q,K$ 的张量形状；它只对最后一维成对坐标做确定性旋转。值向量不参与 $QK^\top$ 的匹配，旋转 $V$ 不会帮助分数显式获得相对位移，反而会把位置相位写入被聚合的内容。
+
+长上下文外推的困难来自频率分布失配：训练时模型只见过有限位置范围与相位组合，超出范围后，某些高频坐标会经历更多旋转，注意力模式可能进入训练未覆盖区域。位置插值或频率缩放的基本思想，是把更长的实际位置映射到较温和的有效相位范围；它改善外推，但可能压缩近距离分辨率，因此仍需要校准或长上下文训练。
+
+\begin{interviewbox}{RoPE 为什么只作用于 Q/K？}
+\textbf{20 秒回答：}位置信息需要进入注意力匹配分数 $QK^\top$。对位置 $m,n$ 的 Q/K 做同形式旋转后，内积可化为相对旋转 $R_{n-m}$，从而让分数依赖相对距离；$V$ 负责传递内容，不参与匹配，因此通常无需旋转。
+
+\textbf{深入解释：}$R_m^\top R_n=R_{n-m}$ 是关键。RoPE 不增加可学习位置表，也不改变 shape，只在二维坐标对上施加正交变换。要求头维度成对处理，是因为每个旋转块至少需要两个坐标。
+
+\textbf{面试官继续追问：}
+\begin{enumerate}
+  \item RoPE 是否增加参数量？
+  \item 为什么绝对位置嵌入不能直接保证相对关系？
+  \item 长上下文外推为什么可能退化？
+  \item position interpolation 牺牲了什么？
+\end{enumerate}
+\end{interviewbox}
+
+\section{ALiBi 与滑动窗口}
+
+\begin{motivationbox}{完整长上下文注意力仍然太贵}
+RoPE 解决“如何表达位置”，却没有改变完整 attention 的 $O(T^2)$ 计算，也不能单独保证长度外推。线性偏置注意力（Attention with Linear Biases，ALiBi）试图用简单的距离偏置提供更平滑的位置归纳偏置；滑动窗口则直接限制可见范围，把资源集中到更可能相关的邻近词元。
+\end{motivationbox}
+
+ALiBi 为分数加入随距离衰减的线性偏置；滑动窗口只看最近 $W$ 个词元，其中 $W$ 是窗口大小。这样可将位置对数量从 $T^2$ 降为约 $TW$，代价是削弱远距离依赖。
+
+二者解决问题的方式不同：ALiBi 改变“看多远时应付出多少分数惩罚”，但仍可计算完整注意力；滑动窗口直接把窗口外位置设为不可见，因此真正减少计算。工程上也可把局部窗口与少量全局词元结合，让模型保留跨段信息通路。
+
+\enlargethispage{\baselineskip}
+\textbf{面试提醒：}训练长度、位置外推、键值缓存和长距检索能力并不等同。
+
+\chapter{多头、共享键值与分组查询注意力}
+\label{sec:gqa}
+
+\figMhaMqaGqa
+
+\begin{motivationbox}{降低逐词元推理的键值读取成本}
+多头注意力（Multi-Head Attention，MHA）为每个查询头保存独立的键/值头，表达能力强，但逐词元解码（decode）每一步都要从显存读取所有历史键值。随着批次和上下文增长，瓶颈逐渐从矩阵计算转为显存容量与带宽。多查询注意力（Multi-Query Attention，MQA）通过共享一组键值把成本降到最低，分组查询注意力（Grouped-Query Attention，GQA）则在质量下降与缓存开销之间提供折中。
+\end{motivationbox}
+
+MHA 中查询头数 $H$ 与键值头数通常相同。MQA 让所有查询头共享一组键值。GQA 设 $n_{\rm kv}<H$，每组查询头共享一个键值头。
+
+若每层缓存都保存键矩阵 $K$ 与值矩阵 $V$，显存与 $n_{\rm kv}$ 成正比：
+\[
+M_{\rm KV}\propto 2\cdot L\cdot B\cdot T\cdot n_{\rm kv}\cdot d_h.
+\]
+式中，系数 $2$ 表示同时保存键和值，$L$ 是层数，$B$ 是批次大小，$T$ 是已缓存的序列长度，$n_{\rm kv}$ 是键值头数，$d_h$ 是每头维度。因此从 MHA 的 $n_{\rm kv}=H$ 改到 GQA 的 $n_{\rm kv}=H/g$ 时，$g$ 表示每个键值头服务的查询头数，键值缓存约减少 $g$ 倍。
+
+\begin{examplebox}{8 个查询头如何共享 2 个键值头}
+设 $H=8$、$n_{\rm kv}=2$，则每组大小为 $g=H/n_{\rm kv}=4$：
+\[
+Q_1,Q_2,Q_3,Q_4\rightarrow(KV)_1,
+\qquad
+Q_5,Q_6,Q_7,Q_8\rightarrow(KV)_2.
+\]
+八个查询头仍各自提出不同查询，因此输出仍有八个头；只是在读取历史信息时，每四个查询头共享同一份键和值。相较 $n_{\rm kv}=8$ 的 MHA，每层、每个词元只需缓存两组而不是八组键值，显存和读取量都约降为四分之一。
+\end{examplebox}
+
+\begin{table}[htbp]
+\centering
+\small
+\begin{tabularx}{0.86\textwidth}{lYYY}
+\toprule
+机制 & KV 头数 & 优点 & 风险\\
+\midrule
+MHA & $H$ & 表达能力强 & 键值缓存大\\
+MQA & $1$ & 逐词元解码显存最低 & 质量可能下降\\
+GQA & $1<n_{\rm kv}<H$ & 质量与效率折中 & 分组设计需调参\\
+\bottomrule
+\end{tabularx}
+\caption{MHA、MQA 与 GQA 的工程对比。}
+\end{table}
+
+GQA 的收益必须按阶段区分。在提示词预填充阶段，$T$ 个查询可并行形成大矩阵乘法，系统常更偏计算密集；减少 K/V 投影和缓存写入有收益，但不会消除所有 QK 分数计算。逐词元解码时每步只有一个新查询，却要读取长度为 $T$ 的历史键值，算术强度低，因此减少 $n_{\rm kv}$ 往往直接降低显存流量和延迟。
+
+\begin{exercisebox}{GQA 的分组与缓存缩减}
+给定 $H=32$ 个查询头、$n_{\rm kv}=8$ 个键值头，每个键值头服务
+\[
+g=H/n_{\rm kv}=32/8=4
+\]
+个查询头。与 $n_{\rm kv}=32$ 的 MHA 相比，键值缓存和理想键值读取量降为 $8/32=1/4$，即约减少 $4$ 倍。查询头仍为 $32$，所以模型仍保留 32 组查询投影。
+\end{exercisebox}
+
+\begin{interviewbox}{GQA 省的是 FLOPs、显存还是带宽？}
+\textbf{20 秒回答：}三者都有局部收益，但最核心的是键值缓存容量和逐词元解码的显存带宽。K/V 投影 FLOPs 会下降；然而每个 Q 头仍要与历史键值形成注意力，稠密 attention 的主要位置对数量不会按相同比例消失。decode memory-bound 时带宽收益最明显。
+
+\textbf{深入解释：}缓存大小与 $n_{\rm kv}$ 成正比。decode 每步新计算的 Q 很小，主要成本常是从 HBM 读取历史 K/V；GQA 让多个 Q 头复用同一份 K/V。prefill 中大矩阵算术强度更高，收益更依赖具体内核与投影占比，因此不能笼统承诺同样的加速倍数。
+
+\textbf{面试官继续追问：}
+\begin{enumerate}
+  \item 为什么 Q 头数可以保持不变？
+  \item MQA 为什么压缩最大，但并非所有模型都使用？
+  \item $H=32,n_{\rm kv}=8$ 时 group size 是多少？
+  \item 缓存减少 4 倍是否意味着端到端一定加速 4 倍？
+\end{enumerate}
+\end{interviewbox}
+
+\section{多头潜在注意力（MLA）}
+\label{sec:mla}
+
+\begin{motivationbox}{比减少键值头更进一步压缩缓存表示}
+GQA 通过让多个查询头共享较少的键值头来缩减缓存，但缓存中仍保存这些键值头的显式向量。多头潜在注意力（Multi-Head Latent Attention，MLA）的出发点，是把历史信息压缩成更低维的潜在表示，在需要计算注意力时再通过投影使用或重建相应表示，以进一步降低缓存容量与读取流量。
+\end{motivationbox}
+
+可以用概念式表示：
+\[
+c_t=x_tW_c,\qquad c_t\in\mathbb R^{d_c},\quad d_c\ll H d_h,
+\]
+其中 $c_t$ 是位置 $t$ 的低维潜在缓存，$W_c$ 是压缩投影。推理时，注意力计算通过额外投影从 $c_{1:t}$ 获得所需的键值相关表示。具体模型如何处理位置编码、投影吸收和解码内核各不相同，本节只强调稳定的架构思想：\textbf{缓存低维潜变量，而不是完整的逐头 K/V。}
+
+\begin{table}[htbp]
+\centering
+\small
+\begin{tabularx}{0.9\textwidth}{lYY}
+\toprule
+机制 & 缓存思路 & 主要权衡\\
+\midrule
+MHA & 保存每个头的完整 K/V & 表达直接，缓存最大\\
+GQA/MQA & 减少并共享 K/V 头 & 共享更强时质量风险上升\\
+MLA & 保存低维潜在表示 & 缓存更小，但引入压缩与投影复杂度\\
+\bottomrule
+\end{tabularx}
+\caption{MHA、GQA 与 MLA 的概念差异。}
+\end{table}
+
+\begin{interviewbox}{GQA 和 MLA 降低键值缓存的本质区别是什么？}
+\textbf{20 秒回答：}GQA 减少显式 K/V 头数，让多组 Q 共享较少的键值；MLA 则把历史信息压缩到更低维潜在表示，缓存的是压缩表示。前者是“少存几组头”，后者是“换一种低维表示来存”。
+
+\textbf{深入解释：}若潜在维 $d_c$ 显著小于显式键值宽度，存储和读取量都可下降；代价是压缩可能损失信息，并需要额外投影、位置处理与高效内核支持。压缩率不能脱离质量、计算和实现复杂度单独比较。
+
+\textbf{面试官继续追问：}
+\begin{enumerate}
+  \item latent compression 为什么能降低存储？
+  \item 压缩带来的质量与计算代价是什么？
+  \item MLA 是否等价于把 $n_{\rm kv}$ 设得更小？
+\end{enumerate}
+\end{interviewbox}
+
+\section{查询/键归一化（QK normalization）}
+
+\begin{motivationbox}{防止注意力分数随训练失控}
+除以 $\sqrt{d_h}$ 只根据初始化时的独立同分布假设校准尺度，但训练会持续改变查询和键的范数。若范数越来越大，内积仍会把 softmax 推入近似独热（one-hot）的饱和区，导致梯度变小、注意力熵骤降。长上下文中极端分数的机会更多，因此问题更明显。
+\end{motivationbox}
+
+查询/键归一化在查询和键向量上做归一化或尺度控制，使内积主要反映方向相似度而不是无界增长的向量长度。它解决的是注意力分数与梯度稳定性，不直接降低 $T^2$ 复杂度，也不替代因果遮罩。面试中可把它归为“控制 softmax 有效温度”的技巧。
+
+\begin{examplebox}{方向相同但范数失控时会发生什么}
+令 $q=(30,40)$、$k=(6,8)$，两者方向完全相同，但原始内积为 $500$，softmax 中的 $e^{500}$ 会极端放大该位置。归一化后 $\hat q=(0.6,0.8)$、$\hat k=(0.6,0.8)$，内积变成 $1$。相关性排序仍表达“方向完全一致”，但不会因为训练把向量范数放大而无界增长。
+\end{examplebox}
+
+这些改进分别作用在不同轴上：RMSNorm 控制残差流尺度，RoPE/ALiBi 注入位置，滑动窗口减少可见范围，GQA 减少键值头，查询/键归一化控制分数尺度。进入推理阶段后，还需要进一步消除历史 $K,V$ 的重复计算，并优化 attention 的内存访问。
+
+\section*{面试高频问题}
+\addcontentsline{toc}{section}{面试高频问题：现代结构}
+
+\textbf{Q: RoPE 为什么能表达相对位置？}
+
+20 秒回答：两个位置的旋转内积可化为基向量之间乘以相对旋转矩阵，score 依赖 $n-m$ 而不是单独的 $m,n$。
+
+\textbf{Q: GQA 为什么能加速逐词元解码？}
+
+20 秒回答：逐词元解码每步要从显存读取所有历史键值；GQA 减少键值头数，直接降低缓存读取量和显存占用。
+
+\textbf{Q: 查询/键归一化什么时候值得提？}
+
+当讨论长上下文稳定性、注意力分数过大或训练后期不稳定时值得提。它的核心是控制查询和键的尺度，让 softmax 温度更可控。

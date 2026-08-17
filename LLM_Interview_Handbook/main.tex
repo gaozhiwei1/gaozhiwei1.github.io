@@ -1,0 +1,332 @@
+\documentclass[UTF8,zihao=-4,openany,fontset=fandol]{ctexbook}
+
+\usepackage[a4paper,left=20mm,right=20mm,top=19mm,bottom=22mm]{geometry}
+\usepackage{amsmath,amssymb,mathtools,bm}
+\usepackage{fontspec}
+\usepackage{iftex}
+\usepackage{xcolor}
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{tabularx}
+\usepackage{array}
+\usepackage{longtable}
+\usepackage{enumitem}
+\usepackage{multicol}
+\usepackage{caption}
+\usepackage{subcaption}
+\usepackage{float}
+\usepackage{tikz}
+\usepackage{pgfplots}
+\usepackage[most]{tcolorbox}
+\usepackage{listings}
+\usepackage{needspace}
+\usepackage{hyperref}
+\usepackage{microtype}
+\usepackage{lastpage}
+
+\pgfplotsset{compat=1.18}
+\usetikzlibrary{arrows.meta,positioning,calc,fit,matrix,shapes.geometric,backgrounds}
+
+\IfFontExistsTF{JetBrains Mono}{\setmonofont{JetBrains Mono}}{\setmonofont{DejaVu Sans Mono}}
+\xeCJKsetup{PunctStyle=quanjiao}
+
+\definecolor{ink}{HTML}{17212B}
+\definecolor{muted}{HTML}{596773}
+\definecolor{linegray}{HTML}{CBD3DA}
+\definecolor{softblue}{HTML}{EAF2F8}
+\definecolor{blue}{HTML}{326B91}
+\definecolor{softgreen}{HTML}{E8F3EF}
+\definecolor{green}{HTML}{287A68}
+\definecolor{softamber}{HTML}{FBF1E4}
+\definecolor{amber}{HTML}{B96B2B}
+\definecolor{softcoral}{HTML}{F8ECE9}
+\definecolor{coral}{HTML}{A95446}
+\definecolor{codebg}{HTML}{F5F7F8}
+
+\hypersetup{
+  colorlinks=true,
+  linkcolor=blue,
+  urlcolor=blue,
+  citecolor=blue,
+  pdftitle={LLM Interview Handbook},
+  pdfauthor={Codex}
+}
+
+\ctexset{
+  chapter={format=\Large\bfseries\sffamily\color{ink},beforeskip=12pt,afterskip=18pt},
+  section={format=\large\bfseries\sffamily\color{ink},beforeskip=1.6ex,afterskip=0.9ex},
+  subsection={format=\zihao{4}\bfseries\sffamily\color{ink}},
+  part={format=\Huge\bfseries\sffamily\color{ink}}
+}
+\setlist[itemize]{leftmargin=1.6em,itemsep=0.22em,topsep=0.35em}
+\setlist[enumerate]{leftmargin=1.8em,itemsep=0.22em,topsep=0.35em}
+\setlength{\parskip}{0.32em}
+\setlength{\parindent}{2em}
+\linespread{1.18}
+\emergencystretch=2.5em
+\raggedbottom
+\clubpenalty=10000
+\widowpenalty=10000
+\displaywidowpenalty=10000
+\captionsetup{font=normalsize,labelfont=bf,labelsep=quad}
+\captionsetup[subfigure]{font=small,labelfont=bf}
+\setlength{\abovedisplayskip}{0.65em}
+\setlength{\belowdisplayskip}{0.65em}
+
+\tcbset{
+  arc=1mm,
+  boxrule=0.6pt,
+  left=2.2mm,
+  right=2.2mm,
+  top=1.6mm,
+  bottom=1.6mm,
+  before skip=0.9em,
+  after skip=0.9em,
+  breakable,
+  fonttitle=\bfseries\sffamily,
+  coltitle=ink
+}
+\newtcolorbox{takeawaybox}{
+  colback=softblue,
+  colframe=blue,
+  title=面试一句话回答,
+  borderline west={2pt}{0pt}{blue}
+}
+\newtcolorbox{pitfallbox}{
+  colback=softamber,
+  colframe=amber,
+  title=常见误区,
+  borderline west={2pt}{0pt}{amber}
+}
+\newtcolorbox{mathbox}{
+  colback=softgreen,
+  colframe=green,
+  title=关键推导,
+  borderline west={2pt}{0pt}{green}
+}
+\newtcolorbox{motivationbox}[1]{
+  colback=codebg,
+  colframe=blue,
+  title={提出动机：#1},
+  borderline west={2pt}{0pt}{blue}
+}
+\newtcolorbox{examplebox}[1]{
+  colback=softamber,
+  colframe=amber,
+  title={具体例子：#1},
+  borderline west={2pt}{0pt}{amber},
+  breakable=false
+}
+\newtcolorbox{interviewbox}[1]{
+  colback=white,
+  colframe=blue,
+  title={面试深挖：#1},
+  borderline west={2pt}{0pt}{blue},
+  breakable
+}
+\newtcolorbox{wrongbox}{
+  colback=softcoral,
+  colframe=coral,
+  title=容易答错,
+  borderline west={2pt}{0pt}{coral}
+}
+\newtcolorbox{exercisebox}[1]{
+  colback=softgreen,
+  colframe=green,
+  title={计算题：#1},
+  borderline west={2pt}{0pt}{green},
+  breakable=false
+}
+
+\lstdefinestyle{pytorch}{
+  language=Python,
+  basicstyle=\ttfamily\small,
+  keywordstyle=\color{blue}\bfseries,
+  commentstyle=\color{muted},
+  stringstyle=\color{green},
+  backgroundcolor=\color{codebg},
+  frame=single,
+  rulecolor=\color{linegray},
+  breaklines=true,
+  breakatwhitespace=true,
+  columns=fullflexible,
+  keepspaces=true,
+  showstringspaces=false,
+  tabsize=4,
+  xleftmargin=1.2em,
+  xrightmargin=0.4em,
+  aboveskip=0.8em,
+  belowskip=0.8em
+}
+\lstset{style=pytorch}
+
+\newcolumntype{Y}{>{\raggedright\arraybackslash}X}
+\newcommand{\shape}[1]{\texttt{#1}}
+\newcommand{\softmax}{\operatorname{softmax}}
+\newcommand{\TopK}{\operatorname{TopK}}
+\newcommand{\codesubsection}[1]{\Needspace{12\baselineskip}\subsection{#1}}
+\newcommand{\codesection}[1]{\Needspace{14\baselineskip}\section{#1}}
+\newcounter{quickquestion}
+\newcommand{\quickq}[3]{%
+  \Needspace{3\baselineskip}%
+  \refstepcounter{quickquestion}%
+  \noindent\textbf{\thequickquestion. #1}%
+  \hfill{\small\color{muted}$\rightarrow$ 第\pageref{#3}页}\par
+  \noindent{\color{muted}\textbf{短答：}#2}\par\vspace{1pt}
+}
+\let\cleardoublepage\clearpage
+
+\input{figures/diagrams}
+
+\begin{document}
+\zihao{4}
+
+\frontmatter
+\begin{titlepage}
+  \centering
+  \vspace*{14mm}
+  {\sffamily\bfseries\color{blue}\Large LLM INTERVIEW HANDBOOK 2026\par}
+  \vspace{10mm}
+  {\Huge\bfseries 大模型面试手册\par}
+  \vspace{7mm}
+  {\Large 大模型算法岗 · 基础模型 · Post-Training · 推理优化\par}
+  \vspace{16mm}
+  \rule{0.68\textwidth}{0.7pt}\par
+  \vspace{8mm}
+  {\large 数学推导 · PyTorch 手写 · 原理图解 · 高频追问 · 工程估算\par}
+  \vfill
+  {\sffamily\bfseries 2026 Edition · Version 2.1\par}
+  \vspace{4mm}
+  {\small 从公式、张量形状与系统瓶颈出发，回答面试官真正会追问的“为什么”\par}
+\end{titlepage}
+
+\clearpage
+\thispagestyle{empty}
+\vspace*{24mm}
+{\Large\bfseries\sffamily 版本与使用说明\par}
+\vspace{10mm}
+
+\noindent\textbf{版本：}2026 Edition · v2.1
+
+\vspace{6mm}
+\noindent\textbf{适用岗位：}
+\begin{itemize}
+  \item LLM 算法工程师 / Foundation Model
+  \item Post-Training / Alignment
+  \item 推理优化与模型部署
+  \item 大模型应用算法与 Agent
+\end{itemize}
+
+\vspace{8mm}
+本资料围绕公开技术资料、数学推导与工程实践组织，重点服务个人学习与面试准备。技术结论应结合具体模型实现、硬件环境和业务约束判断。
+
+\vfill
+\begin{tcolorbox}[colback=codebg,colframe=linegray,title=版权说明]
+本资料仅供购买者个人学习与面试准备使用。未经许可不得批量转载、二次销售或公开传播。
+\end{tcolorbox}
+\clearpage
+
+\tableofcontents
+
+\chapter*{阅读方法}
+\addcontentsline{toc}{chapter}{阅读方法}
+
+本书不把技术名词当作孤立答案。几乎每一种 LLM 方法都来自上一种方案在规模、数据、数值或系统上的具体失败。阅读每节时，建议始终追问五件事：
+
+\begin{enumerate}
+  \item \textbf{原始方案是什么：}没有这个技巧时，系统如何工作？
+  \item \textbf{瓶颈在哪里：}问题来自计算量、显存、带宽、优化稳定性、数据质量，还是目标与行为不一致？
+  \item \textbf{方法改变了什么：}它修改的是目标函数、张量布局、信息可见范围、参数共享方式，还是执行调度？
+  \item \textbf{为什么有效：}公式中的哪一项或系统中的哪一次重复工作被改变？
+  \item \textbf{代价和边界是什么：}它新增了什么误差、通信、超参数或质量风险，又在哪些场景下不适用？
+\end{enumerate}
+
+后文的“提出动机”框先回答前两项，“具体例子”框把抽象机制落到可追踪的输入和中间结果上，公式与代码解释方法细节，章节结尾再交代代价与下一种方法为何出现。面试时也可以沿用这条链路，先说问题再说方案，通常比直接背定义更有说服力。
+
+\chapter*{术语与符号约定}
+\addcontentsline{toc}{chapter}{术语与符号约定}
+\markboth{术语与符号约定}{术语与符号约定}
+
+专业名词在第一次出现时采用“中文含义（英文原词或缩写）”的写法，后文再使用业界常见简称。代码中的变量名和 API 保留英文，以便与 PyTorch 文档对应。
+
+\section*{常见张量符号}
+
+\begin{center}
+\begin{tabularx}{0.94\textwidth}{lY}
+\toprule
+符号 & 含义\\
+\midrule
+$B$ & 批次大小，即一次并行处理的样本数\\
+$T$ & 序列长度，即每个样本包含的词元数量\\
+$V$ & 词表大小，即模型可输出的词元类别数\\
+$C$ 或 $d_{\rm model}$ & 模型隐藏维度，即每个位置的向量宽度\\
+$H$ & 查询注意力头数量\\
+$D$ 或 $d_h$ & 单个注意力头的维度，常有 $C=HD$\\
+$L$ & Transformer 层数\\
+$n_{\rm kv}$ & 键/值（key/value）的头数量；在 MHA 中通常等于 $H$，在 GQA/MQA 中更少\\
+$P$ & 模型参数总数\\
+$i,j,t$ & 位置或时间步下标；具体范围由当前公式说明\\
+$\theta,\phi$ & 可学习参数集合；$\theta$ 常指主模型或策略参数，$\phi$ 常指奖励模型参数\\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+因此 shape $[B,T,C]$ 表示“$B$ 个样本，每个样本 $T$ 个词元，每个词元用 $C$ 维向量表示”；$[B,H,T,D]$ 则表示把隐藏维拆成 $H$ 个注意力头，每头宽度为 $D$。
+
+\section*{常见中英文术语}
+
+\begin{center}
+\begin{tabularx}{0.94\textwidth}{lY}
+\toprule
+术语 & 本书中的含义\\
+\midrule
+词元（token） & 分词器输出的最小处理单元，可能是字、子词、标点或字节\\
+词元编号（token id） & 词元在有限词表中的整数下标\\
+批次（batch） & 一次并行送入模型的一组样本\\
+嵌入向量（embedding） & 由词元编号查表得到的连续向量\\
+隐藏状态（hidden state） & Transformer 中间层对当前位置的向量表示\\
+未归一化分数（logits） & softmax 之前的实数分数，不要求和为 $1$\\
+目标标签（target/label） & 希望模型预测出的正确词元编号\\
+提示词（prompt） & 用户输入或生成开始前已经给定的上下文\\
+回答（response） & 模型在提示词之后生成的内容\\
+遮罩（mask） & 用布尔值或极小分数禁止某些位置参与计算\\
+缓存（cache） & 保存可复用的中间结果，避免重复计算\\
+注意力头（head） & 一组独立的查询/键/值（query/key/value）投影与注意力关系\\
+损失（loss） & 训练中需要最小化的标量目标\\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+\section*{推理的两个基本阶段}
+
+\begin{center}
+\begin{tabularx}{0.94\textwidth}{lYY}
+\toprule
+阶段 & 做什么 & 主要特点\\
+\midrule
+提示词预填充（prefill） & 一次并行处理完整提示词，并为各层建立键值缓存 & 矩阵规模大，通常更偏计算密集\\
+逐词元解码（decode） & 每一步只生成一个新词元，并读取此前的键值缓存 & 串行步骤多，通常更受显存带宽限制\\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+例如提示词是“我喜欢”，提示词预填充会同时处理“我”和“喜欢”；随后模型逐步生成“机器”“学习”，这两个生成步骤分别属于两次逐词元解码。后文再使用 prefill 和 decode 时，都指这里定义的两个阶段。
+
+\mainmatter
+\input{sections/foundations}
+\input{sections/pretraining}
+\input{sections/modern_transformers}
+\input{sections/inference}
+\input{sections/reasoning}
+\input{sections/post_training}
+\input{sections/peft_distillation}
+\input{sections/moe}
+\input{sections/distributed}
+\input{sections/evaluation}
+\input{sections/rag_agents}
+\input{sections/review}
+
+\backmatter
+\input{sections/references}
+
+\end{document}

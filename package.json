@@ -1,0 +1,50 @@
+{
+  "name": "llm-interview-lab",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "dev": "node server/dev.mjs",
+    "dev:web": "vite --host 0.0.0.0",
+    "typecheck": "tsc -b --pretty false",
+    "lint": "eslint src",
+    "format": "prettier --write \"src/auth/**/*.{ts,tsx}\" \"src/entitlements/**/*.{ts,tsx}\" \"src/payments/**/*.ts\" \"src/progress/**/*.{ts,tsx}\" \"src/components/{AccountPage,AuthPage,PaymentStatusPage,PremiumDeepDive,PricingPage,ProPreview}.tsx\" \"src/config/**/*.ts\" \"src/lib/{api,supabase}.ts\" \"server/saas/**/*.{mjs,json}\" \"server/{dev,prod}.mjs\" \"scripts/protect-*.mjs\" \"tests/saas-*.mjs\" \"docs/{auth-architecture,database-schema,subscription-architecture,payment-setup,deployment-checklist}.md\"",
+    "format:check": "prettier --check \"src/auth/**/*.{ts,tsx}\" \"src/entitlements/**/*.{ts,tsx}\" \"src/payments/**/*.ts\" \"src/progress/**/*.{ts,tsx}\" \"src/components/{AccountPage,AuthPage,PaymentStatusPage,PremiumDeepDive,PricingPage,ProPreview}.tsx\" \"src/config/**/*.ts\" \"src/lib/{api,supabase}.ts\" \"server/saas/**/*.{mjs,json}\" \"server/{dev,prod}.mjs\" \"scripts/protect-*.mjs\" \"tests/saas-*.mjs\" \"docs/{auth-architecture,database-schema,subscription-architecture,payment-setup,deployment-checklist}.md\"",
+    "build": "tsc -b && vite build",
+    "start": "node server/prod.mjs",
+    "test": "vitest run src && node --test tests/server.test.mjs tests/saas-security.test.mjs server/saas/payments.test.mjs server/saas/http.test.mjs",
+    "test:db": "supabase test db",
+    "test:runner": "python3 -m unittest discover -s local-runner/tests -v",
+    "test:runner:e2e": "node tests/local-runner-e2e.mjs",
+    "test:e2e": "node tests/visual-qa.mjs",
+    "test:saas:e2e": "node tests/saas-visual-qa.mjs",
+    "sync:runner-problems": "node scripts/export-runner-problems.mjs",
+    "preview": "vite preview --host 0.0.0.0",
+    "check:saas": "node scripts/check-saas-config.mjs"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.112.3",
+    "@vitejs/plugin-react": "latest",
+    "dotenv": "^17.4.2",
+    "katex": "latest",
+    "lucide-react": "latest",
+    "react": "latest",
+    "react-dom": "latest",
+    "stripe": "^22.5.0"
+  },
+  "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "@types/katex": "latest",
+    "@types/react": "latest",
+    "@types/react-dom": "latest",
+    "eslint": "^10.8.1",
+    "eslint-plugin-react-hooks": "^7.1.1",
+    "eslint-plugin-react-refresh": "^0.5.4",
+    "playwright": "^1.62.1",
+    "prettier": "^3.9.6",
+    "typescript": "latest",
+    "typescript-eslint": "^8.67.0",
+    "vite": "latest",
+    "vitest": "latest"
+  }
+}

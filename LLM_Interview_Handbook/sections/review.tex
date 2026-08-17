@@ -1,0 +1,340 @@
+\part{高频面试问题与速查}
+
+\chapter{高频公式速查 I}\label{sec:formula-cheatsheet}
+
+\begin{takeawaybox}
+\textbf{架构与推理（Architecture \& Inference）：}公式要沿“张量形状 $\rightarrow$ 信息流 $\rightarrow$ 系统成本”复习。面试时不仅写出公式，还要说明归一化维度，以及它影响计算、显存还是带宽。
+\end{takeawaybox}
+
+\renewcommand{\arraystretch}{1.18}
+\noindent\begin{tabularx}{\textwidth}{p{0.22\textwidth}Y}
+\toprule
+主题 & 公式与面试解释\\
+\midrule
+Q/K/V 投影 & $Q=XW_Q,\ K=XW_K,\ V=XW_V$。三种投影分离查询条件、匹配索引和被聚合内容；投影本身也会混合特征通道。\\[0.45em]
+缩放点积注意力 & $A=\softmax\!\left(QK^\top/\sqrt{d_k}+M\right)$，$O=AV$。softmax 对每个 query 沿 key 位置归一化；$M$ 控制可见性。\\[0.45em]
+多头输出 & $O_{\rm mha}=\operatorname{Concat}(O_1,\ldots,O_H)W_O$。$W_O$ 重新组合各头，并把输出投影回固定残差宽度。\\[0.45em]
+Residual stream & $X_{\ell+1}=X_\ell+F_\ell(X_\ell)$。逐元素相加要求同维，因此 attention 与 FFN 最终都回到 $d_{\rm model}$。\\[0.45em]
+RMSNorm & $\operatorname{RMSNorm}(x)=g\odot x/\sqrt{d^{-1}\sum_i x_i^2+\epsilon}$。沿 hidden dimension 控制尺度，不保证输出均值为零。\\[0.45em]
+RoPE & $q_m=R_mq,\ k_n=R_nk$，$q_m^\top k_n=q^\top R_{n-m}k$。对 Q/K 旋转，使点积显式依赖相对位置。\\[0.45em]
+SwiGLU & $\operatorname{SwiGLU}(x)=\left(\operatorname{SiLU}(xW_g)\odot xW_u\right)W_d$。门控与内容在宽空间逐元素结合，再下投影。\\[0.45em]
+GQA 缓存比例 & $M_{\rm GQA}/M_{\rm MHA}=n_{kv}/H$。保持 query head 数 $H$，减少 KV head 数 $n_{kv}$，可按比例压缩 KV Cache。\\[0.45em]
+KV Cache & $M_{\rm KV}=2LBTn_{kv}d_hs$ bytes。$2$ 对应 K/V，$L,B,T,d_h,s$ 分别是层数、批量、长度、头维和每元素字节。\\[0.45em]
+温度采样 & $p_i(T)=\exp(z_i/T)/\sum_j\exp(z_j/T)$。$T<1$ 使分布更尖锐；$T\to0^+$ 时趋近 greedy。\\
+\bottomrule
+\end{tabularx}
+
+\chapter{高频公式速查 II}\label{sec:formula-cheatsheet-training}
+
+\begin{takeawaybox}
+\textbf{训练与后训练（Training \& Post-Training）：}公式要能指出“优化谁、基线是谁、归一化在哪里”。尤其不要混淆 PPO 的旧策略与参考策略，也不要把 GRPO 的无独立 value model 误解为没有基线。
+\end{takeawaybox}
+
+\renewcommand{\arraystretch}{1.16}
+\noindent\begin{tabularx}{\textwidth}{p{0.22\textwidth}Y}
+\toprule
+主题 & 公式与面试解释\\
+\midrule
+自回归似然 & $p_\theta(x_{1:T})=\prod_{t=1}^{T}p_\theta(x_t\mid x_{<t})$。链式法则把序列学习变为每个位置的下一词元预测。\\[0.4em]
+交叉熵 & $\mathcal L=-\sum_t\log p_\theta(x_t\mid x_{<t})$，且 $\partial\ell/\partial z_i=p_i-\mathbf 1[i=y]$。错误类别概率越高，梯度修正越大。\\[0.4em]
+困惑度 & $\operatorname{PPL}=\exp(\mathcal L_{\rm token})$。它是平均负对数似然的指数；不同 tokenizer 的 token-level PPL 不宜直接比较。\\[0.4em]
+AdamW & $\theta_{t+1}=\theta_t-\eta_t\hat m_t/(\sqrt{\hat v_t}+\epsilon)-\eta_t\lambda\theta_t$。权重衰减与自适应梯度更新解耦。\\[0.4em]
+LoRA & $W'=W+\Delta W,\ \Delta W=(\alpha/r)BA$。若 $W\in\mathbb R^{d_o\times d_i}$，可训练参数为 $r(d_i+d_o)$。\\[0.4em]
+PPO ratio & $r_t(\theta)=\pi_\theta(a_t\mid s_t)/\pi_{\rm old}(a_t\mid s_t)$。它比较新旧策略对已采样动作的概率，不是 reward。\\[0.4em]
+PPO 裁剪目标 & $\mathbb E[\min(r_t\hat A_t,\operatorname{clip}(r_t,1-\epsilon,1+\epsilon)\hat A_t)]$。clip 限制代理目标从过大策略变化中获益。\\[0.4em]
+DPO & $-\log\sigma\!\left(\beta[\log\frac{\pi_\theta(y_w|x)}{\pi_{\rm ref}(y_w|x)}-\log\frac{\pi_\theta(y_l|x)}{\pi_{\rm ref}(y_l|x)}]\right)$。学习偏好差，同时用参考策略锚定变化。\\[0.4em]
+GRPO & $\hat A_i=(r_i-\bar r)/(\operatorname{std}(r)+\epsilon)$。同一 prompt 的组内奖励统计形成相对基线，不需单独训练 value model。\\[0.4em]
+MoE & $y=\sum_{i\in\TopK(g(x))}p_i(x)E_i(x)$。总参数可很大，但每个 token 只激活少数专家。\\[0.4em]
+pass@$k$ & $1-\binom{n-c}{k}/\binom{n}{k}$。从 $n$ 个样本中选 $k$ 个时，至少一个通过测试的无偏估计形式。\\
+\bottomrule
+\end{tabularx}
+
+\chapter{Interview Last-Day Checklist}
+
+\begin{multicols}{2}
+\begin{itemize}[label=$\square$]
+  \item 能手推 attention 的完整 tensor shape
+  \item 能解释为什么除以 $\sqrt{d_k}$
+  \item 能解释 Q/K/V 为什么独立投影
+  \item 能解释 residual stream 固定宽度
+  \item 能解释 FFN 为什么升维再降维
+  \item 能证明无激活的两层 linear 仍是 linear
+  \item 能准确解释跨 token 通信与逐位置非线性变换
+  \item 能解释 RoPE 为什么作用于 Q/K
+  \item 能计算 MHA/GQA 的 KV Cache
+  \item 能区分 prefill 与 decode 的瓶颈
+  \item 能解释 FlashAttention 的 IO 优化
+  \item 能解释 KV Cache 不缓存 Q
+  \item 能推导 temperature 的极限行为
+  \item 能区分量化、LoRA 与 QLoRA
+  \item 能估算训练 model-state memory
+  \item 能解释 compute-optimal 的参数/数据权衡
+  \item 能区分 thinking 与 direct mode
+  \item 能解释 test-time scaling 的上限
+  \item 能解释 RLVR 的 verifier 风险
+  \item 能区分 PPO 的旧策略与参考策略
+  \item 能区分 PPO、DPO 与 GRPO
+  \item 能解释 MoE 为什么替换 FFN
+  \item 能说明 MoE 的 All-to-All 瓶颈
+  \item 能逐项说明 DDP/TP/PP/FSDP 切什么
+  \item 能解释 PPL 与任务体验的差异
+  \item 能拆解 RAG 的召回与重排指标
+  \item 能说明 Agent 的权限与幂等边界
+\end{itemize}
+\end{multicols}
+
+\section{不同岗位怎么刷这本书？}
+
+\begin{center}
+\small
+\begin{tabularx}{0.96\textwidth}{lY}
+\toprule
+目标岗位 & 优先路径\\
+\midrule
+基础模型 / Pretraining & Transformer $\rightarrow$ 预训练 $\rightarrow$ 现代架构 $\rightarrow$ 分布式训练 $\rightarrow$ 评测\\
+Post-Training / Alignment & SFT $\rightarrow$ Reward Model $\rightarrow$ PPO $\rightarrow$ DPO $\rightarrow$ GRPO $\rightarrow$ Reasoning / RLVR\\
+推理优化 & Attention $\rightarrow$ GQA/MLA $\rightarrow$ KV Cache $\rightarrow$ FlashAttention $\rightarrow$ 量化 $\rightarrow$ 连续批处理 $\rightarrow$ 推测式解码\\
+LLM 应用 / Agent & Transformer 基础 $\rightarrow$ 推理基础 $\rightarrow$ RAG $\rightarrow$ Agent $\rightarrow$ 评测\\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+\begin{takeawaybox}
+刷题时先遮住“短答”，用 20 秒给出结论；再补公式、形状或系统瓶颈；最后沿正文中的“面试官继续追问”自测。页码由 LaTeX 自动引用详细章节，不需要手工维护。
+\end{takeawaybox}
+
+\chapter{面试问答索引：210 题}\label{sec:question-index}
+
+\section{Tokenization（8 题）}
+\quickq{Tokenizer 解决的根本问题是什么？}{把字符串映射为有限词表中的离散编号，同时权衡序列长度、词表规模和鲁棒性。}{sec:tokenization}
+\quickq{BPE 为什么从字符或字节开始反复合并？}{它用频繁共现压缩常见片段，同时保留拆解稀有词的退路。}{sec:tokenization}
+\quickq{Byte-level BPE 为什么几乎没有 OOV？}{任意文本最终都能退化为有限的字节序列。}{sec:tokenization}
+\quickq{词表越大一定越好吗？}{不一定；序列可能变短，但 embedding/LM head 参数、softmax 成本和长尾词元都会增加。}{sec:tokenization}
+\quickq{字符级 tokenizer 的主要系统代价是什么？}{词表小但序列更长，会放大 attention、KV Cache 和生成步数。}{sec:tokenization}
+\quickq{同一句话为什么在不同模型里 token 数不同？}{分词算法、训练语料、预分词规则和特殊词元定义不同。}{sec:tokenization}
+\quickq{中文为什么不能简单按“一个字一个 token”理解？}{真实 tokenizer 可能组合多字词、字节与标点，边界由词表学习和规则共同决定。}{sec:tokenization}
+\quickq{Tokenizer 怎样影响推理成本？}{它改变输入长度和输出步数，进而影响 prefill FLOPs、KV Cache 与 decode latency。}{sec:tokenization}
+
+\section{Transformer Fundamentals（27 题）}
+\quickq{Token embedding 的矩阵 shape 是什么？}{$E\in\mathbb R^{V\times d_{\rm model}}$，每个 token id 选择其中一行。}{sec:embedding-lmhead}
+\quickq{为什么 hidden state 不是概率？}{它是任意实数特征向量，须经 LM head 和 softmax 才成为词表分布。}{sec:embedding-lmhead}
+\quickq{LM head 为什么投影到 vocabulary size？}{下一词元是 $V$ 类分类问题，每个词元都需要一个 logit。}{sec:embedding-lmhead}
+\quickq{Embedding 与 LM head 为什么可以 weight tying？}{输入和输出共享同一词元语义坐标，可省去一份 $Vd_{\rm model}$ 参数。}{sec:embedding-lmhead}
+\quickq{Softmax 为什么沿 vocabulary dimension 做？}{每个位置要在全部候选词元之间形成归一化分布。}{sec:embedding-lmhead}
+\quickq{Temperature 为什么作用于 logits 更自然？}{缩放 logits 等价于统一调节相对 log-odds，再由 softmax 正确归一化。}{sec:embedding-lmhead}
+\quickq{为什么 Q、K、V 使用不同投影矩阵？}{它们分别学习查询条件、匹配索引和被聚合内容，独立投影允许职责分化。}{sec:attention}
+\quickq{若直接令 $Q=K=V=X$ 会损失什么？}{匹配空间与内容空间被强制绑定，表达能力受限。}{sec:attention}
+\quickq{为什么 Q/K 匹配而 V 传递内容？}{$QK^\top$ 只产生权重，真正被权重加权求和的是 $V$。}{sec:attention}
+\quickq{Attention 为什么除以 $\sqrt{d_k}$？}{点积方差随 $d_k$ 增长；缩放防止 softmax 过早饱和和梯度变小。}{sec:attention}
+\quickq{Softmax 在 attention 的哪个维度归一化？}{对每个 query，沿可见 key 的序列维归一化。}{sec:attention}
+\quickq{因果遮罩屏蔽哪一侧？}{位置 $t$ 屏蔽未来 key，即通常屏蔽注意力矩阵上三角。}{sec:attention}
+\quickq{$d_k$ 必须等于 $d_v$ 吗？}{数学上不必；前者决定匹配维度，后者决定每头输出宽度。}{sec:attention}
+\quickq{多头 attention 为什么不是重复计算？}{不同头有独立投影，可学习不同关系子空间与注意模式。}{sec:attention}
+\quickq{固定 $d_{\rm model}$ 时增加 head 数会怎样？}{每头维度通常变小，粒度增加但单头容量和硬件效率可能下降。}{sec:attention}
+\quickq{为什么 concat 后还需要 $W_O$？}{它混合各头信息并映射回 residual stream 的固定宽度。}{sec:attention}
+\quickq{Residual stream 是什么？}{贯穿各层的固定宽度状态，子层只向其写入增量。}{sec:residual}
+\quickq{为什么 residual stream 通常保持 $d_{\rm model}$？}{固定接口使任意深度的残差相加和层堆叠都无需反复改维。}{sec:residual}
+\quickq{残差连接的作用只是防梯度消失吗？}{不是；它还提供 identity 信息路径并让子层学习增量修正。}{sec:residual}
+\quickq{Pre-Norm 为什么更接近 identity path？}{归一化位于分支内，残差主路径可不经过归一化直接跨层传播。}{sec:residual}
+\quickq{子层输出维度与 residual 不同怎么办？}{必须投影到同维，或对 shortcut 做匹配投影后才能相加。}{sec:residual}
+\quickq{Attention 与 FFN 的职责有何不同？}{Attention 的独特作用是跨 token 通信，但其 Q/K/V/O 投影也会混合特征；FFN 不跨 token，而是逐位置执行更强的非线性特征变换。}{sec:ffn}
+\quickq{FFN 为什么先升维再降维？}{在更宽中间基上做非线性变换，再回到固定 residual 宽度控制全网成本。}{sec:ffn}
+\quickq{为什么不只做 $d_{\rm model}\to d_{\rm model}$？}{可以但中间非线性特征基更窄，通常限制逐 token 变换容量。}{sec:ffn}
+\quickq{若 FFN 没有激活函数会怎样？}{两层线性可合并为一个矩阵，仍然只是线性变换。}{sec:ffn}
+\quickq{$d_{\rm ff}$ 越大一定越好吗？}{不一定；容量增加同时抬高参数、FLOPs、激活和带宽成本。}{sec:ffn}
+\quickq{为什么 MoE 通常替换 FFN 而不是 attention？}{FFN 天然逐 token 独立，易稀疏路由；attention 承担跨 token 通信，稀疏化更改交互结构。}{sec:ffn}
+
+\section{Pretraining + Scaling Laws（25 题）}
+\quickq{自回归似然如何分解？}{$p(x_{1:T})=\prod_t p(x_t\mid x_{<t})$。}{sec:pretraining}
+\quickq{为什么预测下一个词元能产生监督？}{序列右移一位即可得到每个位置的真实标签，无需人工标注。}{sec:pretraining}
+\quickq{为什么下一词元目标可能学到通用能力？}{降低条件熵需要建模语法、事实、语义和数据中的推理结构。}{sec:pretraining}
+\quickq{Logits 与 labels 怎样错位对齐？}{位置 $0\ldots T-2$ 的 logits 预测位置 $1\ldots T-1$ 的 token。}{sec:pretraining}
+\quickq{交叉熵与 KL 散度是什么关系？}{数据熵固定时，最小化交叉熵等价于最小化 $D_{KL}(p_{data}\Vert p_\theta)$。}{sec:pretraining}
+\quickq{教师强制为什么能并行？}{真实序列一次输入，因果遮罩让每个位置只读取其真实前缀。}{sec:pretraining}
+\quickq{暴露偏差来自哪里？}{训练读取真实前缀，推理读取模型自身生成前缀，两种状态分布不同。}{sec:pretraining}
+\quickq{Padding token 为什么要 mask loss？}{补齐不是学习目标，否则模型会把批处理格式当作数据。}{sec:pretraining}
+\quickq{Sequence packing 解决什么问题？}{把短样本装入固定长度块，减少 padding 的无效计算。}{sec:optimization}
+\quickq{Packing 最容易引入什么错误？}{未隔离样本边界会造成跨样本 attention 和标签泄漏。}{sec:optimization}
+\quickq{数据去重为什么重要？}{减少重复记忆、算力浪费和 benchmark contamination。}{sec:optimization}
+\quickq{AdamW 与 Adam 加 L2 的关键区别是什么？}{AdamW 将参数衰减从自适应梯度预条件中解耦。}{sec:optimization}
+\quickq{Warmup 解决什么问题？}{训练初期统计量与表示不稳定时，限制过大的更新步长。}{sec:optimization}
+\quickq{梯度累积降低哪些显存？}{主要降低单个微批次的激活峰值，不减少参数与优化器状态。}{sec:optimization}
+\quickq{梯度裁剪与 warmup 能互相替代吗？}{不能；前者限制当前异常梯度，后者调节训练初期学习率日程。}{sec:optimization}
+\quickq{什么是 Scaling Law？}{从受控实验中拟合的经验关系，用来描述损失如何随参数量、训练 token 和计算量变化。}{sec:scaling-laws}
+\quickq{Scaling Law 是经验规律还是数学定理？}{是依赖训练条件的经验规律；特定系数和指数不能当作普适定理。}{sec:scaling-laws}
+\quickq{为什么参数量越大不一定越好？}{参数会挤占固定预算下可训练的 token 数；模型过大但数据不足可能欠训练，部署成本也更高。}{sec:scaling-laws}
+\quickq{什么叫 under-trained model？}{模型容量相对训练信号过大，许多参数尚未被足量数据和优化步骤有效塑造。}{sec:scaling-laws}
+\quickq{什么叫 compute-optimal training？}{在给定计算预算下协调模型规模与训练 token，使预算带来的质量收益尽可能大。}{sec:scaling-laws}
+\quickq{固定 FLOPs 时为什么要平衡模型大小和训练 token 数？}{粗略地 $C\propto ND$；增大参数会压缩可训练数据量，反之亦然。}{sec:scaling-laws}
+\quickq{模型很大但训练 token 太少会怎样？}{可能欠训练；同等计算下，更小但训练更充分的模型可能达到更低损失。}{sec:scaling-laws}
+\quickq{数据很多但模型太小会怎样？}{容量可能成为瓶颈，新增 token 的边际收益下降，计算未必被高效利用。}{sec:scaling-laws}
+\quickq{Scaling Law 对训练预算规划有什么价值？}{可用小规模试验拟合趋势，比较等计算量方案并估计扩展收益与风险。}{sec:scaling-laws}
+\quickq{为什么不能机械套用固定参数/token 比例？}{最优点依赖架构、数据质量、训练流程、计算范围和部署目标，论文比例只适用于其研究条件。}{sec:scaling-laws}
+
+\section{Modern Architecture（20 题）}
+\quickq{LayerNorm 为什么要减均值？}{它提供平移与缩放归一化，使特征中心和尺度受控。}{sec:normalization}
+\quickq{RMSNorm 为什么可以不减均值？}{它只追求重缩放不变性，经验上可省去重定中心步骤。}{sec:normalization}
+\quickq{RMSNorm 保证输出均值为零吗？}{不保证；它只控制均方根。}{sec:normalization}
+\quickq{Transformer 的 norm 沿哪个维度做？}{通常对每个 token 的 hidden dimension 独立归一化。}{sec:normalization}
+\quickq{为什么 Transformer 不主要用 BatchNorm？}{序列长度、batch 统计和自回归场景变化大，跨样本统计会引入不稳定依赖。}{sec:normalization}
+\quickq{RMSNorm 的 $\epsilon$ 是正则化吗？}{不是；它主要防止分母过小导致数值不稳定。}{sec:normalization}
+\quickq{SwiGLU 为什么有 gate 与 up 两条投影？}{一条产生数据相关门控，另一条提供被调制的内容特征。}{sec:ffn}
+\quickq{SwiGLU 的 gate 为什么不是简单 sigmoid？}{SiLU 同时提供平滑非线性和非严格 $[0,1]$ 的幅度调制。}{sec:ffn}
+\quickq{SwiGLU 为什么常重新调整 hidden size？}{它有三块大矩阵，为与普通 FFN 参数预算接近需缩小中间宽度。}{sec:ffn}
+\quickq{FFN 中真正的非线性在哪里？}{在激活函数以及 SwiGLU 的逐元素门控乘法。}{sec:ffn}
+\quickq{为什么绝对位置 embedding 不总是够用？}{attention 更关心 token 间相对距离，且固定表在训练长度外缺少自然定义。}{sec:rope}
+\quickq{RoPE 为什么作用于 Q/K 而不是 V？}{位置信息需要改变匹配分数；V 负责传递被选中的内容。}{sec:rope}
+\quickq{RoPE 怎样在点积中产生相对位置？}{相同旋转族满足 $R_m^TR_n=R_{n-m}$。}{sec:rope}
+\quickq{RoPE 会增加参数量或改变 shape 吗？}{不会；它是无参数、保持维度的二维旋转。}{sec:rope}
+\quickq{RoPE 为什么成对处理 head dimension？}{每两个坐标构成一个二维平面，才能应用旋转矩阵。}{sec:rope}
+\quickq{RoPE 长上下文外推为何会退化？}{测试位置产生训练中未覆盖的旋转相位和距离分布。}{sec:rope}
+\quickq{Position interpolation 的基本思想是什么？}{把更长位置压缩回训练时熟悉的坐标范围，但牺牲位置分辨率。}{sec:rope}
+\quickq{MHA、MQA、GQA 的 KV head 数怎样变化？}{MHA 每个 Q head 一组 KV，MQA 仅一组，GQA 介于二者之间。}{sec:gqa}
+\quickq{$H=32,n_{kv}=8$ 时每个 KV head 服务几个 Q head？}{$32/8=4$ 个，理想 KV Cache 为 MHA 的四分之一。}{sec:gqa}
+\quickq{MLA 与 GQA 压缩 KV 的思路有何不同？}{GQA 减少 KV head 数；MLA 缓存更低维的潜在表示。}{sec:mla}
+
+\section{Inference / KV / Flash（27 题）}
+\quickq{Prefill 是什么？}{提示词预填充：一次并行处理完整输入并建立每层 KV Cache。}{sec:kvcache}
+\quickq{Decode 是什么？}{逐词元解码：每一步基于历史 cache 生成一个新 token。}{sec:kvcache}
+\quickq{KV Cache 缓存什么？}{每层历史 token 的 K 与 V 投影结果。}{sec:kvcache}
+\quickq{为什么通常不缓存 Q？}{旧 query 在其生成步使用后不会再参与未来 token 的注意力计算。}{sec:kvcache}
+\quickq{不用 KV Cache 的重复计算在哪里？}{每个新步骤都会重新投影并处理全部历史 token 的 K/V。}{sec:kvcache}
+\quickq{KV Cache 显存为什么随上下文线性增长？}{每新增 token 都需在每层追加一份 K 与一份 V。}{sec:kvcache}
+\quickq{KV Cache 的通用显存公式是什么？}{$2LBTn_{kv}d_hs$ bytes。}{sec:kvcache}
+\quickq{KV Cache 会让 attention 变成 $O(1)$ 吗？}{不会；历史 K/V 无需重算，但新 query 仍需扫描不断增长的历史。}{sec:kvcache}
+\quickq{GQA 省的是 FLOPs、显存还是带宽？}{主要省 KV 参数/缓存与 decode 读取带宽；prefill 主体 FLOPs 不按同倍数下降。}{sec:gqa}
+\quickq{为什么 decode 比 prefill 更容易受 KV bandwidth 限制？}{单步矩阵较小、复用低，却反复读取长历史 cache，算术强度较低。}{sec:gqa}
+\quickq{为什么所有模型不直接使用 MQA？}{最大共享可能损失 KV 表达多样性和模型质量。}{sec:gqa}
+\quickq{Prefix caching 与普通 KV Cache 有何区别？}{前者在请求之间复用相同前缀，后者主要在单次请求的解码步之间复用。}{sec:kvcache}
+\quickq{KV Cache quantization 的收益与风险是什么？}{降低容量和读取带宽，但量化误差会持续影响后续全部解码步。}{sec:pagedattention}
+\quickq{PagedAttention 主要解决计算还是内存管理？}{主要解决 KV Cache 的分页分配、碎片和请求动态增长。}{sec:pagedattention}
+\quickq{Continuous batching 解决什么？}{请求到达和结束时动态重组批次，减少设备空闲。}{sec:pagedattention}
+\quickq{FlashAttention 会改变 attention 数学结果吗？}{在相同精度和实现约定下是精确分块计算，不是近似 attention。}{sec:flash}
+\quickq{FlashAttention 主要减少 FLOPs 吗？}{主要减少 HBM 与片上存储之间的数据移动和中间矩阵物化。}{sec:flash}
+\quickq{为什么不能保存完整 $T\times T$ attention matrix？}{长序列下其二次显存与读写成本很高。}{sec:flash}
+\quickq{Online softmax 为什么允许分块 attention？}{维护逐行最大值、归一化和与加权和即可精确合并各块。}{sec:flash}
+\quickq{FlashAttention 与 KV Cache 解决同一问题吗？}{前者优化一次 attention 内部 IO，后者避免跨解码步重算历史 K/V。}{sec:flash}
+\quickq{量化中的 scale 和 zero point 分别做什么？}{scale 映射实数步长，zero point 表示实数零在整数域的位置。}{sec:quantization}
+\quickq{Per-channel 为什么常比 per-tensor 精确？}{不同通道可使用各自动态范围，减少被极端值共同拉伸。}{sec:quantization}
+\quickq{当 temperature $T\to0$ 时为何接近 greedy？}{最大 logit 的指数相对其他项占据全部概率质量。}{sec:sampling}
+\quickq{Top-$k$ 与 Top-$p$ 的根本区别是什么？}{前者固定候选数量，后者按累计概率动态决定集合大小。}{sec:sampling}
+\quickq{Beam search 为什么容易偏好短序列？}{序列对数概率是负项累加，未校正时长序列得分天然更低。}{sec:sampling}
+\quickq{推测式解码为什么能保持目标分布？}{目标模型并行验证草稿，并用接受/拒绝校正保证最终采样分布。}{sec:speculative}
+\quickq{Draft model 太弱或太大会怎样？}{太弱接受率低；太大自身成本高，二者都会吞噬加速收益。}{sec:speculative}
+
+\section{Reasoning / Thinking（23 题）}
+\quickq{什么是 reasoning model？}{在多步问题上被训练或配置为投入额外推理计算、搜索或验证的模型。}{sec:reasoning-models}
+\quickq{Thinking 与普通生成的本质区别是什么？}{前者在最终回答前分配更多中间计算预算；后者偏向直接低延迟输出。}{sec:reasoning-models}
+\quickq{Thinking 是否意味着参数发生改变？}{不一定；同一权重可由模式、预算、提示或解码策略产生不同推理行为。}{sec:reasoning-models}
+\quickq{同一模型为何可能有 thinking/non-thinking 两种行为？}{服务端可改变推理预算、控制 token、搜索和验证路径。}{sec:reasoning-models}
+\quickq{Chain-of-Thought 与 reasoning capability 是一回事吗？}{不是；CoT 是提示或可见表达形式，能力还取决于模型与验证过程。}{sec:reasoning-models}
+\quickq{Hidden reasoning 与可见 reasoning trace 有何区别？}{内部计算不必原样暴露；可见解释通常是面向用户的受控输出。}{sec:reasoning-models}
+\quickq{Reasoning 能力可能来自哪些阶段？}{预训练、SFT、RL、蒸馏与 inference-time search 都可能贡献。}{sec:reasoning-models}
+\quickq{为什么 reasoning 越长不一定越正确？}{错误前提会被延长，冗余步骤增加偏航机会，且缺少可靠验证。}{sec:reasoning-models}
+\quickq{Reasoning token 增加意味着什么成本？}{更高 decode latency、算力、能耗和服务费用。}{sec:reasoning-models}
+\quickq{为什么数学和代码更受益于 reasoning？}{任务可分解且常有可检查中间约束或最终验证器。}{sec:reasoning-models}
+\quickq{什么叫 test-time scaling？}{不改参数，在推理时增加轨迹长度、候选、搜索或验证预算。}{sec:test-time-scaling}
+\quickq{Test-time compute 与 training-time compute 有何区别？}{前者为具体请求临时付费，后者把能力固化进权重供多次复用。}{sec:test-time-scaling}
+\quickq{增加采样次数为什么可能提高正确率？}{多个候选提高覆盖到正确解的概率，但需要可靠选择器。}{sec:test-time-scaling}
+\quickq{Self-consistency 为什么可能有效？}{不同推理路径若汇聚到同一答案，可用一致性抵消部分偶发错误。}{sec:test-time-scaling}
+\quickq{Best-of-N 的前提是什么？}{候选需有足够多样性，且 verifier 排序与真实质量相关。}{sec:test-time-scaling}
+\quickq{Verifier 不可靠会发生什么？}{系统可能稳定选中表面高分但错误或投机的候选。}{sec:test-time-scaling}
+\quickq{什么是 RLVR？}{使用可自动验证的结果奖励优化策略，常见于数学、代码和形式化任务。}{sec:rlvr}
+\quickq{为什么数学题适合 RLVR？}{答案常能由规则或证明检查器给出低歧义反馈。}{sec:rlvr}
+\quickq{Outcome reward 的主要问题是什么？}{只看终点，难以给长轨迹中的中间决策分配信用。}{sec:rlvr}
+\quickq{Process reward 的优势与风险是什么？}{反馈更密集，但标注昂贵且错误过程标准可能限制有效新路径。}{sec:rlvr}
+\quickq{Sparse reward 为什么让 RL 困难？}{大多数 rollout 同分且无梯度方向，探索很难碰到成功样本。}{sec:rlvr}
+\quickq{多 rollout 为什么有助于 reasoning RL？}{增加探索覆盖，并为组内相对基线或候选选择提供样本。}{sec:rlvr}
+\quickq{Reasoning distillation 的额外风险是什么？}{教师的冗长、捷径和错误轨迹会被学生一并模仿。}{sec:reasoning-distillation}
+
+\section{Post-Training / PEFT / Distillation（32 题）}
+\quickq{SFT 为什么可 mask prompt loss 但 prompt 仍参与 attention？}{loss mask 只取消标签监督；prompt 仍是生成回答所需条件。}{sec:sft}
+\quickq{若把 prompt token 从输入删除会怎样？}{回答失去任务条件，模型无法知道应回答什么。}{sec:sft}
+\quickq{Assistant-only loss 与 full-sequence loss 有何区别？}{前者只监督回答，后者还拟合用户提示和模板 token。}{sec:sft}
+\quickq{SFT 能否学到 demonstration 中没有的能力？}{可组合和迁移预训练能力，但不能假设凭少量示例创造任意新知识。}{sec:sft}
+\quickq{Reward model 为什么输出 scalar？}{策略优化需要把整段回答映射为可比较的单一偏好信号。}{sec:reward-model}
+\quickq{Reward 的绝对值重要吗？}{排序训练主要依赖差值；尺度却会影响策略更新强度与稳定性。}{sec:reward-model}
+\quickq{Pairwise ranking 为什么常比直接打分稳定？}{人更容易判断两者谁好，减少个人评分尺度不一致。}{sec:reward-model}
+\quickq{Bradley--Terry 模型假设什么？}{偏好概率由两个候选潜在标量分数之差的 logistic 函数决定。}{sec:reward-model}
+\quickq{Reward hacking 是什么？}{策略利用代理奖励漏洞获得高分，却没有提高真实目标质量。}{sec:reward-model}
+\quickq{PPO 中 reward、return 与 value 分别是什么？}{reward 是即时反馈，return 是累计回报，value 是状态期望回报估计。}{sec:ppo}
+\quickq{Q value 与 advantage 分别是什么？}{$Q(s,a)$ 评估动作后回报，$A=Q-V$ 衡量相对基线好多少。}{sec:ppo}
+\quickq{PPO probability ratio 是 reward 吗？}{不是；它是新旧策略对已采样动作的概率比。}{sec:ppo}
+\quickq{PPO 为什么需要 old policy？}{它定义采样分布与更新前基线，使 importance ratio 和 clip 可计算。}{sec:ppo}
+\quickq{PPO clipping 限制的是什么？}{限制概率比继续推动代理目标的收益，不是直接裁剪模型参数。}{sec:ppo}
+\quickq{PPO clipping 等于严格 KL constraint 吗？}{不等于；它是逐样本代理目标截断，不能保证全局 KL 上界。}{sec:ppo}
+\quickq{Old policy 与 reference policy 是同一个模型吗？}{不是；old 是近期行为策略快照，reference 通常是固定锚点以限制分布漂移。}{sec:ppo}
+\quickq{DPO 为什么不需要显式 reward model？}{它把 KL 正则化偏好目标重参数化为 policy 与 reference 的对数概率差。}{sec:dpo}
+\quickq{DPO 为什么仍需要 reference policy？}{reference 提供相对锚点，决定偏好提升是相对哪个基础分布。}{sec:dpo}
+\quickq{DPO 的 $\beta$ 控制什么？}{控制相对 reference 偏移与偏好间隔的尺度。}{sec:dpo}
+\quickq{DPO 是不是 RL？}{它来源于 KL 正则 RL 目标，但训练常是固定偏好数据上的离线监督式优化。}{sec:dpo}
+\quickq{DPO 与普通 pairwise classification 的区别是什么？}{分类 logit 由 policy 相对 reference 的序列对数概率差构造。}{sec:dpo}
+\quickq{GRPO 为什么不训练独立 value model？}{它用同一 prompt 多个回答的组内奖励统计构造相对优势。}{sec:grpo}
+\quickq{GRPO 没有 critic 是否等于没有 baseline？}{不是；组均值或标准化奖励就是样本级 baseline。}{sec:grpo}
+\quickq{GRPO 中所有 group rewards 相同会怎样？}{相对优势接近零，该组几乎不提供区分学习信号。}{sec:grpo}
+\quickq{Reward std 很小时为什么不稳定？}{除以很小标准差会放大噪声，因此需要 $\epsilon$ 或其他稳健处理。}{sec:grpo}
+\quickq{Group size 增大有什么取舍？}{基线更稳定、探索更多，但 rollout 成本和延迟上升。}{sec:grpo}
+\quickq{LoRA 为什么假设更新可以低秩？}{许多任务适配所需变化集中在较低维子空间，这是经验假设而非普遍定理。}{sec:lora}
+\quickq{LoRA 的 $\alpha/r$ 做什么？}{控制低秩分支的有效更新尺度，便于不同 rank 下调节。}{sec:lora}
+\quickq{LoRA 为什么常让初始 $\Delta W=0$？}{训练从原模型函数出发，避免随机适配分支先破坏输出。}{sec:lora}
+\quickq{LoRA merge 是什么意思？}{部署前把 $(\alpha/r)BA$ 加回冻结权重，消除独立分支。}{sec:lora}
+\quickq{QLoRA 与普通 INT4 推理量化一样吗？}{不一样；QLoRA 通过量化冻结基座节省微调显存，只训练适配器。}{sec:qlora}
+\quickq{Soft-target distillation 比 hard label 多提供什么？}{提供类别间相似性和教师不确定性，而不只有唯一正确类别。}{sec:distillation}
+
+\section{MoE（11 题）}
+\quickq{MoE 为什么通常把 FFN 换成 experts？}{FFN 逐 token 独立，适合条件路由而不破坏 attention 的跨 token 交互。}{sec:moe}
+\quickq{为什么不直接把 attention heads 当 experts？}{head 是同一次跨 token 聚合的组成部分，路由会改变通信和注意结构。}{sec:moe}
+\quickq{Top-1 与 Top-2 routing 有何区别？}{Top-2 冗余和容量更强，但专家计算与通信更高。}{sec:moe}
+\quickq{MoE 为什么总参数大而每 token FLOPs 不同比增长？}{每个 token 只激活 Top-$k$ 个专家。}{sec:moe}
+\quickq{Activated parameters 与 total parameters 有何区别？}{前者是单 token 实际参与计算的子集，后者是全部专家容量。}{sec:moe}
+\quickq{Router collapse 为什么发生？}{早期微小偏好形成正反馈，使少数专家持续获得更多 token 和训练信号。}{sec:moe}
+\quickq{Load balancing loss 优化什么？}{鼓励 token 负载和路由概率更均匀地分布到专家。}{sec:moe}
+\quickq{Capacity factor 是什么？}{为每个专家预留容量相对平均负载的倍率。}{sec:moe}
+\quickq{Expert Parallel 为什么需要 All-to-All？}{token 必须发送到专家所在设备，再把输出送回原并行布局。}{sec:moe}
+\quickq{MoE FLOPs 不大为什么 latency 仍可能高？}{路由、All-to-All、小矩阵和负载不均会降低硬件利用率。}{sec:moe}
+\quickq{专家数越多一定越好吗？}{不一定；容量增加同时加剧路由、通信、存储和训练均衡难题。}{sec:moe}
+
+\section{Distributed Training（16 题）}
+\quickq{DDP 切了什么、没切什么？}{切数据批次；每卡仍保存完整参数、梯度和优化器状态。}{sec:distributed}
+\quickq{DDP 为什么每张 GPU 存完整参数？}{各卡需独立完成相同模型的前后向，只在梯度阶段同步。}{sec:distributed}
+\quickq{Gradient 为什么用 AllReduce 而不是 Gather？}{每卡都需要聚合后的完整梯度更新其本地参数副本。}{sec:distributed}
+\quickq{Tensor Parallel 切什么？}{切单层矩阵或 attention/FFN 的张量维度。}{sec:distributed}
+\quickq{Tensor Parallel 为什么每层常有通信？}{被切开的局部矩阵结果必须规约或拼接，才能进入下一算子。}{sec:distributed}
+\quickq{Pipeline Parallel 切什么？}{沿网络深度把不同层分配到不同设备。}{sec:distributed}
+\quickq{Pipeline bubble 怎样产生？}{流水线填充和排空阶段部分 stage 没有可处理的 micro-batch。}{sec:distributed}
+\quickq{Micro-batch 为什么能减小 bubble？}{更多流水片段提高不同 stage 同时忙碌的比例。}{sec:distributed}
+\quickq{Sequence Parallel 切什么？}{切序列维的激活或相关计算，以降低长序列激活内存。}{sec:distributed}
+\quickq{Expert Parallel 为什么与 MoE 强绑定？}{它把不同专家放到不同设备，并按路由交换 token。}{sec:distributed}
+\quickq{ZeRO-1 shard 什么？}{优化器状态。}{sec:distributed}
+\quickq{ZeRO-2 比 ZeRO-1 多 shard 什么？}{梯度。}{sec:distributed}
+\quickq{ZeRO-3 再多 shard 什么？}{模型参数。}{sec:distributed}
+\quickq{FSDP forward 前为什么可能 AllGather？}{计算某个模块前需临时重建其完整参数。}{sec:distributed}
+\quickq{7B BF16 为什么不只需 14 GB 就能训练？}{还要梯度、FP32 主权重、Adam 状态、激活与临时/通信缓冲。}{sec:training-memory}
+\quickq{Activation checkpointing 与 ZeRO 解决同一种显存吗？}{不是；前者压缩激活，后者分片模型状态。}{sec:training-memory}
+
+\section{Evaluation（9 题）}
+\quickq{Validation loss 下降为什么不代表一定更好用？}{它测词元似然，不直接测指令遵循、事实、安全和用户偏好。}{sec:evaluation}
+\quickq{不同 tokenizer 的模型能直接比较 PPL 吗？}{不宜；token 计量单位和序列切分不同。}{sec:evaluation}
+\quickq{Exact Match 的主要局限是什么？}{可能把语义等价的不同表述判错，也忽略部分正确。}{sec:evaluation}
+\quickq{pass@$k$ 衡量什么？}{从 $k$ 个候选中至少有一个通过测试的概率估计。}{sec:evaluation}
+\quickq{pass@1 与 pass@10 分别说明什么？}{前者看单次可靠性，后者还看多样采样覆盖能力。}{sec:evaluation}
+\quickq{LLM-as-a-judge 有哪些常见 bias？}{位置、长度、自偏好、风格和领域知识偏差。}{sec:evaluation}
+\quickq{Benchmark contamination 为什么危险？}{记忆泄漏会抬高分数，使评测不再代表泛化能力。}{sec:evaluation}
+\quickq{Reward model score 能直接当真实质量吗？}{不能；它是可能被利用且分布外失真的代理指标。}{sec:evaluation}
+\quickq{Post-training 后 PPL 变差一定是模型变差吗？}{不一定；可能是目标行为改变，也可能是遗忘，需用分层任务评测区分。}{sec:evaluation}
+
+\section{RAG + Agents（12 题）}
+\quickq{Chunk 太大和太小分别有什么问题？}{太大主题稀释且噪声多；太小破坏语义、表格和上下文边界。}{sec:rag}
+\quickq{Embedding retrieval 与 reranker 分别优化什么？}{前者低成本保召回，后者在小候选集提高精确率。}{sec:rag}
+\quickq{高 recall 后为什么还要 reranking？}{高召回候选含噪声，直接全部放入上下文会干扰生成并增加成本。}{sec:rag}
+\quickq{Metadata filtering 为什么重要？}{它在语义相似候选中强制权限、租户、语言和版本约束。}{sec:rag}
+\quickq{Hybrid search 是什么？}{融合向量语义检索与 BM25 等词法检索。}{sec:rag}
+\quickq{RAG 怎样处理文档版本冲突？}{记录版本和生效时间，先过滤再重排，并在答案中引用实际证据。}{sec:rag}
+\quickq{Lost in the Middle 是什么？}{模型对长上下文中部相关信息的利用可能显著弱于开头或结尾。}{sec:rag}
+\quickq{Agent 和 workflow 的区别是什么？}{Agent 动态选择下一动作；workflow 的主要步骤与分支由程序预定义。}{sec:agents}
+\quickq{Agent 为什么需要状态？}{保存跨步骤事实、工具结果、计划进度与恢复信息。}{sec:agents}
+\quickq{Tool call 为什么需要 schema？}{把自然语言意图约束成可解析、可验证的结构化参数。}{sec:agents}
+\quickq{什么是 idempotency？}{重复执行同一请求不会产生额外副作用，是安全重试的基础。}{sec:agents}
+\quickq{MCP 在 Agent 系统中做什么？}{标准化上下文、工具和资源接口，解耦模型应用与外部能力提供方。}{sec:agents}
+
+\label{question-total}

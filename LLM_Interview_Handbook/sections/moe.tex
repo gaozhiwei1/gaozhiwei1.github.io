@@ -1,0 +1,184 @@
+\part{混合专家模型}
+
+\chapter{稀疏专家模型}
+\label{sec:moe}
+
+\begin{motivationbox}{增加模型容量而不等比例增加每词元计算}
+稠密 Transformer 扩大前馈网络参数时，每个词元都必须经过全部新增参数，模型容量、训练浮点运算量和推理成本同步增长。混合专家模型（Mixture of Experts，MoE）引入条件计算：准备多组专家参数，但让路由器（router）为每个词元只选择少数专家。这样总参数量可以显著增加，而激活参数量主要由 Top-$k$ 决定。
+\end{motivationbox}
+
+稠密 Transformer 的前馈网络对每个词元都使用同一组参数。MoE 把前馈网络替换为 $N$ 个专家函数 $E_1,\ldots,E_N$，每个词元只激活概率最高的 $k$ 个专家。
+
+\figMoE
+
+对某个词元的隐藏状态 $x\in\mathbb R^d$，路由器先计算：
+\[
+p=\softmax(W_rx),
+\]
+其中 $W_r\in\mathbb R^{N\times d}$ 是可学习的路由矩阵，$p\in\mathbb R^N$ 是专家概率向量，$p_i$ 是选择第 $i$ 个专家的概率。Top-$k$ 输出为：
+\[
+y=\sum_{i\in\TopK(p)}p_iE_i(x).
+\]
+这里 $\TopK(p)$ 是概率最大的 $k$ 个专家下标集合，$E_i(x)$ 是专家 $i$ 的输出，$y$ 是按路由概率加权后的最终输出。由于每个词元只运行少数专家，MoE 可以增加总参数量而不让每词元浮点运算量等比例增加。
+
+Top-$k$ 以后通常会对选中的 $k$ 个概率重新归一化，使它们的和恢复为 $1$。需要区分“总参数”和“激活参数”：所有专家参数都占模型存储，但一次词元前向只读取被选专家，因此计算量主要随 $k$ 而不是专家总数 $N$ 增长。
+
+\begin{examplebox}{一个词元如何经过 Top-2 专家}
+假设路由器对四个专家给出的概率为
+\[
+p=[0.10,0.60,0.25,0.05].
+\]
+Top-2 选择 $E_2,E_3$。在入选集合内重新归一化后，权重为
+\[
+\tilde p_2=0.60/0.85\approx0.706,\qquad
+\tilde p_3=0.25/0.85\approx0.294.
+\]
+若两个专家输出 $E_2(x)=(2,0)$、$E_3(x)=(0,4)$，最终结果为
+\[
+y=0.706(2,0)+0.294(0,4)\approx(1.412,1.176).
+\]
+$E_1$ 和 $E_4$ 本次不执行，因此不产生这个词元的主要前馈网络计算。
+\end{examplebox}
+
+\section{为什么专家通常替换 FFN？}
+
+FFN 对每个词元独立执行，且通常占单层的大部分参数与相当比例的 FLOPs，因此天然适合“先按词元路由，再按专家分桶计算”。attention 的独特作用则是跨词元通信：一个查询的输出依赖多个位置。虽然 Q/K/V/O 投影也会变换特征通道，但若直接把注意力头当作互斥专家，仍会改变哪些词元可以互相通信，并引入更复杂的路由与跨设备依赖。
+
+Top-1 路由每个词元只执行一个专家，激活计算和通信较低，但路由错误没有第二专家补偿，训练更依赖负载均衡；Top-2 执行两个专家并加权，通常表达更稳健，但计算、通信与容量需求更高。两者没有脱离硬件与质量目标的绝对优劣。
+
+\begin{interviewbox}{为什么 MoE 通常替换 FFN，而不是 attention？}
+\textbf{20 秒回答：}FFN 是逐词元独立的大参数模块，路由后可以把词元分发给不同专家而不改变其可见上下文；attention 承担跨词元通信，稀疏路由会同时改变信息连接和通信。替换 FFN 更容易获得“总参数变大、每词元只激活少量参数”的条件计算收益。
+
+\textbf{深入解释：}MoE 增大的是总容量，不是每个词元的激活容量。所有专家都占存储，但每个词元只运行 Top-$k$ 个。attention 的线性投影当然也会混合特征，但 attention 头首先共同实现跨位置的信息交换，并不是按输入条件选择的独立大网络；直接把头当专家也无法获得同样的 FFN 参数扩展比例。
+
+\textbf{面试官继续追问：}
+\begin{enumerate}
+  \item Top-1 与 Top-2 routing 有什么权衡？
+  \item 总参数和激活参数有什么区别？
+  \item 路由器的离散 Top-$k$ 如何训练？
+  \item 为什么 MoE FLOPs 不高但延迟可能很高？
+\end{enumerate}
+\end{interviewbox}
+
+\codesection{对应实现：朴素 Top-k MoE}
+
+下面的实现用显式循环展示路由语义，便于理解，但不适合高性能训练。真实系统会按专家对词元排序和分桶，再用分组矩阵乘法（grouped GEMM）或专家并行的全交换通信批量计算。
+
+\begin{lstlisting}
+import torch
+import torch.nn as nn
+
+class NaiveTopKMoE(nn.Module):
+    def __init__(self, dim, experts, top_k=2):
+        super().__init__()
+        if not 1 <= top_k <= len(experts):
+            raise ValueError("top_k must be within expert count")
+
+        self.experts = nn.ModuleList(experts)
+        self.top_k = top_k
+
+        # Router 为每个 token 产生 num_experts 个打分。
+        self.router = nn.Linear(dim, len(experts), bias=False)
+
+    def forward(self, x):
+        # x: [B, T, C]
+        batch, seq_len, dim = x.shape
+        tokens = x.reshape(batch * seq_len, dim)  # [N_token, C]
+
+        router_logits = self.router(tokens)
+        router_probs = torch.softmax(router_logits, dim=-1)
+        # router_probs: [N_token, num_experts]
+
+        # 每个 token 只保留概率最大的 top_k 个专家。
+        top_prob, top_idx = router_probs.topk(self.top_k, dim=-1)
+
+        # 只在入选专家之间重新归一化门控权重。
+        top_prob = top_prob / top_prob.sum(dim=-1, keepdim=True)
+
+        output = torch.zeros_like(tokens)
+        for expert_id, expert in enumerate(self.experts):
+            for slot in range(self.top_k):
+                # 找出在当前 slot 选择了该专家的 token。
+                token_mask = top_idx[:, slot] == expert_id
+                if not token_mask.any():
+                    continue
+
+                expert_out = expert(tokens[token_mask])
+                weight = top_prob[token_mask, slot, None]
+
+                # 同一 token 的多个专家结果按路由概率加权相加。
+                output[token_mask] += weight * expert_out
+
+        return output.view(batch, seq_len, dim), router_probs
+\end{lstlisting}
+
+\texttt{topk} 返回的专家下标是离散选择，不能像普通连续函数那样对“下标变化”求导；路由器主要通过入选专家的门控权重和额外的负载均衡损失学习。若长期只有少数专家入选，未选专家几乎收不到主任务梯度，这就是专家坍缩（expert collapse）难以自行恢复的原因。
+
+\section{容量与负载均衡}
+
+\begin{motivationbox}{条件路由会自然产生热点专家}
+路由器若只追求主任务损失，可能发现少数专家在早期略占优势，随后把更多词元送给它们，使这些专家获得更多训练并进一步垄断流量。设备容量有限，热点专家既会溢出，也会让其他设备空闲。专家容量（expert capacity）和负载均衡损失就是为打破这种正反馈而提出的。
+\end{motivationbox}
+
+专家容量限制每个专家在一个批次中最多处理多少词元。容量太小会丢弃词元或转给备选专家，容量太大则会因负载不均让慢专家拖住整体。
+
+若一个批次共有 $N_{\rm tok}$ 个词元、$N$ 个专家且每个词元路由到 $k$ 个专家，平均每个专家接收 $kN_{\rm tok}/N$ 个词元。引入容量因子（capacity factor）$c\ge1$ 后，常设
+\[
+C=\left\lceil c\frac{kN_{\rm tok}}{N}\right\rceil.
+\]
+其中 $C$ 是每个专家允许处理的最大词元数，$\lceil\cdot\rceil$ 表示向上取整。$c$ 越大，溢出概率越低，但预留缓冲与无效填充越多；$c$ 太小则高负载专家超过 $C$ 后必须丢弃或改路由。
+
+\begin{examplebox}{容量因子如何决定专家上限}
+一个批次有 $N_{\rm tok}=1000$ 个词元、$N=4$ 个专家，每个词元选择 $k=2$ 个专家。平均每个专家会收到 $2\times1000/4=500$ 次路由。若容量因子 $c=1.25$，则每个专家最多接收
+\[
+C=\lceil1.25\times500\rceil=625
+\]
+个词元。若热点专家实际收到 $800$ 个，就有 $175$ 个超出容量，需要丢弃、转给备选专家或延后处理；与此同时其他专家可能仍未满载。这就是负载不均会同时伤害质量和吞吐的具体方式。
+\end{examplebox}
+
+负载均衡的直觉是希望路由器分配概率和实际词元计数都接近均匀。设 $f_i$ 为分到专家 $i$ 的词元比例，$P_i$ 为所有词元对专家 $i$ 的平均路由概率，可加入辅助损失：
+\[
+\mathcal L_{\rm aux}=N\sum_{i=1}^{N} f_iP_i.
+\]
+其中 $N$ 是专家总数。当少数专家吸走大部分词元时，该项会变大，从而惩罚专家坍缩。
+
+\section{并行与工程影响}
+
+\begin{motivationbox}{专家总参数放不下一张卡}
+MoE 虽然每个词元只激活少数专家，但所有专家参数仍要存储。专家数量增大后，单卡无法容纳完整专家集合，于是需要把不同专家放到不同设备。代价是词元必须跨设备送往被选专家，计算结束后再把结果送回原序列位置。
+\end{motivationbox}
+
+专家并行（expert parallelism）把不同专家放到不同设备。通信通常包含词元分发（dispatch）与结果合并（combine），并形成全交换（All-to-All）模式。MoE 的瓶颈不只是浮点运算量，还包括网络通信、负载不均和小批次下专家利用率；因此“激活计算量较低”并不自动等于端到端延迟较低。
+
+全交换通信不同于 AllReduce：每张设备持有不同专家，需要把各词元发送到其目标专家所在设备，计算后再按原位置送回。若某个专家成为热点，其他设备即使完成计算也必须等待最慢设备；小批次还可能让每个专家只收到很少词元，矩阵乘法无法达到高利用率。
+
+\begin{interviewbox}{Router collapse 为什么会发生，负载均衡损失在优化什么？}
+\textbf{20 秒回答：}早期少数专家略优时，路由器会给它们更多词元，它们得到更多主任务梯度后进一步变强，形成正反馈。负载均衡损失同时约束实际分配比例和平均路由概率，鼓励流量分散，避免热点溢出与闲置专家。
+
+\textbf{深入解释：}capacity factor 只提供容量缓冲，不能从根本上消除偏斜；过大浪费内存和填充，过小会丢词元或改路由。辅助损失过强又可能为了均匀牺牲专家专业化，因此主任务质量、负载和通信要联合调节。
+
+\textbf{面试官继续追问：}
+\begin{enumerate}
+  \item capacity factor 如何影响溢出概率？
+  \item expert parallel 为什么使用 All-to-All？
+  \item 小 batch 为什么对 MoE 不友好？
+  \item 辅助损失权重过大会怎样？
+\end{enumerate}
+\end{interviewbox}
+
+MoE 把模型扩展问题从纯计算转变为路由、容量和通信的联合问题。下一部分的分布式训练会把视角进一步推广：当 dense 参数、激活或优化器状态也放不下单卡时，应当切分哪一种资源。
+
+\begin{pitfallbox}
+MoE 的“参数更多”不等于“推理一定更慢”。真正要看每词元激活参数、专家并行通信和负载均衡。
+\end{pitfallbox}
+
+\section*{面试高频问题}
+\addcontentsline{toc}{section}{面试高频问题：MoE}
+
+\textbf{Q: MoE 为什么能提升容量但控制计算量？}
+
+20 秒回答：每个词元只激活 Top-$k$ 个专家，所以总参数可以很大，但每个词元只使用其中一小部分。
+
+\textbf{Q: 专家坍缩是什么？}
+
+少数专家被大量词元选择，其他专家几乎不用。结果是容量浪费、负载不均和训练不稳定，需要辅助负载均衡损失或路由约束。

@@ -1,0 +1,524 @@
+\part{高效注意力与推理}
+
+\chapter{键值缓存（KV Cache）}
+\label{sec:kvcache}
+
+\figKVCache
+
+\begin{motivationbox}{避免每生成一个词元都重算整段历史}
+自回归模型第 $t$ 步的历史词元与上一步几乎相同。若每次都重新投影全部历史 $K,V$，生成 $T$ 个词元会重复执行大量相同计算。键值缓存用显存换计算：历史位置的键和值只计算一次，后续步骤直接复用。它显著降低逐词元解码的计算，却把长上下文推理变成显存容量和带宽问题。
+\end{motivationbox}
+
+模型推理通常分成两个阶段。第一阶段是\textbf{提示词预填充（prefill）}：把用户给出的整段提示词一次并行送入模型，并为其中每个位置建立键值缓存。第二阶段是\textbf{逐词元解码（decode）}：第 $t$ 步只产生一个新词元，并把它的新键和值追加到缓存。若不缓存，每一步都要重新计算全部历史词元的 $K,V$。通常不缓存查询向量，因为它只服务当前一步，用完即可。
+
+\begin{examplebox}{生成“我喜欢机器学习”时缓存了什么}
+提示词预填充阶段输入“我 / 喜欢”后，每一层保存 $(k_1,v_1)$ 与 $(k_2,v_2)$。开始生成“机器”时，只为当前隐藏状态计算 $q_3,k_3,v_3$，把 $(k_3,v_3)$ 追加到缓存，再用查询向量 $q_3$ 读取
+\[
+[k_1,k_2,k_3]\quad\text{和}\quad[v_1,v_2,v_3].
+\]
+下一步生成“学习”时，同样只新算 $q_4,k_4,v_4$，历史 $k_1$ 到 $k_3$ 不再投影。$q_3$ 用完后不会被下一步读取，所以无需缓存查询；下一步会从新的隐藏状态产生 $q_4$。
+\end{examplebox}
+
+\begin{mathbox}
+键值缓存显存为
+\[
+M_{\mathrm{KV}}=
+2\times L\times B\times T\times n_{\mathrm{kv}}\times d_h\times s.
+\]
+其中 $M_{\rm KV}$ 是缓存占用的总字节数；$2$ 表示 $K,V$ 两份；$L$ 是层数；$B$ 是批次大小；$T$ 是缓存长度；$n_{\rm kv}$ 是键值头数；$d_h$ 是单头维度；$s$ 是每个数值的存储字节数，例如 FP16/BF16 为 $2$。
+\end{mathbox}
+
+例：$L=32,B=8,T=4096,n_{\rm kv}=8,d_h=128,s=2$，则
+\[
+M_{\rm KV}=2\cdot32\cdot8\cdot4096\cdot8\cdot128\cdot2
+\approx4.29\text{ GB}.
+\]
+若多头注意力有 $32$ 个键值头，同条件约 $17.18$ GB；分组查询注意力的收益非常直接。
+
+更严格地说，上例的 $4{,}294{,}967{,}296$ 字节等于 $4.29$ GB（十进制）或 $4.00$ GiB（二进制）。面试估算时应先说明单位口径，避免把 GB 与 GiB 混用。
+
+\begin{exercisebox}{长上下文键值缓存}
+给定
+\[
+L=32,\quad B=4,\quad T=8192,\quad
+n_{\rm kv}=8,\quad d_h=128,
+\]
+BF16 每个元素占 2 字节，则
+\[
+M_{\rm KV}=2\times32\times4\times8192\times8\times128\times2
+=4{,}294{,}967{,}296\text{ bytes}.
+\]
+因此缓存约为 $4.29$ GB 或 $4.00$ GiB。若改为 32 个键值头，其他条件不变，缓存约增至 $17.18$ GB。
+\end{exercisebox}
+
+\section{面试追问链}
+
+\begin{interviewbox}{为什么缓存 K/V 而通常不缓存 Q？}
+\textbf{20 秒回答：}历史 K/V 会被后续每一个新查询反复读取，缓存后可避免对历史隐藏状态重复投影；历史 Q 只在它自己生成时使用一次，下一步会从新隐藏状态产生新的 Q，因此缓存历史 Q 没有复用价值。
+
+\textbf{深入解释：}不用缓存时，第 $t$ 步会再次对 $x_{1:t}$ 计算 K/V，前 $t-1$ 个位置与上一步完全重复。使用缓存后只投影新位置，并让 $q_t$ 与 $K_{1:t}$ 计算分数。投影重复被消除，但读取历史 K/V 和计算 $q_tK_{1:t}^\top$ 仍随 $t$ 线性增长，所以不能说“KV Cache 让 attention 变成 $O(1)$”。
+
+\textbf{工程含义：}缓存以显存容量和带宽换计算。上下文越长，单步需要读取的历史 K/V 越大；这正是 decode 常从计算瓶颈转为 memory-bound 的原因。
+
+\textbf{面试官继续追问：}
+\begin{enumerate}
+  \item 完全不用缓存时，重复计算具体发生在哪里？
+  \item 缓存后单步 attention 还剩多少与 $T$ 有关的工作？
+  \item GQA 为什么同时降低缓存和 decode 带宽？
+  \item KV Cache 量化会引入什么误差？
+\end{enumerate}
+\end{interviewbox}
+
+\begin{interviewbox}{Prefix caching 与普通 KV Cache 有什么区别？}
+\textbf{20 秒回答：}普通 KV Cache 在一次请求内部复用该请求已经计算的历史；前缀缓存（prefix caching）进一步在不同请求之间复用完全相同前缀的 K/V，例如共享系统提示词或公共文档前缀。
+
+\textbf{深入解释：}跨请求复用要求前缀词元、模型版本、位置编码状态和相关推理配置兼容。命中后可跳过公共前缀的重复预填充，降低首词元延迟；但缓存索引、生命周期、租户隔离和显存淘汰都会变复杂。相似但不完全相同的自然语言前缀不能直接复用精确 K/V。
+
+\textbf{面试官继续追问：}
+\begin{enumerate}
+  \item prefix cache 命中主要减少 prefill 还是 decode？
+  \item 为什么位置偏移会影响复用？
+  \item 多租户系统如何避免缓存泄漏？
+\end{enumerate}
+\end{interviewbox}
+
+\begin{wrongbox}
+\textbf{错误说法：}KV Cache 让自回归 attention 变成 $O(1)$。
+
+\textbf{更准确：}它让每步新增位置的 K/V 投影接近常数工作量，并消除历史投影的重复计算；但当前查询仍要读取并匹配长度为 $T$ 的历史键值，单步读取量和点积工作仍随上下文线性增长。
+\end{wrongbox}
+
+\codesection{对应实现：单步逐词元解码与键值缓存}
+
+下面的代码展示语义完整的单步逐词元解码。它把当前词元产生的新 $K,V$ 追加到历史缓存，再让当前查询读取全部历史位置。为突出张量形状，代码保留了显式的 GQA 头复制；高性能计算内核通常不会真的复制这些数据。
+
+\begin{lstlisting}
+import math
+import torch
+
+def decode_attention(
+    x_t, k_cache, v_cache,
+    q_proj, k_proj, v_proj,
+    num_query_heads, num_kv_heads,
+):
+    # x_t: [B, 1, C]，decode 每次只处理一个新 token。
+    batch = x_t.size(0)
+    if num_query_heads % num_kv_heads != 0:
+        raise ValueError("query heads must divide into KV groups")
+
+    head_dim = q_proj.out_features // num_query_heads
+
+    def project_one_token(layer, tensor, num_heads):
+        # [B, 1, heads*D] -> [B, heads, 1, D]
+        projected = layer(tensor)
+        return projected.view(
+            batch, 1, num_heads, head_dim
+        ).transpose(1, 2)
+
+    q = project_one_token(q_proj, x_t, num_query_heads)
+    k_new = project_one_token(k_proj, x_t, num_kv_heads)
+    v_new = project_one_token(v_proj, x_t, num_kv_heads)
+
+    # cache 的时间维是 dim=2；这里只追加新 token 的 K、V。
+    if k_cache is None:
+        k_cache, v_cache = k_new, v_new
+    else:
+        k_cache = torch.cat((k_cache, k_new), dim=2)
+        v_cache = torch.cat((v_cache, v_new), dim=2)
+
+    # GQA 中多个 query 头共享一个 KV 头。
+    # repeat_interleave 便于理解，生产 kernel 会直接按组读取。
+    repeats = num_query_heads // num_kv_heads
+    k_for_attn = k_cache.repeat_interleave(repeats, dim=1)
+    v_for_attn = v_cache.repeat_interleave(repeats, dim=1)
+
+    # q: [B, H, 1, D]；历史 K: [B, H, T_cache, D]
+    scores = torch.matmul(q, k_for_attn.transpose(-2, -1))
+    scores = scores / math.sqrt(head_dim)
+    probs = torch.softmax(scores.float(), dim=-1).to(q.dtype)
+    output = torch.matmul(probs, v_for_attn)  # [B, H, 1, D]
+
+    # 合并注意力头，恢复为 [B, 1, H*D]。
+    output = output.transpose(1, 2).contiguous()
+    output = output.view(batch, 1, num_query_heads * head_dim)
+    return output, k_cache, v_cache
+\end{lstlisting}
+
+这段示例中的 \texttt{torch.cat} 是张量拼接操作，每步都会重新分配连续内存，所以只适合解释算法。真实推理系统会预分配缓存、按当前位置原地写入，或使用分页缓存管理离散块。另一个常见疑问是“为什么没有因果遮罩”：单步查询的键集合已经只包含过去和当前位置，未来词元尚不存在，因此天然满足因果约束。
+
+\chapter{FlashAttention}
+\label{sec:flash}
+
+\begin{motivationbox}{算术量没变，为什么标准 Attention 仍然慢？}
+标准实现会在高带宽显存（High Bandwidth Memory，HBM）中写入并再次读取 $T\times T$ 的分数或概率矩阵。长序列下，数据搬运耗时和中间激活显存可能比乘法本身更突出。FlashAttention 的提出不是为了近似注意力，而是利用分块和在线 softmax 改变精确计算的输入输出（I/O）路径，让中间矩阵尽量停留在更快的片上静态随机存储器（SRAM）。
+\end{motivationbox}
+
+标准 attention 若显式保存 $A\in\mathbb R^{T\times T}$，长序列会产生大量 HBM 读写。FlashAttention 的关键不是改变数学结果，而是改变计算组织：分块读入 $Q,K,V$，在 SRAM 中做局部计算，用在线 softmax 累积归一化结果，避免把完整注意力矩阵写回 HBM。
+
+\begin{mathbox}
+对某一行分数，处理完旧分块后保存行最大值 $m$、指数和 $\ell$ 与未归一化输出 $u$。新分块分数为 $s$ 时，令
+\[
+m'=\max(m,\max s),
+\]
+\[
+\ell'=e^{m-m'}\ell+\sum_j e^{s_j-m'},\qquad
+u'=e^{m-m'}u+\sum_j e^{s_j-m'}v_j.
+\]
+这里 $s_j$ 是新分块中的第 $j$ 个分数，$v_j$ 是它对应的值向量；$m$ 是此前见过的最大分数，$\ell$ 是以 $m$ 为基准的指数和，$u$ 是尚未除以指数和的加权值向量。带撇号的 $m',\ell',u'$ 表示合并新分块后的统计量，最终输出为 $o=u'/\ell'$。因最大值变化而乘的 $e^{m-m'}$ 恰好把旧分块重标定到新基准，所以分块结果与一次性数值稳定 softmax 完全一致，却不必保存完整分数矩阵。
+\end{mathbox}
+
+\begin{examplebox}{在线 softmax 如何合并两个分块}
+设某个查询的三个分数为 $[1,2,3]$，对应标量值为 $[10,20,30]$。先处理前两项：
+\[
+m=2,\quad \ell=e^{-1}+1\approx1.368,
+\quad u=10e^{-1}+20\approx23.679.
+\]
+再读到分数 $3$ 时，新最大值变为 $m'=3$。旧统计量必须乘 $e^{2-3}=e^{-1}$ 后再合并：
+\[
+\ell'=e^{-1}\ell+1\approx1.503,
+\quad u'=e^{-1}u+30\approx38.711.
+\]
+最终 $o=u'/\ell'\approx25.75$，与一次性计算
+$\softmax([1,2,3])\cdot[10,20,30]$ 完全相同。分块只改变计算顺序，没有近似误差。
+\end{examplebox}
+
+\begin{lstlisting}
+# FlashAttention 概念伪代码，不是可直接运行的 kernel。
+for q_block in blocks(Q):
+    # 每个 query 行维护三个在线统计量：
+    # m 是目前见过的最大 score，l 是指数和，out 是加权和。
+    m = -inf
+    l = 0
+    out = 0
+
+    for k_block, v_block in blocks(K, V):
+        # 当前 Q 分块只与一小块 K 做乘法，score 留在片上内存。
+        scores = q_block @ k_block.T / sqrt(d)
+        m_new = maximum(m, rowmax(scores))
+
+        # 所有指数都减去新的行最大值，避免 exp 溢出。
+        p = exp(scores - m_new)
+
+        # 若最大值发生变化，旧统计量必须重标定到新基准。
+        out = out * exp(m - m_new) + p @ v_block
+        l = l * exp(m - m_new) + rowsum(p)
+        m = m_new
+
+    # 直到读完所有 K/V 分块后才完成归一化。
+    O_block = out / l
+\end{lstlisting}
+
+\begin{takeawaybox}
+FlashAttention 面试重点是数据搬运：减少 HBM 读写，并避免显式生成（materialize）$T\times T$ 中间矩阵，而不是简单说“用了 CUDA 所以快”。
+\end{takeawaybox}
+
+\section{面试追问链}
+
+\begin{interviewbox}{FlashAttention 为什么更快，却没有改变稠密 attention 的数学结果？}
+\textbf{20 秒回答：}它仍精确计算所有需要的 $QK^\top$ 和 $AV$，稠密 attention 的算术复杂度仍是 $O(T^2d)$。主要收益来自分块、在线 softmax 和算子融合：中间分数尽量留在 SRAM，不把完整 $T\times T$ 矩阵写回 HBM，从而减少显存流量和激活占用。
+
+\textbf{深入解释：}在线 softmax 用每行最大值 $m$、指数和 $\ell$ 与加权和 $u$ 合并分块，重标定保证结果等价于全行数值稳定 softmax。算法改变的是 I/O 复杂度和执行顺序，不是把注意力近似成稀疏或低秩形式。
+
+\textbf{工程含义：}在长序列预填充/训练中，避免物化 $[B,H,T,T]$ 中间矩阵的收益很大。单步 decode 的查询长度通常为 $1$，本就不会生成同样规模的二维查询矩阵，此时历史 KV 读取、分页布局和专用 decode kernel 往往更关键；不能假设两个阶段得到相同加速比。
+
+\textbf{面试官继续追问：}
+\begin{enumerate}
+  \item FlashAttention 主要减少 FLOPs 吗？
+  \item 为什么 HBM 与 SRAM 的数据移动会支配时间？
+  \item online softmax 保存哪些统计量？
+  \item FlashAttention 和 KV Cache 解决的是同一个问题吗？
+\end{enumerate}
+\end{interviewbox}
+
+\begin{wrongbox}
+\textbf{错误说法：}FlashAttention 把 attention 的时间复杂度从 $O(T^2)$ 降成了 $O(T)$。
+
+\textbf{更准确：}对稠密 attention，它仍计算二次数量级的位置对；核心改进是减少 HBM 往返和完整分数矩阵物化，因此峰值显存和墙钟时间可明显下降，但算术复杂度没有变成线性。
+\end{wrongbox}
+
+\chapter{量化、采样与动态批处理}
+
+\section{量化}
+\label{sec:quantization}
+
+\begin{motivationbox}{模型权重和带宽成为推理成本上限}
+大模型推理会反复从显存读取权重，瓶颈可能是数据搬运而不是乘法计算。半精度权重占用的容量和带宽仍会限制模型大小、批次和吞吐。量化用更少比特表示权重或激活，以降低存储、传输和计算成本，代价是舍入、截断和尺度估计引入的误差。
+\end{motivationbox}
+
+量化把浮点数映射到低比特整数。对称量化常写为
+\[
+q=\operatorname{round}\left(\frac{x}{s}\right),\qquad \hat x=sq.
+\]
+其中 $x$ 是原始浮点数，$q$ 是量化后的整数，$s>0$ 是量化尺度，$\hat x$ 是反量化得到的近似值。非对称量化再加入零点（zero point）$z$：
+\[
+q=\operatorname{round}(x/s)+z,\qquad \hat x=s(q-z).
+\]
+逐通道量化（per-channel）为不同通道设置不同尺度，比整个张量共用一个尺度（per-tensor）更细，误差通常更小但元数据更多。
+
+对有符号 $b$ 位对称量化，令 $Q_{\max}=2^{b-1}-1$，即正整数的最大可表示值，常取
+\[
+s=\frac{\max_i|x_i|}{Q_{\max}},\qquad
+q_i=\operatorname{clip}\!\left(\operatorname{round}(x_i/s),-Q_{\max},Q_{\max}\right).
+\]
+这里 $i$ 是张量元素下标，$\operatorname{clip}$ 把结果截断到整数可表示范围。若没有发生截断，舍入到最近整数可给出误差界 $|x_i-\hat x_i|\le s/2$。逐通道量化为第 $c$ 个输出通道单独选择尺度 $s_c$，因此能降低被极端通道放大的误差。
+
+\begin{examplebox}{把三个浮点数映射到 INT4}
+取 $x=[-1.0,-0.2,0.7]$。有符号 INT4 的 $Q_{\max}=7$，对称尺度为 $s=1/7\approx0.143$。量化整数为
+\[
+q=\operatorname{round}(x/s)=[-7,-1,5].
+\]
+反量化得到
+\[
+\hat x=sq\approx[-1.000,-0.143,0.714].
+\]
+第二、三个数与原值存在误差，但每个整数只需 4 位。若同一张量中还有绝对值为 $100$ 的离群值，统一尺度会变成 $100/7$，上面三个小数几乎都被量化为零；这正是逐通道尺度和异常通道保护有价值的原因。
+\end{examplebox}
+
+\begin{table}[htbp]
+\centering
+\small
+\begin{tabularx}{0.86\textwidth}{lYYY}
+\toprule
+格式 & 字节 & 优点 & 注意点\\
+\midrule
+FP32 & 4 & 精度高 & 训练显存大\\
+FP16 & 2 & Tensor Core 友好 & 指数范围较小\\
+BF16 & 2 & 指数范围接近 FP32 & 尾数较少\\
+INT8 & 1 & 推理常用 & 激活尺度需校准\\
+INT4 & 0.5 & 权重显存低 & 误差控制更难\\
+\bottomrule
+\end{tabularx}
+\caption{常见数值格式。}
+\end{table}
+
+直接按权重最大值做均匀舍入，会把所有权重误差视为同等重要；但某些方向上的微小误差会被层输入显著放大。\textbf{GPTQ} 因此利用近似二阶信息逐层选择和补偿量化误差，目标是减小该层输出变化，而不只是减小权重自身的逐元素误差。
+
+\textbf{AWQ} 来自另一项观察：少量与大激活相乘的权重通道对输出尤其敏感。它利用校准激活识别并保护这些重要通道，通过尺度变换让其更不容易被低比特量化破坏。二者都是训练后量化（post-training quantization），不需要完整重训；它们改善权重量化误差，却不能自动解决异常激活值的动态范围问题。
+
+\section{温度、Top-k 与 Top-p 采样}
+\label{sec:sampling}
+
+\begin{motivationbox}{概率分布不等于最终生成策略}
+语言模型只给出下一个词元的条件分布。总选最大概率虽然确定，但容易产生重复和僵化文本；直接从完整分布采样又可能选到长尾噪声。温度（temperature）调节分布锐度，Top-k 和 Top-p 截断不可靠尾部，它们共同解决“如何把模型概率转成符合任务需求的生成行为”。
+\end{motivationbox}
+
+设候选词元 $i$ 的原始未归一化分数为 $z_i$。温度采样使用 $p_i\propto\exp(z_i/\tau)$，其中 $p_i$ 是归一化后的采样概率，$\tau>0$ 是温度：$\tau<1$ 会放大分数差异，使分布更尖锐；$\tau>1$ 会缩小差异，增加随机性。Top-k 只保留概率最高的固定 $k$ 个词元；Top-p 则保留累计概率达到阈值 $p\in(0,1]$ 的最小候选集合，因此会随分布的确定程度自动改变集合大小。
+
+完整温度公式为
+\[
+p_i(\tau)=\frac{\exp(z_i/\tau)}{\sum_j\exp(z_j/\tau)}.
+\]
+当 $\tau=1$ 时保持原分布；$0<\tau<1$ 放大 logit 差，使分布更尖；$\tau>1$ 压缩差异，使分布更平。当 $\tau\to0^+$ 时，最大 logit 与其他 logit 的差被无限放大，概率质量集中到最大项，极限行为接近贪心解码。温度直接缩放 logits 等价于统一调节所有类别的相对 log-odds；对 softmax 后概率直接除以温度再归一化，没有同样清晰的指数族解释。
+
+\begin{examplebox}{Top-p 为什么必须保留越过阈值的词元}
+假设排序后的词元概率为
+\[
+[0.50,0.25,0.15,0.10],
+\]
+累计概率为 $[0.50,0.75,0.90,1.00]$。当 $p=0.8$ 时，前两个词元的总概率只有 $0.75$，尚未达到阈值；必须把第三个词元也保留，候选集合才是前三个，总质量为 $0.90$。因此代码先标记累计值超过 $p$ 的位置，再把删除遮罩右移一位，留下首次越过阈值的词元。
+\end{examplebox}
+
+\begin{table}[htbp]
+\centering
+\small
+\begin{tabularx}{0.9\textwidth}{lYYY}
+\toprule
+算法 & 控制参数 & 优点 & 风险\\
+\midrule
+贪心解码 & 无 & 稳定快速 & 容易重复、缺少多样性\\
+Top-k & $k$ & 截断低概率噪声 & $k$ 固定不适应分布形状\\
+Top-p & $p$ & 自适应候选集合 & 实现需排序或近似\\
+束搜索 & 束宽 & 适合确定性任务 & 开放生成可能僵硬\\
+\bottomrule
+\end{tabularx}
+\caption{常见解码算法。}
+\end{table}
+
+\codesubsection{对应实现：Temperature、Top-k 与 Top-p}
+
+\begin{lstlisting}
+import torch
+
+def temperature_sample(logits, temperature=1.0):
+    # logits: [B, V]，每行是一个样本的词表分数。
+    if temperature <= 0:
+        raise ValueError("temperature must be positive")
+
+    # 除以温度后再归一化；不要对概率直接除以温度。
+    probs = torch.softmax(logits / temperature, dim=-1)
+    return torch.multinomial(probs, num_samples=1)  # [B, 1]
+
+def top_k_top_p_filter(logits, top_k=None, top_p=None):
+    # clone 避免原地修改调用方仍需使用的 logits。
+    filtered = logits.clone()
+
+    if top_k is not None:
+        if top_k <= 0:
+            raise ValueError("top_k must be positive")
+        top_k = min(top_k, filtered.size(-1))
+        # 第 k 大的 logit 是保留集合的门槛。
+        threshold = filtered.topk(top_k, dim=-1).values[..., -1, None]
+        filtered.masked_fill_(filtered < threshold, float("-inf"))
+
+    if top_p is not None:
+        if not 0.0 < top_p <= 1.0:
+            raise ValueError("top_p must be in (0, 1]")
+
+        # Top-p 必须先按概率从高到低排序。
+        sorted_logits, sorted_idx = filtered.sort(
+            descending=True, dim=-1
+        )
+        sorted_probs = torch.softmax(sorted_logits, dim=-1)
+        cumulative = sorted_probs.cumsum(dim=-1)
+
+        # 初始 mask 会标记累计概率已经超过 p 的位置。
+        remove = cumulative > top_p
+
+        # 右移一位，保留“首次使累计概率达到 p”的 token。
+        # 否则候选集合的概率和可能仍小于目标阈值。
+        remove[..., 1:] = remove[..., :-1].clone()
+        remove[..., 0] = False  # 至少保留最高概率 token
+
+        sorted_logits.masked_fill_(remove, float("-inf"))
+
+        # scatter 把排序后的结果放回原词表下标。
+        filtered = torch.full_like(filtered, float("-inf"))
+        filtered.scatter_(-1, sorted_idx, sorted_logits)
+
+    return filtered
+\end{lstlisting}
+
+实际生成时通常先调用过滤函数，再对过滤后的未归一化分数做 softmax 和多项式采样。Top-k 与 Top-p 可以同时启用：代码会先做 Top-k，再在剩余候选中做 Top-p。被置为 $-\infty$ 的位置经 softmax 后概率为零。
+
+\section{束搜索（Beam Search）}
+
+\begin{motivationbox}{局部最优词元不一定组成全局最优序列}
+贪心解码每步只保留一个词元，一旦早期选择错误，后面无法回退。束搜索同时保留多条高分前缀，用额外计算换取更广的序列搜索，因此适合答案空间较确定、序列概率与任务质量相关较强的场景。
+\end{motivationbox}
+
+束搜索在每一步保留累计对数概率最高的 $K$ 条序列，其中 $K$ 是束宽。关键不是为每条候选序列各选一个词元，而是把“父候选序列 $\times$ 词表”展平成 $KV$ 个联合候选，再全局取前 $K$ 个。父序列下标决定新序列从哪条旧序列复制，词元下标决定追加什么。
+
+\begin{examplebox}{为什么要在所有父 beam 中全局选 Top-k}
+设两条旧 beam 的累计分数为 $A=-0.1$、$B=-0.4$。下一 token 只有 $x,y$，其条件 log-prob 分别为
+\[
+A:[-0.2,-1.0],\qquad B:[-0.05,-0.2].
+\]
+四个联合候选的累计分数是 $A+x=-0.3$、$A+y=-1.1$、$B+x=-0.45$、$B+y=-0.6$。若 beam size 为 $2$，全局保留 $A+x$ 与 $B+x$。这说明不能简单地让每条父 beam 各自保留一个 token；所有父子组合必须一起竞争。
+\end{examplebox}
+
+\codesubsection{对应实现：单步 Beam 扩展}
+
+\begin{lstlisting}
+def simple_beam_step(log_probs, beam_scores, beam_size):
+    # log_probs: [B, beam, V]，当前步每条 beam 的词表分数。
+    # beam_scores: [B, beam]，生成到上一步的累计对数概率。
+    batch, old_beam, vocab_size = log_probs.shape
+
+    # 广播累计分数，得到所有“父 beam + 新 token”组合。
+    scores = log_probs + beam_scores[..., None]
+    # scores: [B, old_beam, V]
+
+    # 展平后，每个下标都唯一对应一组 (parent, token)。
+    flat_scores = scores.view(batch, old_beam * vocab_size)
+    new_scores, flat_idx = flat_scores.topk(beam_size, dim=-1)
+
+    # 整除恢复父 beam，下标取模恢复新 token。
+    parent_beam = flat_idx // vocab_size
+    next_token = flat_idx % vocab_size
+    return parent_beam, next_token, new_scores
+\end{lstlisting}
+
+完整实现还要处理 EOS、长度惩罚、重复惩罚和回溯序列。长度惩罚尤其重要，因为对数概率通常为负，单纯累加会天然偏爱较短序列。开放式对话往往更适合采样；翻译、语音识别等目标较确定的任务更常使用 Beam Search。
+
+\begin{interviewbox}{Top-k、Top-p 与束搜索分别改变什么？}
+\textbf{20 秒回答：}Top-k 固定候选数量，Top-p 固定累计概率质量、候选数量动态变化；两者通常用于随机采样。束搜索则并行保留若干条累计分数最高的序列前缀，目标更接近搜索高概率完整序列，开放式对话中可能显得保守和模板化。
+
+\textbf{深入解释：}分布很尖时，Top-p 可能只保留少数候选；分布平时会保留更多。束搜索累加负对数概率，序列越长通常累加越多负数，因此需要长度归一化或长度惩罚。它擅长答案空间较确定的任务，但最大似然序列不一定等于人类认为最自然、多样的回答。
+
+\textbf{面试官继续追问：}
+\begin{enumerate}
+  \item $\tau\to0$ 为什么接近 greedy？
+  \item Top-p 为什么候选数量不是常数？
+  \item beam search 为什么偏好短序列？
+  \item 为什么开放式对话常使用 sampling？
+\end{enumerate}
+\end{interviewbox}
+
+\section{推测式解码（Speculative Decoding）}
+\label{sec:speculative}
+
+\begin{motivationbox}{大模型逐词元解码串行且每步利用率低}
+目标模型必须逐词元生成，单步矩阵规模小、带宽占比高，而且下一步依赖上一步结果，难以直接并行。推测式解码让计算较便宜的草稿模型（draft model）先连续提出多个候选，再由目标模型（target model）一次并行验证，把“多次小前向”尽量合并成“一次较大的前向”。
+\end{motivationbox}
+
+推测式解码使用小草稿模型先提出多个词元，大目标模型再并行验证。若接受规则按概率比修正，最终分布仍可与目标模型的采样分布一致。收益来自把多个候选词元的验证合并成一次目标模型前向。
+
+设候选词元为 $x$，草稿模型与目标模型在当前步对它给出的概率分别为 $q(x)$ 与 $p(x)$。草稿候选 $x$ 的接受概率为
+\[
+\alpha(x)=\min\!\left(1,\frac{p(x)}{q(x)}\right).
+\]
+若拒绝，则从残差分布 $p'(x)\propto[p(x)-q(x)]_+$ 重新采样，其中 $[a]_+=\max(a,0)$ 表示只保留正数部分。接受分支贡献 $\min(p(x),q(x))$，拒绝分支补齐其余概率，因此校正后的边缘分布仍是目标分布 $p(x)$。
+
+\begin{examplebox}{草稿候选何时会被接受}
+假设草稿模型对候选词元“学习”给出 $q(x)=0.5$，目标模型只给 $p(x)=0.3$，则接受概率
+\[
+\alpha(x)=\min(1,0.3/0.5)=0.6.
+\]
+也就是说，草稿模型对该词元过于自信，只有 $60\%$ 概率直接接受，其余情况要按残差分布校正。若 $q(x)=0.2$、$p(x)=0.3$，则 $\alpha=1$，候选总被接受。草稿模型越接近目标模型，连续接受的词元越多，加速收益越高；候选质量太差时频繁拒绝，额外草稿计算反而可能得不偿失。
+\end{examplebox}
+
+\begin{interviewbox}{推测式解码为什么能加速又保持目标分布？}
+\textbf{20 秒回答：}更快的草稿模型先提出多个候选，目标模型用一次并行前向验证；基于 $\min(1,p/q)$ 的接受规则和残差分布校正，使最终边缘分布仍等于目标模型分布。收益取决于一次验证能接受多少连续候选。
+
+\textbf{深入解释：}草稿模型太弱会使接受率低，白做许多草稿计算；太大又会让草稿本身接近目标模型成本。理想草稿模型既快又与目标分布接近。该方法针对串行 decode，而不是已经能够大矩阵并行的 prefill。
+
+\textbf{面试官继续追问：}
+\begin{enumerate}
+  \item acceptance rate 决定什么？
+  \item draft model 太弱和太大分别会怎样？
+  \item 为什么目标模型能一次验证多个候选？
+  \item 贪心推理与随机采样下的验证规则有何不同？
+\end{enumerate}
+\end{interviewbox}
+
+\section{连续批处理与分页注意力}
+\label{sec:pagedattention}
+
+\begin{motivationbox}{真实请求长度不同，静态批处理会浪费算力和显存}
+在线服务中的提示词和输出长度各不相同。静态批处理必须等待最慢请求结束，已完成请求留下空槽；按最大长度预留连续键值空间又会产生碎片和浪费。连续批处理（continuous batching）解决调度空洞，分页注意力（paged attention）解决键值内存必须连续分配的问题。
+\end{motivationbox}
+
+静态批处理要等同一批请求全部结束，容易被长请求拖慢。连续批处理在每个解码步动态加入新请求、移除完成请求，提高 GPU 利用率。分页注意力把键值缓存分成块，像虚拟内存一样管理，减少大块连续显存需求和碎片。
+
+分页注意力解决的核心是\textbf{内存管理和访问布局}，不是改变 attention 公式。逻辑上连续的词元可以映射到物理上不连续的缓存块；调度器按需分配、复用和回收页面，避免为每个请求按最大可能长度预留整块显存。代价是页表管理、间接寻址和内核实现更复杂。
+
+键值缓存量化则从另一维度压缩每个缓存元素的位宽。若从 BF16 降到 INT8，理想存储量可减半，decode 读取带宽也可能下降；但 K/V 的量化误差会直接扰动注意力分数与加权内容，长上下文、异常通道和逐层误差积累都可能影响质量，还要付出量化元数据和反量化计算。
+
+\begin{interviewbox}{PagedAttention 解决的是计算问题还是内存问题？}
+\textbf{20 秒回答：}主要是键值缓存的分配、碎片与地址管理问题。它把逻辑连续缓存映射到固定大小物理页，按需分配并复用；attention 的数学计算仍然存在，只是内核能够从分页布局中读取历史键值。
+
+\textbf{深入解释：}连续批处理解决“请求何时进入和退出批次”，分页缓存解决“每个请求的 K/V 放在哪里”。两者经常配合，但一个是调度问题，一个是内存布局问题。它们都不等价于减少模型参数或改变注意力概率。
+
+\textbf{面试官继续追问：}
+\begin{enumerate}
+  \item 页太大或太小分别有什么代价？
+  \item 分页如何减少外部碎片？
+  \item continuous batching 与 static batching 的延迟权衡是什么？
+  \item KV Cache quantization 主要收益和风险是什么？
+\end{enumerate}
+\end{interviewbox}
+
+\figInferenceTimeline
+
+从这一章可以看到，推理优化不是单一“加速技巧”：键值缓存消除重复计算，FlashAttention 减少数据搬运，量化减少表示位宽，采样控制输出行为，推测式解码增加单次验证并行度，连续批处理与分页注意力提高多请求资源利用率。接下来后训练要解决的是另一类问题：预训练模型会续写文本，但未必会遵循指令或符合人类偏好。
+
+\section*{面试高频问题}
+\addcontentsline{toc}{section}{面试高频问题：推理}
+
+\textbf{Q: 逐词元解码为什么常被显存带宽限制？}
+
+20 秒回答：每步只生成一个词元，矩阵计算规模小，但必须读取所有层、所有历史词元的键值缓存，算术强度低。
+
+\textbf{Q: vLLM 的分页键值缓存解决什么问题？}
+
+20 秒回答：它把键值缓存切成页，按需分配和复用，降低长短请求混合时的显存碎片和预留浪费。

@@ -1,0 +1,328 @@
+\part{预训练}
+
+\chapter{自回归语言建模}\label{sec:pretraining}
+
+\begin{motivationbox}{如何从海量无标注文本获得监督信号？}
+人工为互联网规模文本逐条标注任务类别或答案不可行，但每段自然文本都天然提供了“前文”和“下一个词元”。自回归语言建模把序列向右移动一位就得到监督目标，使模型可以从原始文本自监督学习。它解决了监督数据规模问题，却也把模型能力绑定到数据分布和“预测下一个词元”的目标之上。
+\end{motivationbox}
+
+LLM 预训练的核心目标是最大化语料序列概率。对词元序列 $x_{1:T}=(x_1,\ldots,x_T)$，$x_t$ 表示第 $t$ 个词元，$T$ 表示序列长度。链式法则给出：
+\[
+p(x_{1:T})=\prod_{t=1}^{T}p(x_t\mid x_{<t}).
+\]
+模型在位置 $t$ 输出未归一化的词表分数（logits）$z_t\in\mathbb R^V$，其中 $V$ 是词表大小，$z_{t,i}$ 是候选词元 $i$ 的分数。softmax 后得到下一个词元的概率分布：
+\[
+p_\theta(x_t=i\mid x_{<t})=\frac{\exp z_{t,i}}{\sum_{j=1}^{V}\exp z_{t,j}}.
+\]
+其中 $\theta$ 表示模型的全部可训练参数，$x_{<t}$ 表示位置 $t$ 之前的词元。最大似然等价于最小化负对数似然：
+\[
+\mathcal L=-\sum_{t=1}^{T}\log p_\theta(x_t\mid x_{<t}).
+\]
+在一个批次中，若 $m_{b,t}\in\{0,1\}$ 表示第 $b$ 个样本的第 $t$ 个位置是否参与监督，则实际使用的词元平均损失是
+\[
+\mathcal L_{\rm token}
+=-\frac{1}{N_{\rm valid}}
+\sum_{b=1}^{B}\sum_{t=1}^{T-1}
+m_{b,t}\log p_\theta(x_{b,t+1}\mid x_{b,\le t}),
+\qquad
+N_{\rm valid}=\sum_{b,t}m_{b,t}.
+\]
+这里 $B$ 是批次大小，$N_{\rm valid}$ 是整个批次中参与监督的有效位置总数。补齐位置（padding）、跨样本边界和监督微调中的提示词位置，都可以通过令 $m_{b,t}=0$ 排除。
+
+\begin{examplebox}{一句话如何产生多条训练标签}
+句子“我喜欢机器学习”加上序列开始和结束词元后可写成
+\[
+[\mathrm{BOS},\ \text{我},\ \text{喜欢},\ \text{机器},\ \text{学习},\ \mathrm{EOS}].
+\]
+同一序列向右错开一位，就得到五个“预测下一个词元”的监督信号：
+
+\begin{center}
+\begin{tabular}{ll}
+\toprule
+模型可见前缀 & 应预测的目标标签\\
+\midrule
+$[\mathrm{BOS}]$ & “我”\\
+$[\mathrm{BOS},\text{我}]$ & “喜欢”\\
+$[\mathrm{BOS},\text{我},\text{喜欢}]$ & “机器”\\
+$[\ldots,\text{机器}]$ & “学习”\\
+$[\ldots,\text{学习}]$ & $\mathrm{EOS}$\\
+\bottomrule
+\end{tabular}
+\end{center}
+
+训练代码不需要真的运行五次模型。因果遮罩让一次并行前向中的每个位置只能看到左侧前缀，随后用 \texttt{logits[:, :-1]} 与 \texttt{input\_ids[:, 1:]} 一次对齐全部五个预测任务。
+\end{examplebox}
+
+\begin{mathbox}
+设真实数据分布为 $p_{\rm data}$，参数为 $\theta$ 的模型分布为 $p_\theta$。交叉熵
+\[
+H(p_{\rm data},p_\theta)=H(p_{\rm data})+D_{\rm KL}(p_{\rm data}\Vert p_\theta).
+\]
+其中 $H(p_{\rm data})$ 是数据自身的熵，$D_{\rm KL}$ 是 Kullback--Leibler 散度。数据熵与模型参数无关，因此最小化交叉熵等价于最小化真实分布到模型分布的 KL 散度。
+\end{mathbox}
+
+\begin{mathbox}
+对单个位置，令真实词元类别的编号为 $y$，候选类别 $i$ 的模型分数为 $z_i$，交叉熵
+\[
+\ell=-\log\frac{e^{z_y}}{\sum_j e^{z_j}}
+=-z_y+\log\sum_j e^{z_j}.
+\]
+直接求导得到
+\[
+\frac{\partial\ell}{\partial z_i}
+=-\mathbf 1[i=y]+\frac{e^{z_i}}{\sum_j e^{z_j}}
+=p_i-\mathbf 1[i=y].
+\]
+其中 $p_i$ 是 softmax 后候选类别 $i$ 的概率，$\mathbf 1[i=y]$ 是指示函数。所以梯度会降低真实词元的“概率缺口”，同时压低其他词元。困惑度（perplexity，PPL）定义为
+$\operatorname{PPL}=\exp(\mathcal L_{\rm token})$；平均损失每下降 $\Delta$，PPL 就乘以 $e^{-\Delta}$，这里 $\Delta>0$ 表示下降量。
+\end{mathbox}
+
+\section{PyTorch 中的预测分数与目标标签}
+
+公式写成 $p(x_t\mid x_{<t})$，而模型输入和输出却具有相同的序列长度。实现中的错位对齐（shift）正是连接二者的步骤：位置 $t$ 的隐藏状态（hidden state）表示前缀 $x_{\le t}$，它应预测 $x_{t+1}$，不能拿同一位置的输入词元当标签。
+
+\begin{lstlisting}
+import torch.nn.functional as F
+
+# input_ids: [B, T]，每个位置保存一个 token id。
+input_ids = batch["input_ids"]
+
+# 一次前向并行得到所有位置的预测，logits: [B, T, V]。
+# causal mask 保证位置 t 的输出看不到位置 t 之后的 token。
+logits = model(input_ids)
+
+# 位置 0..T-2 的输出预测位置 1..T-1 的真实 token。
+shift_logits = logits[:, :-1, :].contiguous()
+shift_targets = input_ids[:, 1:].contiguous()
+
+# cross_entropy 要求类别维在最后展平后变成 [N, V]。
+loss = F.cross_entropy(
+    shift_logits.view(-1, shift_logits.size(-1)),
+    shift_targets.view(-1),
+)
+\end{lstlisting}
+
+模型取 {\small\texttt{logits[:, :-1]}} 作为输入位置 $0\ldots T-2$ 给出的预测分数，取 {\small\texttt{input\_ids[:, 1:]}} 作为真实的下一个词元编号。两者各去掉一端，因此监督位置数是 $T-1$，不是 $T$。若批次含补齐位置，还应把这些位置的目标标签改成 \texttt{-100}，并向交叉熵传入 \texttt{ignore\_index=-100}。
+
+教师强制（teacher forcing）的“并行”容易被误解：模型不是先生成第一个预测再把预测送回去，而是一次看到整段真实序列，并靠因果遮罩保证每个位置只读取真实前缀。因此所有位置可同时训练；代价是推理时模型只能看到自己生成的前缀，错误可能逐步累积，这就是暴露偏差（exposure bias）。
+
+\figPretrainingPipeline
+
+\begin{interviewbox}{为什么“预测下一个词元”能学到通用能力？}
+\textbf{20 秒回答：}下一个词元看似是局部标签，但准确预测它往往需要压缩语法、事实、语义关系、代码结构和推理模式。目标函数没有逐项命名这些能力，它们是模型在大规模、多样数据上降低条件熵时形成的可迁移内部表示。
+
+\textbf{深入解释：}模型优化的是 $-\log p_\theta(x_t\mid x_{<t})$。当同一前缀允许多种合理续写时，模型需要估计的是整个条件分布，而不只是背诵一个答案。更低的训练损失只说明更贴合训练分布；能否迁移还取决于数据覆盖、容量、优化和评测分布，因此不能把“下一个词元目标”直接等同于“必然产生推理能力”。
+
+\textbf{面试官继续追问：}
+1. 这种自监督信号为什么可以扩展到互联网规模？
+2. 数据分布会怎样限制模型能力？
+3. 训练损失更低为什么不保证下游体验更好？
+4. 与掩码语言模型相比，因果语言模型的生成优势是什么？
+\end{interviewbox}
+
+\begin{interviewbox}{教师强制为什么能并行训练，却产生暴露偏差？}
+\textbf{20 秒回答：}训练时每个位置都读取真实前缀，并借助因果遮罩一次并行预测全部下一词元；推理时真实后续不可用，只能读取模型自己生成的前缀。训练与推理前缀分布不同，因此早期错误可能在解码中继续传播。
+
+\textbf{深入解释：}并行来自张量计算，不是来自取消自回归约束。对位置 $t$，注意力遮罩仍保证它只能读取 $x_{\le t}$，只是不同 $t$ 的计算可以同时完成。若训练时改用模型逐步采样的前缀，成本显著上升且目标更难稳定；因此后训练和序列级优化通常用于补充，而不是简单替代教师强制。
+
+\textbf{面试官继续追问：}
+1. 为什么不能把同一位置的输入词元直接当标签？
+2. 暴露偏差一定会导致生成失败吗？
+3. 序列级强化学习与词元级交叉熵分别优化什么？
+\end{interviewbox}
+
+\section{预训练流水线的面试拆解}
+
+\begin{motivationbox}{正确目标为什么仍可能训练出差模型？}
+损失函数只规定模型怎样从词元学习，却不保证输入词元本身干净、均衡且没有泄漏。重复网页会被过度记忆，低质量文本会消耗算力，错误的序列拼接会让样本互相泄漏。因此预训练流水线是在梯度进入模型前控制“模型究竟从什么分布学习”。
+\end{motivationbox}
+
+回答预训练流程题时，可以按“数据到梯度”的顺序展开：先说明原始数据需要清洗、去重和质量过滤，再说明分词器把文本变成词元编号，序列拼接（packing）把多个词元序列组织成高利用率批次，最后因果语言模型输出未归一化词表分数，并用错位后的目标标签计算下一个词元损失。
+
+\begin{takeawaybox}
+把预训练说清楚的关键是对齐三件事：输入词元的张量形状、目标词元的错位方式，以及损失如何反向更新所有 Transformer 参数。
+\end{takeawaybox}
+
+\chapter{数据与优化}\label{sec:optimization}
+
+\section{数据混合、去重与序列拼接}
+
+\begin{motivationbox}{让有限训练预算花在有效词元上}
+模型不会判断某条数据是否值得学习，只会按出现频率更新参数。未经处理的网络语料常包含重复页面、模板垃圾、语言比例失衡和评测集（benchmark）泄漏。数据混合、去重和质量过滤的目标，是在固定词元与算力预算下提高每次梯度更新的信息密度。
+\end{motivationbox}
+
+数据配比决定模型能力边界。代码、数学、百科、对话、多语言数据应按目标岗位需求讨论。去重减少对同一内容的重复记忆，也降低训练集与评测集泄漏；质量过滤比单纯扩大词元数更重要，因为低质量词元同样会占用完整计算。
+
+短样本若分别补齐（padding）到固定长度，大量算力会花在无意义的补齐位置上。序列拼接（sequence packing）因此把多个短样本拼入固定长度块以提高 GPU 利用率。它解决利用率问题，却引入样本边界问题：必须用注意力遮罩阻止不同样本之间互相读取，否则模型会学习不存在的跨样本上下文。
+
+\section{优化细节}
+
+\begin{motivationbox}{让大规模优化在数值、显存和训练阶段上都可控}
+大模型训练初期统计量尚未稳定，过大学习率容易直接发散；训练后期继续使用高学习率又会围绕较优区域震荡。同时，完整批次和 FP32 状态往往超出显存。学习率预热、衰减、混合精度、梯度裁剪与梯度累积，分别处理启动稳定性、后期收敛、数值成本、异常梯度和批次显存问题。
+\end{motivationbox}
+
+Adam 的自适应缩放会让“把 L2 正则直接加到梯度”也被逐坐标缩放，使实际衰减强度难以解释。AdamW 因此将权重衰减从自适应梯度中解耦，让参数收缩直接由 $\eta_t\lambda$ 控制。学习率预热（warmup）避免训练初期参数和动量统计尚不可靠时迈步过大，余弦衰减（cosine decay）则在后期逐步减小更新幅度，帮助模型稳定收敛。
+
+混合精度（mixed precision）用低精度完成主要矩阵计算，以减少显存并提高张量计算核心（Tensor Core）的吞吐，但需要关注 FP16 溢出、损失缩放（loss scaling）与关键统计量精度。梯度裁剪（gradient clipping）在偶发梯度尖峰时限制更新范数；梯度累积（gradient accumulation）则把一个逻辑大批次拆成多个可放入显存的微批次（micro-batch）。它们解决的问题不同，不能互相替代。
+
+设 $g_t=\nabla_\theta\mathcal L_t$，AdamW 的核心更新为
+\[
+m_t=\beta_1m_{t-1}+(1-\beta_1)g_t,\qquad
+v_t=\beta_2v_{t-1}+(1-\beta_2)g_t^2,
+\]
+\[
+\theta_{t+1}
+=\theta_t-\eta_t\frac{\hat m_t}{\sqrt{\hat v_t}+\epsilon}
+-\eta_t\lambda\theta_t.
+\]
+最后一项直接作用在参数上，不会被 $1/(\sqrt{\hat v_t}+\epsilon)$ 按坐标缩放，这就是 AdamW 与“把 L2 项加进 Adam 梯度”的关键区别。
+
+式中，$t$ 是优化步编号；$\theta_t$ 是第 $t$ 步的模型参数；$g_t=\nabla_\theta\mathcal L_t$ 是当前损失对参数的梯度；$m_t$ 和 $v_t$ 分别是梯度的一阶动量与平方梯度的二阶动量。$\beta_1,\beta_2\in[0,1)$ 控制历史信息的衰减速度，$\hat m_t,\hat v_t$ 是经过初始偏差修正的动量，$\eta_t$ 是当前学习率，$\lambda$ 是权重衰减系数，$\epsilon$ 是防止除零的小常数。
+
+\begin{lstlisting}
+# 累积开始前清空旧梯度；set_to_none=True 通常更省显存。
+optimizer.zero_grad(set_to_none=True)
+
+for micro_x in micro_batches:
+    # micro_x: [b, T]，b 是能放入单卡的 micro-batch 大小。
+    logits = model(micro_x)
+
+    # 除以累积步数，使最终梯度近似大 batch 的平均梯度。
+    # 若不除，梯度会被额外放大 grad_accum_steps 倍。
+    loss = lm_loss(logits, micro_x) / grad_accum_steps
+    loss.backward()
+
+# 必须在所有 micro-batch 反向完成后再裁剪和更新。
+torch.nn.utils.clip_grad_norm_(model.parameters(), max_norm=1.0)
+optimizer.step()
+\end{lstlisting}
+
+梯度累积只减少单次前向需要保存的激活，不会减少模型参数、梯度和优化器状态本身的显存。它也不等于数据并行：累积是在同一组参数上串行处理多个微批次，数据并行则在多张卡上同时计算并通过通信聚合梯度。分布式训练中常配合 \texttt{no\_sync()}，避免每个微步都执行全归约通信（AllReduce）。
+
+\begin{wrongbox}
+\textbf{容易答错：}“梯度累积把一个大批次拆开，所以训练显存都会按累积步数下降。”
+
+\textbf{更准确：}它主要降低每个微步的激活峰值；参数、梯度与优化器状态仍需驻留。若吞吐、归一化方式和有效词元权重处理不当，累积后的更新也未必与一次性大批次完全相同。
+\end{wrongbox}
+
+\begin{interviewbox}{AdamW、预热和梯度裁剪分别在解决什么？}
+\textbf{20 秒回答：}AdamW 让权重衰减不再被自适应预条件器扭曲；预热限制训练初期不可靠统计量下的步长；梯度裁剪只处理偶发的异常大更新。三者作用在不同环节，不能互相替代。
+
+\textbf{深入解释：}AdamW 的衰减项是 $-\eta_t\lambda\theta_t$，而不是把 $\lambda\theta$ 混进梯度后再除以 $\sqrt{\hat v_t}$。预热改变一段时间内的 $\eta_t$；裁剪改变当前梯度的范数。模型发散时需要结合损失缩放、数据异常、学习率、梯度范数和通信错误定位，不能把所有问题都归因于“缺少 warmup”。
+
+\textbf{面试官继续追问：}
+1. AdamW 的 $\epsilon$ 是正则项吗？
+2. 混合精度下为什么还可能保留高精度主权重？
+3. 梯度累积是否会减少优化器状态？
+4. 有效词元数不同的微批次怎样正确加权？
+\end{interviewbox}
+
+\begin{examplebox}{为什么累积时要除以步数}
+设两个微批次对某参数产生的梯度分别为 $g_1=(2,0)$、$g_2=(0,4)$。逻辑大批次的平均梯度应为
+\[
+\frac{g_1+g_2}{2}=(1,2).
+\]
+因此每个微批次的损失先除以 $2$ 再反向传播，累积结果才是 $(1,2)$。若不除，得到的是和 $(2,4)$，等价于把学习率额外放大两倍。若各微批次的有效词元数不同，则更严谨的做法是按总有效词元数加权，而不是机械地平均每个微批次。
+\end{examplebox}
+
+\section{Scaling Laws 与 Compute-Optimal Training}
+\label{sec:scaling-laws}
+
+\begin{motivationbox}{固定预算应该买更多参数，还是训练更多 token？}
+扩大模型并不等于只增加参数量。基础模型的最终质量同时受参数量、训练数据量、数据质量和计算预算约束：模型过大但训练不足，容量来不及被数据塑造；模型过小却反复吞入大量数据，又可能把计算花在一个容量受限的模型上。Scaling Laws 的价值，是把“越大越好”改写成可通过实验拟合和预算约束讨论的问题。
+\end{motivationbox}
+
+令 $N$ 表示模型参数量，$D$ 表示训练词元数，$C$ 表示训练计算量，$L$ 表示验证损失。一类常见的经验形式是
+\[
+L(N,D)\approx L_\infty+A N^{-\alpha}+B D^{-\beta},
+\]
+其中 $L_\infty$ 是给定数据分布下难以继续降低的损失项，$A,B>0$ 是尺度系数，$\alpha,\beta>0$ 描述参数和数据增加时的收益递减速度。这个式子表达的是：固定其他条件时，增大 $N$ 或 $D$ 往往能按幂律趋势降低损失，但边际收益逐渐减小。
+
+\textbf{它是经验规律，不是数学定理。}系数和指数来自特定模型族、数据分布、tokenizer、优化器、训练时长和评测口径下的拟合。换数据清洗流程、模型结构或训练目标后，曲线可能改变；因此不能把某组指数当作跨项目不变的自然常数。
+
+对稠密 Transformer，粗略预算常写成
+\[
+C_{\rm train}\approx \kappa ND,
+\]
+其中 $\kappa$ 汇总一次 token 训练所需的前向、反向与参数相关计算常数。它适合做数量级推理，却会忽略序列长度带来的注意力项、词表投影、稀疏结构、硬件利用率和通信开销。固定预算 $C_0$ 下，问题可以概念化为
+\[
+\min_{N,D}\ L(N,D)
+\qquad
+\text{s.t.}\quad C_{\rm train}(N,D)\le C_0.
+\]
+
+\subsection{Compute-optimal：在约束下平衡容量与数据}
+
+\textbf{计算最优训练（compute-optimal training）}不是寻找全世界唯一的最佳模型，而是在给定计算预算、模型族和数据条件下，协调模型规模 $N$ 与训练词元数 $D$，使预算带来的损失下降尽可能大。
+
+若 $N$ 很大而 $D$ 太少，模型是\textbf{欠训练的（under-trained）}：大量参数只看到有限训练信号，在同样 FLOPs 下，缩小模型并训练更多高质量 token 可能更有效。反过来，若 $D$ 很大而 $N$ 太小，模型容量可能成为瓶颈；继续增加 token 的边际收益很低，把一部分预算用于扩大模型可能更合理。这里的“数据更多”还必须区分新鲜、高质量、多样的数据与低质量重复数据，二者不能只按 token 数等价计算。
+
+\begin{interviewbox}{什么是 Scaling Law？它是数学定理吗？}
+\textbf{20 秒回答：}Scaling Law 是从一组受控训练实验中拟合出的经验关系，用来描述损失如何随参数量、训练 token 和计算量变化。它常呈幂律和收益递减趋势，但系数、指数依赖模型与数据条件，不是可以机械外推的普适定理。
+
+\textbf{深入解释：}它的工程价值不在背某个指数，而在于用小规模试验拟合趋势，再比较等计算量方案。若训练分布、架构或数据质量改变，原曲线可能失效；超出拟合范围的外推也会放大误差。Scaling Law 通常预测的是某种损失或指标趋势，并不自动等价于指令遵循、事实可靠性或部署体验。
+
+\textbf{面试官继续追问：}
+1. 为什么幂律中的指数不能跨模型族照搬？
+2. 验证损失下降是否保证下游体验更好？
+3. 怎样用一组小模型实验规划大训练任务？
+\end{interviewbox}
+
+\subsection{Chinchilla-style 直觉：不要只放大参数}
+
+Chinchilla-style 分析关注的问题是：在近似固定的训练计算量下，参数和训练 token 应怎样共同增长。Hoffmann 等人的受控实验表明，在其研究设置和范围内，许多大模型相对数据量过大、训练 token 不足；把计算分配给更小但训练更充分的模型，可以得到更低损失。
+
+面试时不应把这段结论压缩成一个永远成立的“每参数固定多少 token”。后续模型的数据配比、重复训练、长上下文阶段、合成数据、稀疏结构和部署约束都可能改变最优点。真正应掌握的是：\textbf{固定 FLOPs 时，$N$ 与 $D$ 互相竞争预算；最优比例应由当前训练条件下的曲线与产品目标决定。}
+
+\begin{interviewbox}{什么叫 compute-optimal training？}
+\textbf{20 秒回答：}它是在给定训练计算预算下平衡模型参数量与训练 token 数，使模型既有足够容量，又不会因为数据不足而欠训练。目标不是单独最大化参数量或数据量，而是让每一部分计算产生更高的质量收益。
+
+\textbf{深入解释：}在 $C\approx\kappa ND$ 的粗略约束下，增大 $N$ 会压缩可承担的 $D$，反之亦然。实际决策还要加入数据质量、硬件效率、训练稳定性和推理成本：训练损失近似最优的方案，未必是延迟、显存或服务成本最优的产品方案。
+
+\textbf{面试官继续追问：}
+1. 什么现象说明模型可能 under-trained？
+2. 数据无限增加时，小模型能否无限获益？
+3. 训练最优与部署最优为什么可能不同？
+4. MoE 模型还能直接使用 $C\propto ND$ 吗？
+\end{interviewbox}
+
+\begin{examplebox}{数值直觉：相近计算量的两种训练计划}
+考虑同一稠密模型族的两个假设方案：A 使用 $N=13$B 参数、训练 $D=100$B token；B 使用 $N=7$B 参数、训练 $D=200$B token。若只用 $C\propto ND$ 粗估，则两者分别约为 $1.3\times10^{21}$ 与 $1.4\times10^{21}$ 的参数--token 乘积，训练计算量处在相近数量级。
+
+仅凭这两个乘积\textbf{不能断言谁更好}。还需要同模型族的等计算量实验或拟合曲线、数据质量与重复率、优化是否充分、目标任务，以及推理显存和延迟约束。这个练习考查的不是背诵固定比例，而是能否把模型容量、token 数、计算和数据质量放在同一决策框架中。
+\end{examplebox}
+
+\Needspace{8\baselineskip}
+\begin{wrongbox}
+\textbf{容易答错：}“Chinchilla 给出了固定的参数/token 比例，新模型都按这个比例训练就是 compute-optimal。”
+
+\textbf{更准确：}论文结论来自特定模型族、数据和计算范围。它提供了平衡 $N$ 与 $D$ 的方法和证据，而不是跨架构、跨数据管线永久不变的配方；新项目仍需用自己的试验、质量目标和部署约束校准。
+\end{wrongbox}
+
+完成优化以后，下一类瓶颈不再是“能否把模型训练起来”，而是基础结构在长上下文和逐词元推理时是否足够高效。RMSNorm、RoPE、GQA、键值缓存与 FlashAttention 都可以从这一问题继续推导出来。
+
+\begin{table}[htbp]
+\centering
+\small
+\begin{tabularx}{0.9\textwidth}{lYYY}
+\toprule
+阶段 & 目标 & 主要瓶颈 & 典型技巧\\
+\midrule
+训练 & 更新全部参数 & 计算、通信、显存 & DP/TP/PP、ZeRO、混合精度\\
+提示词预填充（prefill） & 处理完整提示词 & 大矩阵计算 & FlashAttention、批处理\\
+逐词元解码（decode） & 每步生成一个词元 & 键值读取与带宽 & GQA/MQA、分页缓存、量化\\
+\bottomrule
+\end{tabularx}
+\caption{训练、提示词预填充与逐词元解码的差异。}
+\end{table}
+
+\section*{面试高频问题}
+\addcontentsline{toc}{section}{面试高频问题：预训练}
+
+\textbf{Q: 教师强制的利弊是什么？}
+
+20 秒回答：它让训练可并行且监督稳定，但训练时总看真实前缀，推理时看模型生成前缀，两者存在暴露偏差。
+
+\textbf{Q: 为什么要做序列拼接？}
+
+20 秒回答：短样本直接补齐会浪费计算；序列拼接提高词元利用率，但必须正确构造跨样本遮罩。

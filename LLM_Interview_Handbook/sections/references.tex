@@ -1,0 +1,43 @@
+\chapter*{参考文献与进一步阅读}
+\addcontentsline{toc}{chapter}{参考文献与进一步阅读}
+\markboth{参考文献与进一步阅读}{参考文献与进一步阅读}
+
+\begin{takeawaybox}
+以下优先列出原始论文或官方技术报告。面试中不要求背诵完整作者列表，但应知道方法解决的问题、适用边界，以及原始工作是否声称“精确”等价或只是经验近似。
+\end{takeawaybox}
+
+\small
+\begin{enumerate}[leftmargin=2em]
+  \item Vaswani et al. (2017). \href{https://arxiv.org/abs/1706.03762}{Attention Is All You Need}. NeurIPS 2017.
+  \item Kaplan et al. (2020). \href{https://arxiv.org/abs/2001.08361}{Scaling Laws for Neural Language Models}. 研究语言模型损失随参数量、数据量和训练计算变化的经验幂律。
+  \item Hoffmann et al. (2022). \href{https://arxiv.org/abs/2203.15556}{Training Compute-Optimal Large Language Models}. 在其受控实验范围内研究固定计算预算下模型规模与训练 token 的平衡。
+  \item Zhang and Sennrich (2019). \href{https://arxiv.org/abs/1910.07467}{Root Mean Square Layer Normalization}. NeurIPS 2019.
+  \item Su et al. (2021). \href{https://arxiv.org/abs/2104.09864}{RoFormer: Enhanced Transformer with Rotary Position Embedding}.
+  \item Shazeer (2019). \href{https://arxiv.org/abs/1911.02150}{Fast Transformer Decoding: One Write-Head is All You Need}.
+  \item Ainslie et al. (2023). \href{https://arxiv.org/abs/2305.13245}{GQA: Training Generalized Multi-Query Transformer Models from Multi-Head Checkpoints}. EMNLP 2023.
+  \item DeepSeek-AI et al. (2024). \href{https://arxiv.org/abs/2405.04434}{DeepSeek-V2: A Strong, Economical, and Efficient Mixture-of-Experts Language Model}. MLA 的原始技术说明来源。
+  \item Dao et al. (2022). \href{https://arxiv.org/abs/2205.14135}{FlashAttention: Fast and Memory-Efficient Exact Attention with IO-Awareness}. NeurIPS 2022.
+  \item Leviathan, Kalman, and Matias (2023). \href{https://arxiv.org/abs/2211.17192}{Fast Inference from Transformers via Speculative Decoding}. ICML 2023.
+  \item Hu et al. (2022). \href{https://arxiv.org/abs/2106.09685}{LoRA: Low-Rank Adaptation of Large Language Models}. ICLR 2022.
+  \item Dettmers et al. (2023). \href{https://arxiv.org/abs/2305.14314}{QLoRA: Efficient Finetuning of Quantized LLMs}. NeurIPS 2023.
+  \item Hinton, Vinyals, and Dean (2015). \href{https://arxiv.org/abs/1503.02531}{Distilling the Knowledge in a Neural Network}.
+  \item Schulman et al. (2017). \href{https://arxiv.org/abs/1707.06347}{Proximal Policy Optimization Algorithms}.
+  \item Rafailov et al. (2023). \href{https://arxiv.org/abs/2305.18290}{Direct Preference Optimization: Your Language Model is Secretly a Reward Model}. NeurIPS 2023.
+  \item Shao et al. (2024). \href{https://arxiv.org/abs/2402.03300}{DeepSeekMath: Pushing the Limits of Mathematical Reasoning in Open Language Models}. 文中提出 GRPO。
+  \item Wang et al. (2022). \href{https://arxiv.org/abs/2203.11171}{Self-Consistency Improves Chain of Thought Reasoning in Language Models}.
+  \item Snell, Lee, Xu, and Kumar (2024). \href{https://arxiv.org/abs/2408.03314}{Scaling LLM Test-Time Compute Optimally can be More Effective than Scaling Model Parameters}. 支撑按题目难度分配推理时计算及 verifier-guided search 的讨论。
+  \item Cobbe et al. (2021). \href{https://arxiv.org/abs/2110.14168}{Training Verifiers to Solve Math Word Problems}. 支撑多候选生成、验证器排序与可检验数学任务的讨论。
+  \item Lightman et al. (2023). \href{https://arxiv.org/abs/2305.20050}{Let's Verify Step by Step}. 对比 outcome supervision 与 process supervision，并发布步骤级反馈数据 PRM800K。
+  \item Zelikman, Wu, Mu, and Goodman (2022). \href{https://arxiv.org/abs/2203.14465}{STaR: Bootstrapping Reasoning With Reasoning}. 支撑用筛选后的推理过程迭代自训练的公开方法。
+  \item Hsieh et al. (2023). \href{https://arxiv.org/abs/2305.02301}{Distilling Step-by-Step! Outperforming Larger Language Models with Less Training Data and Smaller Model Sizes}. 支撑将教师 rationale 作为额外监督的蒸馏思路。
+  \item DeepSeek-AI et al. (2025). \href{https://arxiv.org/abs/2501.12948}{DeepSeek-R1: Incentivizing Reasoning Capability in LLMs via Reinforcement Learning}. 支撑该报告公开披露的强化学习、多阶段训练与蒸馏模型信息。
+  \item Shazeer et al. (2017). \href{https://arxiv.org/abs/1701.06538}{Outrageously Large Neural Networks: The Sparsely-Gated Mixture-of-Experts Layer}. ICLR 2017.
+  \item Rajbhandari et al. (2020). \href{https://arxiv.org/abs/1910.02054}{ZeRO: Memory Optimizations Toward Training Trillion Parameter Models}. SC 2020.
+  \item Zhao et al. (2023). \href{https://arxiv.org/abs/2304.11277}{PyTorch FSDP: Experiences on Scaling Fully Sharded Data Parallel}. VLDB 2023.
+  \item Chen et al. (2021). \href{https://arxiv.org/abs/2107.03374}{Evaluating Large Language Models Trained on Code}. HumanEval 与 pass@$k$ 估计。
+  \item Liu et al. (2023). \href{https://arxiv.org/abs/2307.03172}{Lost in the Middle: How Language Models Use Long Contexts}.
+\end{enumerate}
+\normalsize
+
+\vspace{0.5em}
+\noindent\textbf{阅读建议：}先根据正文的问题定位原论文，再重点阅读 problem setup、method、ablation 和 limitations。技术报告中的具体模型数字具有实现依赖性，本书只把它们作为方法来源，不把单一模型结果外推为普遍规律。公开技术报告只能支持公开披露的训练流程，不能据此推断未公开的内部训练配方。

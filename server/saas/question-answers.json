@@ -1,0 +1,2631 @@
+{
+  "node-019": {
+    "shortAnswer": "纯词级无法自然处理未登录词，纯字符又会拉长序列。子词用常见片段缩短序列，同时保留拆解新词的能力。",
+    "explanation": "在开放词表、序列长度和可复用片段之间取舍。 需要特别保留这一边界：没有对所有语言都最优的固定粒度。",
+    "knowledgePoints": [
+      "动机：纯词级无法自然处理未登录词，纯字符又会拉长序列。",
+      "机制：子词用常见片段缩短序列，同时保留拆解新词的能力。",
+      "边界：没有对所有语言都最优的固定粒度。"
+    ],
+    "followUps": [
+      "如果移除「字符、词与子词粒度」，最先出现什么可观测问题？",
+      "它改变的是表示、优化信号还是系统资源？",
+      "它与后续哪个 LLM 组件形成因果关系？",
+      "什么情况下「字符、词与子词粒度」不会带来预期收益？"
+    ]
+  },
+  "node-020": {
+    "shortAnswer": "需要从基础字符构造有限词表并覆盖新词。每次 merge 把常见邻接模式变成一个新 token。",
+    "explanation": "迭代合并高频相邻符号对。 需要特别保留这一边界：训练语料频率会把领域与语言偏差写入词表。",
+    "knowledgePoints": [
+      "动机：需要从基础字符构造有限词表并覆盖新词。",
+      "机制：每次 merge 把常见邻接模式变成一个新 token。",
+      "边界：训练语料频率会把领域与语言偏差写入词表。"
+    ],
+    "followUps": [
+      "如果移除「BPE」，最先出现什么可观测问题？",
+      "它改变的是表示、优化信号还是系统资源？",
+      "它为什么依赖先修知识「tokenization.granularity」？",
+      "什么情况下「BPE」不会带来预期收益？"
+    ]
+  },
+  "node-021": {
+    "shortAnswer": "不同子词算法会给相同文本不同分解。Unigram 从候选词表中选择高概率切分；WordPiece 常以似然改进选择片段。",
+    "explanation": "比较增量构词和概率化删减词表。 需要特别保留这一边界：实际实现的 normalization、预切分和特殊规则同样重要。",
+    "knowledgePoints": [
+      "动机：不同子词算法会给相同文本不同分解。",
+      "机制：Unigram 从候选词表中选择高概率切分；WordPiece 常以似然改进选择片段。",
+      "边界：实际实现的 normalization、预切分和特殊规则同样重要。"
+    ],
+    "followUps": [
+      "如果移除「WordPiece 与 Unigram LM」，最先出现什么可观测问题？",
+      "它改变的是表示、优化信号还是系统资源？",
+      "它为什么依赖先修知识「tokenization.granularity」？",
+      "什么情况下「WordPiece 与 Unigram LM」不会带来预期收益？"
+    ]
+  },
+  "node-022": {
+    "shortAnswer": "词表过小增加序列长度，过大增加 embedding/LM Head。更低 fertility 通常减少 prefill、cache 和 decode 步数，但扩大词表相关计算。",
+    "explanation": "用每个词/字符产生的 token 数衡量切分效率。 需要特别保留这一边界：只比较平均 token 数会掩盖长尾语言和代码符号。",
+    "knowledgePoints": [
+      "动机：词表过小增加序列长度，过大增加 embedding/LM Head。",
+      "机制：更低 fertility 通常减少 prefill、cache 和 decode 步数，但扩大词表相关计算。",
+      "边界：只比较平均 token 数会掩盖长尾语言和代码符号。"
+    ],
+    "followUps": [
+      "如果移除「Vocabulary Size 与 Fertility」，最先出现什么可观测问题？",
+      "它改变的是表示、优化信号还是系统资源？",
+      "它为什么依赖先修知识「tokenization.bpe」？",
+      "什么情况下「Vocabulary Size 与 Fertility」不会带来预期收益？"
+    ]
+  },
+  "node-023": {
+    "shortAnswer": "同样字符长度可能消耗完全不同的上下文预算。训练数据覆盖决定哪些片段能被压缩成常用 token。",
+    "explanation": "检查中文、低资源语言、代码和公式的粒度差异。 需要特别保留这一边界：Tokenizer fertility 是效率指标，不直接等于语言能力。",
+    "knowledgePoints": [
+      "动机：同样字符长度可能消耗完全不同的上下文预算。",
+      "机制：训练数据覆盖决定哪些片段能被压缩成常用 token。",
+      "边界：Tokenizer fertility 是效率指标，不直接等于语言能力。"
+    ],
+    "followUps": [
+      "如果移除「多语言与数学/代码切分」，最先出现什么可观测问题？",
+      "它改变的是表示、优化信号还是系统资源？",
+      "它为什么依赖先修知识「tokenization.vocab-fertility」？",
+      "什么情况下「多语言与数学/代码切分」不会带来预期收益？"
+    ]
+  },
+  "node-024": {
+    "shortAnswer": "训练与推理必须对消息边界采用一致编码。特殊 token 是协议的一部分，会影响 attention mask 和 loss mask。",
+    "explanation": "区分边界、停止、补齐和角色标记。 需要特别保留这一边界：PAD 不应自动等同 EOS；混用会改变停止与监督语义。",
+    "knowledgePoints": [
+      "动机：训练与推理必须对消息边界采用一致编码。",
+      "机制：特殊 token 是协议的一部分，会影响 attention mask 和 loss mask。",
+      "边界：PAD 不应自动等同 EOS；混用会改变停止与监督语义。"
+    ],
+    "followUps": [
+      "如果移除「BOS / EOS / PAD 与 Chat Template」，最先出现什么可观测问题？",
+      "它改变的是表示、优化信号还是系统资源？",
+      "它为什么依赖先修知识「tokenization.granularity」？",
+      "什么情况下「BOS / EOS / PAD 与 Chat Template」不会带来预期收益？"
+    ]
+  },
+  "node-025": {
+    "shortAnswer": "离散 ID 本身没有连续几何结构。Embedding 表把每个 token 映射为 d_model 维向量。",
+    "explanation": "用 token ID 选择词表矩阵的一行。 需要特别保留这一边界：Lookup 不是 one-hot 真正物化，但数学上等价于 one-hot 乘矩阵。",
+    "knowledgePoints": [
+      "动机：离散 ID 本身没有连续几何结构。",
+      "机制：Embedding 表把每个 token 映射为 d_model 维向量。",
+      "边界：Lookup 不是 one-hot 真正物化，但数学上等价于 one-hot 乘矩阵。"
+    ],
+    "followUps": [
+      "如果移除「Embedding Lookup」，最先出现什么可观测问题？",
+      "它改变的是表示、优化信号还是系统资源？",
+      "它为什么依赖先修知识「tokenization.special-tokens」？",
+      "什么情况下「Embedding Lookup」不会带来预期收益？"
+    ]
+  },
+  "node-026": {
+    "shortAnswer": "生成需要为词表中每个 token 给出未归一化分数。若共享，输入和输出使用同一 V×D 参数表的转置视角。",
+    "explanation": "把 hidden state 投影到 V 个 vocabulary logits，并可与 embedding 共享权重。 需要特别保留这一边界：Weight tying 节省参数，但仍要计算大词表 logits。",
+    "knowledgePoints": [
+      "动机：生成需要为词表中每个 token 给出未归一化分数。",
+      "机制：若共享，输入和输出使用同一 V×D 参数表的转置视角。",
+      "边界：Weight tying 节省参数，但仍要计算大词表 logits。"
+    ],
+    "followUps": [
+      "如果移除「LM Head 与 Weight Tying」，最先出现什么可观测问题？",
+      "公式中哪个量直接控制尺度、概率或成本？",
+      "它为什么依赖先修知识「representation.embedding.lookup」？",
+      "什么情况下「LM Head 与 Weight Tying」不会带来预期收益？"
+    ]
+  },
+  "node-027": {
+    "shortAnswer": "固定卷积窗口或单一压缩状态难以同时表达长距离和动态依赖。Attention 为每个 query 生成数据依赖的加权读取。",
+    "explanation": "让每个位置按内容选择性读取其他位置。 需要特别保留这一边界：Dense attention 的通信能力伴随 T² 分数矩阵成本。",
+    "knowledgePoints": [
+      "动机：固定卷积窗口或单一压缩状态难以同时表达长距离和动态依赖。",
+      "机制：Attention 为每个 query 生成数据依赖的加权读取。",
+      "边界：Dense attention 的通信能力伴随 T² 分数矩阵成本。"
+    ],
+    "followUps": [
+      "如果移除「为什么需要 Attention」，最先出现什么可观测问题？",
+      "它改变的是表示、优化信号还是系统资源？",
+      "它为什么依赖先修知识「representation.embedding.lookup」？",
+      "什么情况下「为什么需要 Attention」不会带来预期收益？"
+    ]
+  },
+  "node-028": {
+    "shortAnswer": "同一个 hidden state 在“找什么”和“传什么”中需要不同语义。Q/K 决定权重，V 决定权重作用后的内容。",
+    "explanation": "把匹配条件、被匹配特征和传递内容解耦。 需要特别保留这一边界：Attention 也通过 Q/K/V/O 混合通道，不能说它只做 token mixing。",
+    "knowledgePoints": [
+      "动机：同一个 hidden state 在“找什么”和“传什么”中需要不同语义。",
+      "机制：Q/K 决定权重，V 决定权重作用后的内容。",
+      "边界：Attention 也通过 Q/K/V/O 混合通道，不能说它只做 token mixing。"
+    ],
+    "followUps": [
+      "如果移除「Q / K / V 投影」，最先出现什么可观测问题？",
+      "公式中哪个量直接控制尺度、概率或成本？",
+      "它为什么依赖先修知识「math.linear.linear-projection」？",
+      "什么情况下「Q / K / V 投影」不会带来预期收益？"
+    ]
+  },
+  "node-029": {
+    "shortAnswer": "不缩放时，大 d_k 会让 softmax logits 仅因维度变大而过尖。在近似独立、零均值、单位方差下，d_k 项之和方差约为 d_k。",
+    "explanation": "从点积方差随维度增长推导缩放。 需要特别保留这一边界：推导依赖统计假设；实际模型仍需初始化和归一化共同控制尺度。",
+    "knowledgePoints": [
+      "动机：不缩放时，大 d_k 会让 softmax logits 仅因维度变大而过尖。",
+      "机制：在近似独立、零均值、单位方差下，d_k 项之和方差约为 d_k。",
+      "边界：推导依赖统计假设；实际模型仍需初始化和归一化共同控制尺度。"
+    ],
+    "followUps": [
+      "如果移除「为什么除以 sqrt(d_k)」，最先出现什么可观测问题？",
+      "公式中哪个量直接控制尺度、概率或成本？",
+      "它为什么依赖先修知识「math.probability.variance-covariance」？",
+      "什么情况下「为什么除以 sqrt(d_k)」不会带来预期收益？"
+    ]
+  },
+  "node-030": {
+    "shortAnswer": "Attention 需要非负、和为 1 的读取权重。减最大值不改变概率，因为分子分母同时乘同一常数。",
+    "explanation": "把任意实数 logits 归一化成概率。 需要特别保留这一边界：稳定 softmax 不会修复语义错误的 mask 或错误轴。",
+    "knowledgePoints": [
+      "动机：Attention 需要非负、和为 1 的读取权重。",
+      "机制：减最大值不改变概率，因为分子分母同时乘同一常数。",
+      "边界：稳定 softmax 不会修复语义错误的 mask 或错误轴。"
+    ],
+    "followUps": [
+      "如果移除「Softmax 与数值稳定」，最先出现什么可观测问题？",
+      "公式中哪个量直接控制尺度、概率或成本？",
+      "它为什么依赖先修知识「math.probability.categorical」？",
+      "什么情况下「Softmax 与数值稳定」不会带来预期收益？"
+    ]
+  },
+  "node-031": {
+    "shortAnswer": "训练时虽然并行计算所有位置，也必须保持自回归条件。在 softmax 前把不可见位置加上负无穷，使其概率为零。",
+    "explanation": "分别阻止看未来和忽略补齐位置。 需要特别保留这一边界：布尔语义在不同库中可能相反，必须测试 mask 方向。",
+    "knowledgePoints": [
+      "动机：训练时虽然并行计算所有位置，也必须保持自回归条件。",
+      "机制：在 softmax 前把不可见位置加上负无穷，使其概率为零。",
+      "边界：布尔语义在不同库中可能相反，必须测试 mask 方向。"
+    ],
+    "followUps": [
+      "如果移除「Causal Mask 与 Padding Mask」，最先出现什么可观测问题？",
+      "它改变的是表示、优化信号还是系统资源？",
+      "它为什么依赖先修知识「transformer.attention.softmax-stability」？",
+      "什么情况下「Causal Mask 与 Padding Mask」不会带来预期收益？"
+    ]
+  },
+  "node-032": {
+    "shortAnswer": "能手推 shape 才能定位 transpose、mask 和 cache 错误。QKᵀ 在最后两个轴产生每个 query 对所有 key 的分数。",
+    "explanation": "从 [B,T,D] 追到 [B,H,T,T] 再返回 residual width。 需要特别保留这一边界：算术复杂度和张量是否物化是两件事。",
+    "knowledgePoints": [
+      "动机：能手推 shape 才能定位 transpose、mask 和 cache 错误。",
+      "机制：QKᵀ 在最后两个轴产生每个 query 对所有 key 的分数。",
+      "边界：算术复杂度和张量是否物化是两件事。"
+    ],
+    "followUps": [
+      "如果移除「Attention Tensor Shape」，最先出现什么可观测问题？",
+      "它改变的是表示、优化信号还是系统资源？",
+      "它为什么依赖先修知识「math.linear.tensors-broadcasting」？",
+      "什么情况下「Attention Tensor Shape」不会带来预期收益？"
+    ]
+  },
+  "node-033": {
+    "shortAnswer": "单个相似度度量可能把不同关系挤在同一分数结构中。每个 head 有独立 Q/K/V 投影，最后联合回 residual stream。",
+    "explanation": "在不同投影子空间学习不同匹配模式。 需要特别保留这一边界：固定 d_model 时增加 head 会减小 d_h，不保证单调变好。",
+    "knowledgePoints": [
+      "动机：单个相似度度量可能把不同关系挤在同一分数结构中。",
+      "机制：每个 head 有独立 Q/K/V 投影，最后联合回 residual stream。",
+      "边界：固定 d_model 时增加 head 会减小 d_h，不保证单调变好。"
+    ],
+    "followUps": [
+      "如果移除「为什么需要多个 Head」，最先出现什么可观测问题？",
+      "它改变的是表示、优化信号还是系统资源？",
+      "它为什么依赖先修知识「transformer.attention.tensor-path」？",
+      "什么情况下「为什么需要多个 Head」不会带来预期收益？"
+    ]
+  },
+  "node-034": {
+    "shortAnswer": "实现中最常见的 bug 是把 head 和 sequence 轴错置。Split 只是重解释特征轴，transpose 把 head 移到批量矩阵乘法位置。",
+    "explanation": "掌握 B×T×D 与 B×H×T×Dh 的转换。 需要特别保留这一边界：Transpose 后通常需要 contiguous/reshape 语义检查。",
+    "knowledgePoints": [
+      "动机：实现中最常见的 bug 是把 head 和 sequence 轴错置。",
+      "机制：Split 只是重解释特征轴，transpose 把 head 移到批量矩阵乘法位置。",
+      "边界：Transpose 后通常需要 contiguous/reshape 语义检查。"
+    ],
+    "followUps": [
+      "如果移除「Split / Transpose / Concat」，最先出现什么可观测问题？",
+      "它改变的是表示、优化信号还是系统资源？",
+      "它为什么依赖先修知识「transformer.multihead.why」？",
+      "什么情况下「Split / Transpose / Concat」不会带来预期收益？"
+    ]
+  },
+  "node-035": {
+    "shortAnswer": "直接拼接只把子空间并排放置，没有可学习融合。W_O 对 concat 后的通道做线性重组并提供残差兼容输出。",
+    "explanation": "让各 head 的特征重新交互并回到 d_model。 需要特别保留这一边界：W_O 不是仅用于改 shape；输入输出都为 D 时仍有表达作用。",
+    "knowledgePoints": [
+      "动机：直接拼接只把子空间并排放置，没有可学习融合。",
+      "机制：W_O 对 concat 后的通道做线性重组并提供残差兼容输出。",
+      "边界：W_O 不是仅用于改 shape；输入输出都为 D 时仍有表达作用。"
+    ],
+    "followUps": [
+      "如果移除「Concat 与 W_O」，最先出现什么可观测问题？",
+      "它改变的是表示、优化信号还是系统资源？",
+      "它为什么依赖先修知识「transformer.multihead.reshape」？",
+      "什么情况下「Concat 与 W_O」不会带来预期收益？"
+    ]
+  },
+  "node-036": {
+    "shortAnswer": "Decode 需要反复读取长上下文 KV，缓存容量和带宽成为瓶颈。MQA 让全部 query heads 共享一组 KV；GQA 在质量与缓存之间分组折中。",
+    "explanation": "保持 query heads 的同时减少 KV heads。 需要特别保留这一边界：GQA 主要减少 KV 存储和 decode 读取，不代表所有阶段 FLOPs 同比下降。",
+    "knowledgePoints": [
+      "动机：Decode 需要反复读取长上下文 KV，缓存容量和带宽成为瓶颈。",
+      "机制：MQA 让全部 query heads 共享一组 KV；GQA 在质量与缓存之间分组折中。",
+      "边界：GQA 主要减少 KV 存储和 decode 读取，不代表所有阶段 FLOPs 同比下降。"
+    ],
+    "followUps": [
+      "如果移除「MHA / MQA / GQA」，最先出现什么可观测问题？",
+      "公式中哪个量直接控制尺度、概率或成本？",
+      "它为什么依赖先修知识「transformer.multihead.output-projection」？",
+      "什么情况下「MHA / MQA / GQA」不会带来预期收益？"
+    ]
+  },
+  "node-037": {
+    "shortAnswer": "纯 attention 对输入位置的同步置换具有等变性，无法凭内容知道顺序。位置机制把索引或相对位移写入匹配过程。",
+    "explanation": "让相同 token 集合的不同顺序产生不同表示。 需要特别保留这一边界：位置编码不等于模型一定能利用超长上下文。",
+    "knowledgePoints": [
+      "动机：纯 attention 对输入位置的同步置换具有等变性，无法凭内容知道顺序。",
+      "机制：位置机制把索引或相对位移写入匹配过程。",
+      "边界：位置编码不等于模型一定能利用超长上下文。"
+    ],
+    "followUps": [
+      "如果移除「为什么需要 Position」，最先出现什么可观测问题？",
+      "它改变的是表示、优化信号还是系统资源？",
+      "它为什么依赖先修知识「transformer.attention.qkv」？",
+      "什么情况下「为什么需要 Position」不会带来预期收益？"
+    ]
+  },
+  "node-038": {
+    "shortAnswer": "模型需要区分位置，同时可能希望对长度有一定外推结构。不同频率为位置提供一组平滑坐标。",
+    "explanation": "比较可学习位置表和固定多频率正弦基。 需要特别保留这一边界：固定公式并不保证训练长度外的 attention 行为可靠。",
+    "knowledgePoints": [
+      "动机：模型需要区分位置，同时可能希望对长度有一定外推结构。",
+      "机制：不同频率为位置提供一组平滑坐标。",
+      "边界：固定公式并不保证训练长度外的 attention 行为可靠。"
+    ],
+    "followUps": [
+      "如果移除「绝对位置与 Sinusoidal」，最先出现什么可观测问题？",
+      "它改变的是表示、优化信号还是系统资源？",
+      "它为什么依赖先修知识「transformer.position.why」？",
+      "什么情况下「绝对位置与 Sinusoidal」不会带来预期收益？"
+    ]
+  },
+  "node-039": {
+    "shortAnswer": "Attention 真正消费的是 QK 内积，因此位置应进入匹配分数。R_mᵀR_n=R_{n-m}，同一旋转族把绝对角度差化成相对位置。",
+    "explanation": "在二维坐标对上按位置旋转 Q/K，使点积依赖相对位移。 需要特别保留这一边界：RoPE 不改变 shape 或 dense attention 的 T² 算术量。",
+    "knowledgePoints": [
+      "动机：Attention 真正消费的是 QK 内积，因此位置应进入匹配分数。",
+      "机制：R_mᵀR_n=R_{n-m}，同一旋转族把绝对角度差化成相对位置。",
+      "边界：RoPE 不改变 shape 或 dense attention 的 T² 算术量。"
+    ],
+    "followUps": [
+      "如果移除「RoPE 旋转几何」，最先出现什么可观测问题？",
+      "公式中哪个量直接控制尺度、概率或成本？",
+      "它为什么依赖先修知识「transformer.position.absolute-sinusoidal」？",
+      "什么情况下「RoPE 旋转几何」不会带来预期收益？"
+    ]
+  },
+  "node-040": {
+    "shortAnswer": "部署上下文往往长于训练窗口。缩放方法调整位置相位变化速度，让更长位置落入较熟悉的频率范围。",
+    "explanation": "理解频率缩放、位置插值与训练长度分布外问题。 需要特别保留这一边界：任何缩放都可能牺牲局部分辨率或改变已训练分布。",
+    "knowledgePoints": [
+      "动机：部署上下文往往长于训练窗口。",
+      "机制：缩放方法调整位置相位变化速度，让更长位置落入较熟悉的频率范围。",
+      "边界：任何缩放都可能牺牲局部分辨率或改变已训练分布。"
+    ],
+    "followUps": [
+      "如果移除「Context Extrapolation」，最先出现什么可观测问题？",
+      "它改变的是表示、优化信号还是系统资源？",
+      "它为什么依赖先修知识「transformer.position.rope」？",
+      "什么情况下「Context Extrapolation」不会带来预期收益？"
+    ]
+  },
+  "node-041": {
+    "shortAnswer": "深层残差网络需要控制激活尺度和半精度数值范围。RMSNorm 不减均值，只按均方根缩放每个 token 的 hidden 维。",
+    "explanation": "区分中心化方差和均方根缩放。 需要特别保留这一边界：RMSNorm 不保证输出均值为零；epsilon 是数值稳定项，不是正则。",
+    "knowledgePoints": [
+      "动机：深层残差网络需要控制激活尺度和半精度数值范围。",
+      "机制：RMSNorm 不减均值，只按均方根缩放每个 token 的 hidden 维。",
+      "边界：RMSNorm 不保证输出均值为零；epsilon 是数值稳定项，不是正则。"
+    ],
+    "followUps": [
+      "如果移除「LayerNorm 与 RMSNorm」，最先出现什么可观测问题？",
+      "公式中哪个量直接控制尺度、概率或成本？",
+      "它为什么依赖先修知识「math.linear.inner-product-cosine」？",
+      "什么情况下「LayerNorm 与 RMSNorm」不会带来预期收益？"
+    ]
+  },
+  "node-042": {
+    "shortAnswer": "深层堆叠需要保留接近 identity 的主路径。Pre-Norm 让 x→x+F(Norm(x)) 的残差支路保持直接恒等传播。",
+    "explanation": "比较 normalization 放在子层前后时的残差梯度路径。 需要特别保留这一边界：Pre-Norm 更易优化不意味着在所有配置下质量必然更高。",
+    "knowledgePoints": [
+      "动机：深层堆叠需要保留接近 identity 的主路径。",
+      "机制：Pre-Norm 让 x→x+F(Norm(x)) 的残差支路保持直接恒等传播。",
+      "边界：Pre-Norm 更易优化不意味着在所有配置下质量必然更高。"
+    ],
+    "followUps": [
+      "如果移除「Pre-Norm 与 Post-Norm」，最先出现什么可观测问题？",
+      "它改变的是表示、优化信号还是系统资源？",
+      "它为什么依赖先修知识「transformer.norm.layer-rms」？",
+      "什么情况下「Pre-Norm 与 Post-Norm」不会带来预期收益？"
+    ]
+  },
+  "node-043": {
+    "shortAnswer": "Attention 提供跨 token 通信，但每个位置还需要强非线性变换。先投到 d_ff 激活/门控，再回 d_model 以便残差相加。",
+    "explanation": "在固定 residual width 下获得更宽的非线性特征基。 需要特别保留这一边界：Attention 也混合通道；FFN 的严格特征是 position-wise、不跨 token。",
+    "knowledgePoints": [
+      "动机：Attention 提供跨 token 通信，但每个位置还需要强非线性变换。",
+      "机制：先投到 d_ff 激活/门控，再回 d_model 以便残差相加。",
+      "边界：Attention 也混合通道；FFN 的严格特征是 position-wise、不跨 token。"
+    ],
+    "followUps": [
+      "如果移除「FFN 为什么升维再降维」，最先出现什么可观测问题？",
+      "它改变的是表示、优化信号还是系统资源？",
+      "它为什么依赖先修知识「math.linear.linear-projection」？",
+      "什么情况下「FFN 为什么升维再降维」不会带来预期收益？"
+    ]
+  },
+  "node-044": {
+    "shortAnswer": "单一激活对所有中间通道采用固定非线性。SwiGLU 计算 SiLU(gate)⊙up，再由 down projection 回 residual width。",
+    "explanation": "用一条门控分支调制另一条内容分支。 需要特别保留这一边界：两条上投影增加参数，因此常重新调整 d_ff 以匹配预算。",
+    "knowledgePoints": [
+      "动机：单一激活对所有中间通道采用固定非线性。",
+      "机制：SwiGLU 计算 SiLU(gate)⊙up，再由 down projection 回 residual width。",
+      "边界：两条上投影增加参数，因此常重新调整 d_ff 以匹配预算。"
+    ],
+    "followUps": [
+      "如果移除「GELU、GLU 与 SwiGLU」，最先出现什么可观测问题？",
+      "公式中哪个量直接控制尺度、概率或成本？",
+      "它为什么依赖先修知识「transformer.ffn.standard」？",
+      "什么情况下「GELU、GLU 与 SwiGLU」不会带来预期收益？"
+    ]
+  },
+  "node-045": {
+    "shortAnswer": "子层内部 shape 可以变化，但层间需要稳定统一接口和信息通路。每个子层学习对 residual stream 的增量，而非从零重建状态。",
+    "explanation": "把 Norm、Attention、FFN 都接回固定 d_model 主干。 需要特别保留这一边界：残差连接的价值不只是防止梯度消失，还影响优化几何和信息路由。",
+    "knowledgePoints": [
+      "动机：子层内部 shape 可以变化，但层间需要稳定统一接口和信息通路。",
+      "机制：每个子层学习对 residual stream 的增量，而非从零重建状态。",
+      "边界：残差连接的价值不只是防止梯度消失，还影响优化几何和信息路由。"
+    ],
+    "followUps": [
+      "如果移除「Residual Stream 与完整 Block」，最先出现什么可观测问题？",
+      "它改变的是表示、优化信号还是系统资源？",
+      "它为什么依赖先修知识「transformer.norm.pre-post」？",
+      "什么情况下「Residual Stream 与完整 Block」不会带来预期收益？"
+    ]
+  },
+  "node-046": {
+    "shortAnswer": "不同任务对可见上下文和输出方式有不同要求。Encoder 聚合已知输入；decoder 按因果顺序生成；encoder-decoder 通过 cross-attention 条件化。",
+    "explanation": "比较双向表征、因果生成和条件生成。 需要特别保留这一边界：架构名称不能单独决定能力或效率。",
+    "knowledgePoints": [
+      "动机：不同任务对可见上下文和输出方式有不同要求。",
+      "机制：Encoder 聚合已知输入；decoder 按因果顺序生成；encoder-decoder 通过 cross-attention 条件化。",
+      "边界：架构名称不能单独决定能力或效率。"
+    ],
+    "followUps": [
+      "如果移除「Encoder / Decoder / Encoder-Decoder」，最先出现什么可观测问题？",
+      "它改变的是表示、优化信号还是系统资源？",
+      "它为什么依赖先修知识「transformer.residual.block」？",
+      "什么情况下「Encoder / Decoder / Encoder-Decoder」不会带来预期收益？"
+    ]
+  },
+  "node-047": {
+    "shortAnswer": "联合分布直接建模困难，而条件 next-token 可用同一网络反复估计。链式法则把 P(x₁:T) 写成每个 token 在历史前缀下的概率。",
+    "explanation": "把联合序列概率分解为条件概率乘积。 需要特别保留这一边界：这种因果顺序是分解选择，不代表语言中的真实因果关系。",
+    "knowledgePoints": [
+      "动机：联合分布直接建模困难，而条件 next-token 可用同一网络反复估计。",
+      "机制：链式法则把 P(x₁:T) 写成每个 token 在历史前缀下的概率。",
+      "边界：这种因果顺序是分解选择，不代表语言中的真实因果关系。"
+    ],
+    "followUps": [
+      "如果移除「Autoregressive Factorization」，最先出现什么可观测问题？",
+      "公式中哪个量直接控制尺度、概率或成本？",
+      "它为什么依赖先修知识「math.probability.conditional-bayes」？",
+      "什么情况下「Autoregressive Factorization」不会带来预期收益？"
+    ]
+  },
+  "node-048": {
+    "shortAnswer": "已知训练序列允许一次前向产生多个位置的监督。logits[:, :-1] 对齐 labels[:, 1:]，causal mask 阻止未来泄漏。",
+    "explanation": "训练时用真实前缀并行预测全部下一 token。 需要特别保留这一边界：推理前缀来自模型自身，训练/推理分布差异会产生 exposure bias。",
+    "knowledgePoints": [
+      "动机：已知训练序列允许一次前向产生多个位置的监督。",
+      "机制：logits[:, :-1] 对齐 labels[:, 1:]，causal mask 阻止未来泄漏。",
+      "边界：推理前缀来自模型自身，训练/推理分布差异会产生 exposure bias。"
+    ],
+    "followUps": [
+      "如果移除「Teacher Forcing 与 Shifted Targets」，最先出现什么可观测问题？",
+      "它改变的是表示、优化信号还是系统资源？",
+      "它为什么依赖先修知识「decoder.objective.autoregressive」？",
+      "什么情况下「Teacher Forcing 与 Shifted Targets」不会带来预期收益？"
+    ]
+  },
+  "node-049": {
+    "shortAnswer": "Hidden state 不是概率，必须经 LM Head 和 softmax 定义 categorical 分布。正确 token 的负 log-prob 是单 token NLL；平均 NLL 的指数是 perplexity。",
+    "explanation": "从 hidden state 到词表分数、概率和 token loss。 需要特别保留这一边界：不同 tokenizer 的每-token perplexity 通常不可直接横比。",
+    "knowledgePoints": [
+      "动机：Hidden state 不是概率，必须经 LM Head 和 softmax 定义 categorical 分布。",
+      "机制：正确 token 的负 log-prob 是单 token NLL；平均 NLL 的指数是 perplexity。",
+      "边界：不同 tokenizer 的每-token perplexity 通常不可直接横比。"
+    ],
+    "followUps": [
+      "如果移除「Logits、Cross-Entropy 与 Perplexity」，最先出现什么可观测问题？",
+      "公式中哪个量直接控制尺度、概率或成本？",
+      "它为什么依赖先修知识「representation.embedding.weight-tying」？",
+      "什么情况下「Logits、Cross-Entropy 与 Perplexity」不会带来预期收益？"
+    ]
+  },
+  "node-050": {
+    "shortAnswer": "“decoder-only”只规定主干范式，不规定每个子层细节。现代模型常组合 Pre-Norm、RMSNorm、RoPE、SwiGLU 和 GQA。",
+    "explanation": "识别位置、Norm、FFN、bias 和 tokenizer 等实现选择。 需要特别保留这一边界：不同模型家族不能仅凭营销名称推断训练配方。",
+    "knowledgePoints": [
+      "动机：“decoder-only”只规定主干范式，不规定每个子层细节。",
+      "机制：现代模型常组合 Pre-Norm、RMSNorm、RoPE、SwiGLU 和 GQA。",
+      "边界：不同模型家族不能仅凭营销名称推断训练配方。"
+    ],
+    "followUps": [
+      "如果移除「GPT / LLaMA 风格差异」，最先出现什么可观测问题？",
+      "它改变的是表示、优化信号还是系统资源？",
+      "它为什么依赖先修知识「transformer.residual.block」？",
+      "什么情况下「GPT / LLaMA 风格差异」不会带来预期收益？"
+    ]
+  },
+  "node-051": {
+    "shortAnswer": "面试需要把局部模块放回完整前向图。Residual width 在层间固定，最后映射到 V 维 logits。",
+    "explanation": "串联 embedding、N 个 block、final norm 和 vocabulary logits。 需要特别保留这一边界：训练时并行计算 T 个位置，生成时仍按 token 自回归。",
+    "knowledgePoints": [
+      "动机：面试需要把局部模块放回完整前向图。",
+      "机制：Residual width 在层间固定，最后映射到 V 维 logits。",
+      "边界：训练时并行计算 T 个位置，生成时仍按 token 自回归。"
+    ],
+    "followUps": [
+      "如果移除「从 Token IDs 到 LM Head」，最先出现什么可观测问题？",
+      "它改变的是表示、优化信号还是系统资源？",
+      "它为什么依赖先修知识「decoder.architecture.modern-block」？",
+      "什么情况下「从 Token IDs 到 LM Head」不会带来预期收益？"
+    ]
+  },
+  "node-052": {
+    "shortAnswer": "训练分布决定模型最常见的模式与能力覆盖。数据混合权重改变一个 token 在梯度中出现的频率。",
+    "explanation": "不同来源提供不同知识密度和结构。 需要特别保留这一边界：来源规模不能替代许可、质量和污染审计。",
+    "knowledgePoints": [
+      "动机：训练分布决定模型最常见的模式与能力覆盖。",
+      "机制：数据混合权重改变一个 token 在梯度中出现的频率。",
+      "边界：来源规模不能替代许可、质量和污染审计。"
+    ],
+    "followUps": [
+      "如果移除「Web、书籍、代码与科学数据」，最先出现什么可观测问题？",
+      "它改变的是表示、优化信号还是系统资源？",
+      "它为什么依赖先修知识「decoder.objective.autoregressive」？",
+      "什么情况下「Web、书籍、代码与科学数据」不会带来预期收益？"
+    ]
+  },
+  "node-053": {
+    "shortAnswer": "重复内容会浪费计算并扭曲频率，还可能放大记忆与污染。去重需要在精确匹配和语义近似之间选择粒度。",
+    "explanation": "减少低质量、重复和近重复样本。 需要特别保留这一边界：过强过滤会删掉稀有但有价值的数据。",
+    "knowledgePoints": [
+      "动机：重复内容会浪费计算并扭曲频率，还可能放大记忆与污染。",
+      "机制：去重需要在精确匹配和语义近似之间选择粒度。",
+      "边界：过强过滤会删掉稀有但有价值的数据。"
+    ],
+    "followUps": [
+      "如果移除「Filtering 与 Deduplication」，最先出现什么可观测问题？",
+      "它改变的是表示、优化信号还是系统资源？",
+      "它为什么依赖先修知识「pretraining.data.sources」？",
+      "什么情况下「Filtering 与 Deduplication」不会带来预期收益？"
+    ]
+  },
+  "node-054": {
+    "shortAnswer": "模型可能记住题目或近似解法，而非表现出可泛化能力。需要按时间、文本相似度和答案模式做多层审计。",
+    "explanation": "识别训练数据与评测题重叠导致的虚高。 需要特别保留这一边界：无法证明没有污染时，应降低结论强度并加入新鲜评测。",
+    "knowledgePoints": [
+      "动机：模型可能记住题目或近似解法，而非表现出可泛化能力。",
+      "机制：需要按时间、文本相似度和答案模式做多层审计。",
+      "边界：无法证明没有污染时，应降低结论强度并加入新鲜评测。"
+    ],
+    "followUps": [
+      "如果移除「Benchmark Contamination」，最先出现什么可观测问题？",
+      "它改变的是表示、优化信号还是系统资源？",
+      "它为什么依赖先修知识「pretraining.data.filtering-dedup」？",
+      "什么情况下「Benchmark Contamination」不会带来预期收益？"
+    ]
+  },
+  "node-055": {
+    "shortAnswer": "数据域规模不同，直接按原始比例可能淹没高价值小域。权重控制期望梯度贡献；curriculum 还改变训练阶段的分布。",
+    "explanation": "决定各数据域在训练 token 中的采样比例和顺序。 需要特别保留这一边界：动态配比的效果依赖模型阶段，不能只看静态数据量。",
+    "knowledgePoints": [
+      "动机：数据域规模不同，直接按原始比例可能淹没高价值小域。",
+      "机制：权重控制期望梯度贡献；curriculum 还改变训练阶段的分布。",
+      "边界：动态配比的效果依赖模型阶段，不能只看静态数据量。"
+    ],
+    "followUps": [
+      "如果移除「Mixture Weighting 与 Curriculum」，最先出现什么可观测问题？",
+      "它改变的是表示、优化信号还是系统资源？",
+      "它为什么依赖先修知识「pretraining.data.sources」？",
+      "什么情况下「Mixture Weighting 与 Curriculum」不会带来预期收益？"
+    ]
+  },
+  "node-056": {
+    "shortAnswer": "单卡显存限制了单步可容纳样本，但优化需要足够稳定的全局梯度。累积多个 micro-batch 的梯度后再更新，等价性取决于 loss 缩放与状态层。",
+    "explanation": "区分 micro-batch、global batch 和 token batch。 需要特别保留这一边界：Gradient accumulation 不减少参数、梯度和优化器常驻内存。",
+    "knowledgePoints": [
+      "动机：单卡显存限制了单步可容纳样本，但优化需要足够稳定的全局梯度。",
+      "机制：累积多个 micro-batch 的梯度后再更新，等价性取决于 loss 缩放与状态层。",
+      "边界：Gradient accumulation 不减少参数、梯度和优化器常驻内存。"
+    ],
+    "followUps": [
+      "如果移除「Batch、Sequence 与 Gradient Accumulation」，最先出现什么可观测问题？",
+      "它改变的是表示、优化信号还是系统资源？",
+      "它为什么依赖先修知识「math.optimization.gradient-sgd」？",
+      "什么情况下「Batch、Sequence 与 Gradient Accumulation」不会带来预期收益？"
+    ]
+  },
+  "node-057": {
+    "shortAnswer": "大模型训练的矩阵计算和状态存储极其昂贵。BF16 保留 FP32 指数范围而减少尾数精度；混合精度让关键归约保留高精度。",
+    "explanation": "在吞吐、动态范围和数值误差之间取舍。 需要特别保留这一边界：低精度节省不等于所有张量都以同一格式存储。",
+    "knowledgePoints": [
+      "动机：大模型训练的矩阵计算和状态存储极其昂贵。",
+      "机制：BF16 保留 FP32 指数范围而减少尾数精度；混合精度让关键归约保留高精度。",
+      "边界：低精度节省不等于所有张量都以同一格式存储。"
+    ],
+    "followUps": [
+      "如果移除「FP16、BF16 与 Mixed Precision」，最先出现什么可观测问题？",
+      "它改变的是表示、优化信号还是系统资源？",
+      "它为什么依赖先修知识「math.optimization.adamw」？",
+      "什么情况下「FP16、BF16 与 Mixed Precision」不会带来预期收益？"
+    ]
+  },
+  "node-058": {
+    "shortAnswer": "7B BF16 权重约 14 GB，不代表 14 GB 就能训练。Adam 常为每个参数维护一阶/二阶矩；反向还要保存激活与梯度。",
+    "explanation": "参数之外还要计入梯度、优化器状态、激活和 buffer。 需要特别保留这一边界：精确峰值取决于实现、重计算、分片和临时内核。",
+    "knowledgePoints": [
+      "动机：7B BF16 权重约 14 GB，不代表 14 GB 就能训练。",
+      "机制：Adam 常为每个参数维护一阶/二阶矩；反向还要保存激活与梯度。",
+      "边界：精确峰值取决于实现、重计算、分片和临时内核。"
+    ],
+    "followUps": [
+      "如果移除「训练显存核算」，最先出现什么可观测问题？",
+      "它改变的是表示、优化信号还是系统资源？",
+      "它为什么依赖先修知识「pretraining.training.batch-accumulation」？",
+      "什么情况下「训练显存核算」不会带来预期收益？"
+    ]
+  },
+  "node-059": {
+    "shortAnswer": "深层长序列保存全部中间激活会占据大量显存。只保存检查点，反向时重跑局部前向恢复激活。",
+    "explanation": "用重算换激活显存。 需要特别保留这一边界：它不分片模型状态，也会增加计算和 wall-clock time。",
+    "knowledgePoints": [
+      "动机：深层长序列保存全部中间激活会占据大量显存。",
+      "机制：只保存检查点，反向时重跑局部前向恢复激活。",
+      "边界：它不分片模型状态，也会增加计算和 wall-clock time。"
+    ],
+    "followUps": [
+      "如果移除「Activation Checkpointing」，最先出现什么可观测问题？",
+      "它改变的是表示、优化信号还是系统资源？",
+      "它为什么依赖先修知识「pretraining.training.memory」？",
+      "什么情况下「Activation Checkpointing」不会带来预期收益？"
+    ]
+  },
+  "node-060": {
+    "shortAnswer": "预算规划需要估计继续扩模型或加数据的边际收益。在特定实验范围内，log-log 曲线常呈近似平滑趋势。",
+    "explanation": "用经验幂律描述 loss 随 N、D、C 的趋势。 需要特别保留这一边界：指数和系数依赖模型、数据和训练设置，不是普适定理。",
+    "knowledgePoints": [
+      "动机：预算规划需要估计继续扩模型或加数据的边际收益。",
+      "机制：在特定实验范围内，log-log 曲线常呈近似平滑趋势。",
+      "边界：指数和系数依赖模型、数据和训练设置，不是普适定理。"
+    ],
+    "followUps": [
+      "如果移除「Empirical Scaling Law」，最先出现什么可观测问题？",
+      "公式中哪个量直接控制尺度、概率或成本？",
+      "它为什么依赖先修知识「math.probability.likelihood」？",
+      "什么情况下「Empirical Scaling Law」不会带来预期收益？"
+    ]
+  },
+  "node-061": {
+    "shortAnswer": "过大的模型可能因 token 不足而欠训练，过小模型又无法有效利用大量数据。最优分配比较 N 和 D 的边际 loss 改善，而不是只最大化参数。",
+    "explanation": "固定 FLOPs 下协调模型容量与训练数据。 需要特别保留这一边界：Chinchilla-style 比例是特定研究结果，数据质量和部署目标会移动最优点。",
+    "knowledgePoints": [
+      "动机：过大的模型可能因 token 不足而欠训练，过小模型又无法有效利用大量数据。",
+      "机制：最优分配比较 N 和 D 的边际 loss 改善，而不是只最大化参数。",
+      "边界：Chinchilla-style 比例是特定研究结果，数据质量和部署目标会移动最优点。"
+    ],
+    "followUps": [
+      "如果移除「Compute-Optimal Training」，最先出现什么可观测问题？",
+      "它改变的是表示、优化信号还是系统资源？",
+      "它为什么依赖先修知识「pretraining.scaling.empirical-law」？",
+      "什么情况下「Compute-Optimal Training」不会带来预期收益？"
+    ]
+  },
+  "node-062": {
+    "shortAnswer": "模型需要读取条件，却不一定需要模仿用户文本。Loss mask 选择监督位置；删除 prompt 会改变回答 hidden state。",
+    "explanation": "Prompt 参与 attention，但可不贡献 loss。 需要特别保留这一边界：不同 chat template 的边界 token 必须与 mask 对齐。",
+    "knowledgePoints": [
+      "动机：模型需要读取条件，却不一定需要模仿用户文本。",
+      "机制：Loss mask 选择监督位置；删除 prompt 会改变回答 hidden state。",
+      "边界：不同 chat template 的边界 token 必须与 mask 对齐。"
+    ],
+    "followUps": [
+      "如果移除「SFT Assistant-Only Loss」，最先出现什么可观测问题？",
+      "公式中哪个量直接控制尺度、概率或成本？",
+      "它为什么依赖先修知识「decoder.objective.teacher-forcing」？",
+      "什么情况下「SFT Assistant-Only Loss」不会带来预期收益？"
+    ]
+  },
+  "node-063": {
+    "shortAnswer": "SFT 只能直接模仿训练分布中出现的行为。高质量少量示范可以改变输出协议，但窄分布更新可能损伤基座能力。",
+    "explanation": "分析示范覆盖、格式一致性、过拟合和 catastrophic forgetting。 需要特别保留这一边界：“SFT 不能产生新能力”也过于绝对，组合与泛化仍可能出现。",
+    "knowledgePoints": [
+      "动机：SFT 只能直接模仿训练分布中出现的行为。",
+      "机制：高质量少量示范可以改变输出协议，但窄分布更新可能损伤基座能力。",
+      "边界：“SFT 不能产生新能力”也过于绝对，组合与泛化仍可能出现。"
+    ],
+    "followUps": [
+      "如果移除「Instruction Data 与遗忘」，最先出现什么可观测问题？",
+      "它改变的是表示、优化信号还是系统资源？",
+      "它为什么依赖先修知识「posttraining.sft.masking」？",
+      "什么情况下「Instruction Data 与遗忘」不会带来预期收益？"
+    ]
+  },
+  "node-064": {
+    "shortAnswer": "绝对打分尺度难统一，而成对比较更符合标注任务。Sigmoid 将两个标量 reward 的差映射到胜率。",
+    "explanation": "用 reward 差定义 chosen 胜过 rejected 的概率。 需要特别保留这一边界：模型假设偏好由单一标量差解释，无法完整表达循环或多维偏好。",
+    "knowledgePoints": [
+      "动机：绝对打分尺度难统一，而成对比较更符合标注任务。",
+      "机制：Sigmoid 将两个标量 reward 的差映射到胜率。",
+      "边界：模型假设偏好由单一标量差解释，无法完整表达循环或多维偏好。"
+    ],
+    "followUps": [
+      "如果移除「Pairwise Preference 与 Bradley-Terry」，最先出现什么可观测问题？",
+      "公式中哪个量直接控制尺度、概率或成本？",
+      "它为什么依赖先修知识「math.probability.categorical」？",
+      "什么情况下「Pairwise Preference 与 Bradley-Terry」不会带来预期收益？"
+    ]
+  },
+  "node-065": {
+    "shortAnswer": "策略优化需要可计算的质量信号。Pairwise log-sigmoid loss提高 chosen/rejected reward gap。",
+    "explanation": "训练标量排序器并识别分布外利用。 需要特别保留这一边界：绝对 reward 不可辨识；策略还可能找到评分器漏洞。",
+    "knowledgePoints": [
+      "动机：策略优化需要可计算的质量信号。",
+      "机制：Pairwise log-sigmoid loss提高 chosen/rejected reward gap。",
+      "边界：绝对 reward 不可辨识；策略还可能找到评分器漏洞。"
+    ],
+    "followUps": [
+      "如果移除「Reward Model 与 Reward Hacking」，最先出现什么可观测问题？",
+      "它改变的是表示、优化信号还是系统资源？",
+      "它为什么依赖先修知识「posttraining.preference.bradley-terry」？",
+      "什么情况下「Reward Model 与 Reward Hacking」不会带来预期收益？"
+    ]
+  },
+  "node-066": {
+    "shortAnswer": "离散生成无法对采样 token 本身直接反向传播。Score-function identity 把期望奖励梯度写成 reward×∇logπ。",
+    "explanation": "用采样回报加权 log-prob 梯度。 需要特别保留这一边界：估计无偏不代表方差小，baseline 和 credit assignment 很关键。",
+    "knowledgePoints": [
+      "动机：离散生成无法对采样 token 本身直接反向传播。",
+      "机制：Score-function identity 把期望奖励梯度写成 reward×∇logπ。",
+      "边界：估计无偏不代表方差小，baseline 和 credit assignment 很关键。"
+    ],
+    "followUps": [
+      "如果移除「Policy Gradient」，最先出现什么可观测问题？",
+      "公式中哪个量直接控制尺度、概率或成本？",
+      "它为什么依赖先修知识「math.probability.random-expectation」？",
+      "什么情况下「Policy Gradient」不会带来预期收益？"
+    ]
+  },
+  "node-067": {
+    "shortAnswer": "仅用 raw reward 会把题目难度差异混入策略梯度。A(s,a)=Q(s,a)-V(s) 衡量动作相对平均选择的增益。",
+    "explanation": "分离结果好坏与相对当前状态基线。 需要特别保留这一边界：Value 是估计量，不是 reward；错误 critic 会引入偏差。",
+    "knowledgePoints": [
+      "动机：仅用 raw reward 会把题目难度差异混入策略梯度。",
+      "机制：A(s,a)=Q(s,a)-V(s) 衡量动作相对平均选择的增益。",
+      "边界：Value 是估计量，不是 reward；错误 critic 会引入偏差。"
+    ],
+    "followUps": [
+      "如果移除「Return、Value、Q 与 Advantage」，最先出现什么可观测问题？",
+      "公式中哪个量直接控制尺度、概率或成本？",
+      "它为什么依赖先修知识「posttraining.rl.policy-gradient」？",
+      "什么情况下「Return、Value、Q 与 Advantage」不会带来预期收益？"
+    ]
+  },
+  "node-068": {
+    "shortAnswer": "Rollout 来自 π_old，而更新目标属于 π_θ，需要 importance ratio 校正。r_t>1 表示当前策略提高了该动作概率。",
+    "explanation": "比较当前策略和采样行为策略对同一动作的概率。 需要特别保留这一边界：Ratio 不是 reward；old policy 也不是长期 reference policy。",
+    "knowledgePoints": [
+      "动机：Rollout 来自 π_old，而更新目标属于 π_θ，需要 importance ratio 校正。",
+      "机制：r_t>1 表示当前策略提高了该动作概率。",
+      "边界：Ratio 不是 reward；old policy 也不是长期 reference policy。"
+    ],
+    "followUps": [
+      "如果移除「Old Policy 与 Probability Ratio」，最先出现什么可观测问题？",
+      "公式中哪个量直接控制尺度、概率或成本？",
+      "它为什么依赖先修知识「posttraining.rl.policy-gradient」？",
+      "什么情况下「Old Policy 与 Probability Ratio」不会带来预期收益？"
+    ]
+  },
+  "node-069": {
+    "shortAnswer": "重复使用 rollout 会让策略偏离行为分布并产生不可靠大更新。正优势只限制过度增大概率；负优势只限制过度减小概率，另一侧仍有优化信号。",
+    "explanation": "按 advantage 符号分析 min 与 clip 的四种角落情况。 需要特别保留这一边界：Clip 约束代理目标贡献，不是严格 KL 或参数距离上界。",
+    "knowledgePoints": [
+      "动机：重复使用 rollout 会让策略偏离行为分布并产生不可靠大更新。",
+      "机制：正优势只限制过度增大概率；负优势只限制过度减小概率，另一侧仍有优化信号。",
+      "边界：Clip 约束代理目标贡献，不是严格 KL 或参数距离上界。"
+    ],
+    "followUps": [
+      "如果移除「PPO Clipped Objective」，最先出现什么可观测问题？",
+      "公式中哪个量直接控制尺度、概率或成本？",
+      "它为什么依赖先修知识「posttraining.ppo.ratio」？",
+      "什么情况下「PPO Clipped Objective」不会带来预期收益？"
+    ]
+  },
+  "node-070": {
+    "shortAnswer": "单一 clipped policy loss 不能提供稳定 advantage 或限制长期漂移。GAE 对 TD residual 做加权和；reference KL 与 old-policy ratio承担不同控制角色。",
+    "explanation": "组合方差控制、critic 学习、探索和长期语言锚点。 需要特别保留这一边界：各项系数相互影响，不能把 reference model 当作 old policy。",
+    "knowledgePoints": [
+      "动机：单一 clipped policy loss 不能提供稳定 advantage 或限制长期漂移。",
+      "机制：GAE 对 TD residual 做加权和；reference KL 与 old-policy ratio承担不同控制角色。",
+      "边界：各项系数相互影响，不能把 reference model 当作 old policy。"
+    ],
+    "followUps": [
+      "如果移除「GAE、Value Loss、Entropy 与 Reference KL」，最先出现什么可观测问题？",
+      "公式中哪个量直接控制尺度、概率或成本？",
+      "它为什么依赖先修知识「posttraining.ppo.clipping」？",
+      "什么情况下「GAE、Value Loss、Entropy 与 Reference KL」不会带来预期收益？"
+    ]
+  },
+  "node-071": {
+    "shortAnswer": "希望省去显式 RM 和 PPO 在线环路，同时保留 reference 约束。最优策略正比于 π_ref·exp(r/β)，同 prompt 的归一化常数在偏好差中消失。",
+    "explanation": "从 KL 正则化最优策略反解 reward 的 log-ratio 表达。 需要特别保留这一边界：推导来自理想化奖励目标；离线数据覆盖和 reference 选择仍决定效果。",
+    "knowledgePoints": [
+      "动机：希望省去显式 RM 和 PPO 在线环路，同时保留 reference 约束。",
+      "机制：最优策略正比于 π_ref·exp(r/β)，同 prompt 的归一化常数在偏好差中消失。",
+      "边界：推导来自理想化奖励目标；离线数据覆盖和 reference 选择仍决定效果。"
+    ],
+    "followUps": [
+      "如果移除「DPO 隐式奖励推导」，最先出现什么可观测问题？",
+      "公式中哪个量直接控制尺度、概率或成本？",
+      "它为什么依赖先修知识「math.optimization.lagrangian」？",
+      "什么情况下「DPO 隐式奖励推导」不会带来预期收益？"
+    ]
+  },
+  "node-072": {
+    "shortAnswer": "只看当前策略 gap 无法区分参考模型原有偏好。DPO 增大 chosen 相对 reference 的优势，并减小 rejected 的相对优势。",
+    "explanation": "比较 chosen/rejected 相对 reference 的 log-prob 改变量。 需要特别保留这一边界：β 同时影响目标尺度和偏离控制，不能简单当作学习率。",
+    "knowledgePoints": [
+      "动机：只看当前策略 gap 无法区分参考模型原有偏好。",
+      "机制：DPO 增大 chosen 相对 reference 的优势，并减小 rejected 的相对优势。",
+      "边界：β 同时影响目标尺度和偏离控制，不能简单当作学习率。"
+    ],
+    "followUps": [
+      "如果移除「DPO Loss 与 Beta」，最先出现什么可观测问题？",
+      "公式中哪个量直接控制尺度、概率或成本？",
+      "它为什么依赖先修知识「posttraining.dpo.derivation」？",
+      "什么情况下「DPO Loss 与 Beta」不会带来预期收益？"
+    ]
+  },
+  "node-073": {
+    "shortAnswer": "希望去掉独立 value model，同时保留可比较 baseline。同组候选提供局部难度基线；中心化决定方向，标准化控制尺度。",
+    "explanation": "用同 prompt 多个 rollout 的 reward 均值/标准差构造相对优势。 需要特别保留这一边界：全组 reward 相同则没有学习信号；小方差需要 epsilon。",
+    "knowledgePoints": [
+      "动机：希望去掉独立 value model，同时保留可比较 baseline。",
+      "机制：同组候选提供局部难度基线；中心化决定方向，标准化控制尺度。",
+      "边界：全组 reward 相同则没有学习信号；小方差需要 epsilon。"
+    ],
+    "followUps": [
+      "如果移除「GRPO Group Advantage」，最先出现什么可观测问题？",
+      "公式中哪个量直接控制尺度、概率或成本？",
+      "它为什么依赖先修知识「posttraining.rl.value-advantage」？",
+      "什么情况下「GRPO Group Advantage」不会带来预期收益？"
+    ]
+  },
+  "node-074": {
+    "shortAnswer": "在线多样探索仍需要限制单次更新和长期漂移。GRPO 去掉独立 critic，不等于没有 baseline 或没有 critic-like signal。",
+    "explanation": "把 group advantage 放入 clipped policy objective 并加入 reference KL。 需要特别保留这一边界：多 rollout 增加采样成本，group size 和 reward 质量影响方差。",
+    "knowledgePoints": [
+      "动机：在线多样探索仍需要限制单次更新和长期漂移。",
+      "机制：GRPO 去掉独立 critic，不等于没有 baseline 或没有 critic-like signal。",
+      "边界：多 rollout 增加采样成本，group size 和 reward 质量影响方差。"
+    ],
+    "followUps": [
+      "如果移除「GRPO Objective 与限制」，最先出现什么可观测问题？",
+      "它改变的是表示、优化信号还是系统资源？",
+      "它为什么依赖先修知识「posttraining.grpo.group-advantage」？",
+      "什么情况下「GRPO Objective 与限制」不会带来预期收益？"
+    ]
+  },
+  "node-075": {
+    "shortAnswer": "不同资源条件需要不同的数据/控制闭环。Best-of-N 在采样时选优；rejection sampling 生成新 SFT 数据；RLAIF 改变反馈来源。",
+    "explanation": "区分数据筛选、偏好生成、在线优化和奖励设计。 需要特别保留这一边界：这些方法不能互换，verifier/RM 偏差会被选择或训练放大。",
+    "knowledgePoints": [
+      "动机：不同资源条件需要不同的数据/控制闭环。",
+      "机制：Best-of-N 在采样时选优；rejection sampling 生成新 SFT 数据；RLAIF 改变反馈来源。",
+      "边界：这些方法不能互换，verifier/RM 偏差会被选择或训练放大。"
+    ],
+    "followUps": [
+      "如果移除「Best-of-N、Rejection Sampling、RLAIF 与 Reward Shaping」，最先出现什么可观测问题？",
+      "它改变的是表示、优化信号还是系统资源？",
+      "它为什么依赖先修知识「posttraining.preference.reward-model」？",
+      "什么情况下「Best-of-N、Rejection Sampling、RLAIF 与 Reward Shaping」不会带来预期收益？"
+    ]
+  },
+  "node-076": {
+    "shortAnswer": "复杂任务可能需要更多中间计算而非立即输出。Thinking 是 inference behavior，不必意味着参数切换，也不保证内部轨迹公开。",
+    "explanation": "同一参数模型可通过提示、预算或解码策略表现出不同推理行为。 需要特别保留这一边界：更长文本不等于更正确，且隐藏 reasoning 不应被臆测或伪造。",
+    "knowledgePoints": [
+      "动机：复杂任务可能需要更多中间计算而非立即输出。",
+      "机制：Thinking 是 inference behavior，不必意味着参数切换，也不保证内部轨迹公开。",
+      "边界：更长文本不等于更正确，且隐藏 reasoning 不应被臆测或伪造。"
+    ],
+    "followUps": [
+      "如果移除「Thinking 与 Direct Answer」，最先出现什么可观测问题？",
+      "它改变的是表示、优化信号还是系统资源？",
+      "它为什么依赖先修知识「decoder.architecture.full-path」？",
+      "什么情况下「Thinking 与 Direct Answer」不会带来预期收益？"
+    ]
+  },
+  "node-077": {
+    "shortAnswer": "性能不只能通过增加训练参数或训练 FLOPs 改善。额外计算扩大探索或检查范围，可能提高找到正确解的概率。",
+    "explanation": "增加轨迹长度、候选数、搜索或验证预算。 需要特别保留这一边界：收益会饱和，弱 verifier 还可能稳定选择错误答案。",
+    "knowledgePoints": [
+      "动机：性能不只能通过增加训练参数或训练 FLOPs 改善。",
+      "机制：额外计算扩大探索或检查范围，可能提高找到正确解的概率。",
+      "边界：收益会饱和，弱 verifier 还可能稳定选择错误答案。"
+    ],
+    "followUps": [
+      "如果移除「Test-Time Scaling」，最先出现什么可观测问题？",
+      "它改变的是表示、优化信号还是系统资源？",
+      "它为什么依赖先修知识「reasoning.behavior.thinking」？",
+      "什么情况下「Test-Time Scaling」不会带来预期收益？"
+    ]
+  },
+  "node-078": {
+    "shortAnswer": "单条高方差推理路径可能偶然走错。若正确答案在独立多样样本中更稳定，多数聚合可提高成功率。",
+    "explanation": "采样多条路径并聚合最终答案。 需要特别保留这一边界：样本相关或系统性偏差时，增加 N 只会重复同类错误。",
+    "knowledgePoints": [
+      "动机：单条高方差推理路径可能偶然走错。",
+      "机制：若正确答案在独立多样样本中更稳定，多数聚合可提高成功率。",
+      "边界：样本相关或系统性偏差时，增加 N 只会重复同类错误。"
+    ],
+    "followUps": [
+      "如果移除「Self-Consistency 与 Majority Vote」，最先出现什么可观测问题？",
+      "它改变的是表示、优化信号还是系统资源？",
+      "它为什么依赖先修知识「reasoning.inference.test-time-scaling」？",
+      "什么情况下「Self-Consistency 与 Majority Vote」不会带来预期收益？"
+    ]
+  },
+  "node-079": {
+    "shortAnswer": "正确候选存在不代表默认采样会输出它。最终质量同时取决于候选覆盖率和 verifier 排序准确率。",
+    "explanation": "生成 N 个候选后由评分器选优。 需要特别保留这一边界：N 增大提高成本；不可靠 verifier 会引入 winner's curse 或 reward hacking。",
+    "knowledgePoints": [
+      "动机：正确候选存在不代表默认采样会输出它。",
+      "机制：最终质量同时取决于候选覆盖率和 verifier 排序准确率。",
+      "边界：N 增大提高成本；不可靠 verifier 会引入 winner's curse 或 reward hacking。"
+    ],
+    "followUps": [
+      "如果移除「Best-of-N 与 Verifier」，最先出现什么可观测问题？",
+      "它改变的是表示、优化信号还是系统资源？",
+      "它为什么依赖先修知识「reasoning.inference.test-time-scaling」？",
+      "什么情况下「Best-of-N 与 Verifier」不会带来预期收益？"
+    ]
+  },
+  "node-080": {
+    "shortAnswer": "只看终局难以定位哪一步导致失败。Process reward 提供更密集 credit；outcome reward 更容易自动验证。",
+    "explanation": "分别监督中间步骤或最终结果。 需要特别保留这一边界：步骤标注昂贵且可能奖励表面形式；最终正确也可能伴随错误理由。",
+    "knowledgePoints": [
+      "动机：只看终局难以定位哪一步导致失败。",
+      "机制：Process reward 提供更密集 credit；outcome reward 更容易自动验证。",
+      "边界：步骤标注昂贵且可能奖励表面形式；最终正确也可能伴随错误理由。"
+    ],
+    "followUps": [
+      "如果移除「Process vs Outcome Supervision」，最先出现什么可观测问题？",
+      "它改变的是表示、优化信号还是系统资源？",
+      "它为什么依赖先修知识「posttraining.preference.reward-model」？",
+      "什么情况下「Process vs Outcome Supervision」不会带来预期收益？"
+    ]
+  },
+  "node-081": {
+    "shortAnswer": "开放式人工偏好昂贵且噪声大，结构化任务可自动判定结果。数学、代码等任务能低成本产生 pass/fail 或 graded reward。",
+    "explanation": "用单元测试、答案检查器或证明器提供可验证 reward。 需要特别保留这一边界：Verifier 覆盖不全会诱发 reward hacking；稀疏 reward 又提高探索难度。",
+    "knowledgePoints": [
+      "动机：开放式人工偏好昂贵且噪声大，结构化任务可自动判定结果。",
+      "机制：数学、代码等任务能低成本产生 pass/fail 或 graded reward。",
+      "边界：Verifier 覆盖不全会诱发 reward hacking；稀疏 reward 又提高探索难度。"
+    ],
+    "followUps": [
+      "如果移除「RL with Verifiable Rewards」，最先出现什么可观测问题？",
+      "它改变的是表示、优化信号还是系统资源？",
+      "它为什么依赖先修知识「posttraining.grpo.objective」？",
+      "什么情况下「RL with Verifiable Rewards」不会带来预期收益？"
+    ]
+  },
+  "node-082": {
+    "shortAnswer": "强教师的搜索成本可能过高，不适合每次线上运行。蒸馏把教师分布或轨迹变成离线监督，让学生摊销部分搜索。",
+    "explanation": "用教师答案或可见 rationale 训练更小学生模型。 需要特别保留这一边界：教师错误、冗长或不可忠实解释的轨迹会被学生继承。",
+    "knowledgePoints": [
+      "动机：强教师的搜索成本可能过高，不适合每次线上运行。",
+      "机制：蒸馏把教师分布或轨迹变成离线监督，让学生摊销部分搜索。",
+      "边界：教师错误、冗长或不可忠实解释的轨迹会被学生继承。"
+    ],
+    "followUps": [
+      "如果移除「Reasoning Distillation」，最先出现什么可观测问题？",
+      "它改变的是表示、优化信号还是系统资源？",
+      "它为什么依赖先修知识「reasoning.inference.best-of-n」？",
+      "什么情况下「Reasoning Distillation」不会带来预期收益？"
+    ]
+  },
+  "node-083": {
+    "shortAnswer": "不同任务需要确定性或多样性不同的输出。T<1 放大 logit gap，T→0 接近 argmax；T>1 压平分布。",
+    "explanation": "用 T 控制 logits 差异进入 softmax 的尺度。 需要特别保留这一边界：Temperature 不能修复错误事实，只改变采样分布。",
+    "knowledgePoints": [
+      "动机：不同任务需要确定性或多样性不同的输出。",
+      "机制：T<1 放大 logit gap，T→0 接近 argmax；T>1 压平分布。",
+      "边界：Temperature 不能修复错误事实，只改变采样分布。"
+    ],
+    "followUps": [
+      "如果移除「Greedy 与 Temperature」，最先出现什么可观测问题？",
+      "公式中哪个量直接控制尺度、概率或成本？",
+      "它为什么依赖先修知识「decoder.objective.logits-loss」？",
+      "什么情况下「Greedy 与 Temperature」不会带来预期收益？"
+    ]
+  },
+  "node-084": {
+    "shortAnswer": "全词表采样会给极低概率尾部留下错误机会。Top-k 固定保留 k 个；top-p 保留达到阈值的最小高概率集合。",
+    "explanation": "固定候选数与动态累计概率截断。 需要特别保留这一边界：过强截断会损失必要的低频 token，且顺序必须在重归一化前明确。",
+    "knowledgePoints": [
+      "动机：全词表采样会给极低概率尾部留下错误机会。",
+      "机制：Top-k 固定保留 k 个；top-p 保留达到阈值的最小高概率集合。",
+      "边界：过强截断会损失必要的低频 token，且顺序必须在重归一化前明确。"
+    ],
+    "followUps": [
+      "如果移除「Top-k 与 Top-p」，最先出现什么可观测问题？",
+      "它改变的是表示、优化信号还是系统资源？",
+      "它为什么依赖先修知识「inference.generation.temperature」？",
+      "什么情况下「Top-k 与 Top-p」不会带来预期收益？"
+    ]
+  },
+  "node-085": {
+    "shortAnswer": "局部 greedy 不保证最高序列概率，开放式对话又不只追求似然。Beam 保留多个累计 log-prob 前缀；长度惩罚修正短序列偏好。",
+    "explanation": "区分序列概率搜索、开放式采样和生成终止。 需要特别保留这一边界：Beam 对开放式对话常变得模式化，stop 规则错误会截断或泄漏模板。",
+    "knowledgePoints": [
+      "动机：局部 greedy 不保证最高序列概率，开放式对话又不只追求似然。",
+      "机制：Beam 保留多个累计 log-prob 前缀；长度惩罚修正短序列偏好。",
+      "边界：Beam 对开放式对话常变得模式化，stop 规则错误会截断或泄漏模板。"
+    ],
+    "followUps": [
+      "如果移除「Beam Search、Repetition 与 Stop Tokens」，最先出现什么可观测问题？",
+      "它改变的是表示、优化信号还是系统资源？",
+      "它为什么依赖先修知识「inference.generation.topk-topp」？",
+      "什么情况下「Beam Search、Repetition 与 Stop Tokens」不会带来预期收益？"
+    ]
+  },
+  "node-086": {
+    "shortAnswer": "两个阶段的矩阵形状、并行度和瓶颈不同。Prefill 有较大的 T×T attention 与 GEMM；decode 每步 query 长度为 1，但反复读取历史 KV。",
+    "explanation": "区分整段 prompt 并行处理和逐 token 增量生成。 需要特别保留这一边界：不能用单一 FLOPs 指标概括端到端延迟。",
+    "knowledgePoints": [
+      "动机：两个阶段的矩阵形状、并行度和瓶颈不同。",
+      "机制：Prefill 有较大的 T×T attention 与 GEMM；decode 每步 query 长度为 1，但反复读取历史 KV。",
+      "边界：不能用单一 FLOPs 指标概括端到端延迟。"
+    ],
+    "followUps": [
+      "如果移除「Prefill 与 Decode」，最先出现什么可观测问题？",
+      "它改变的是表示、优化信号还是系统资源？",
+      "它为什么依赖先修知识「decoder.architecture.full-path」？",
+      "什么情况下「Prefill 与 Decode」不会带来预期收益？"
+    ]
+  },
+  "node-087": {
+    "shortAnswer": "不缓存会在每个 decode step 重算全部历史层激活的 K/V。历史 K/V 对后续 query 可复用，而 Q 只服务当前位置的读取。",
+    "explanation": "复用历史 token 的 key/value，当前 query 每步重新产生。 需要特别保留这一边界：Cache 不让每步 attention 变 O(1)；仍需读取并匹配长度 T 的历史 KV。",
+    "knowledgePoints": [
+      "动机：不缓存会在每个 decode step 重算全部历史层激活的 K/V。",
+      "机制：历史 K/V 对后续 query 可复用，而 Q 只服务当前位置的读取。",
+      "边界：Cache 不让每步 attention 变 O(1)；仍需读取并匹配长度 T 的历史 KV。"
+    ],
+    "followUps": [
+      "如果移除「KV Cache 为什么缓存 K/V」，最先出现什么可观测问题？",
+      "它改变的是表示、优化信号还是系统资源？",
+      "它为什么依赖先修知识「inference.cache.prefill-decode」？",
+      "什么情况下「KV Cache 为什么缓存 K/V」不会带来预期收益？"
+    ]
+  },
+  "node-088": {
+    "shortAnswer": "长上下文和批量会线性放大常驻缓存及每步读取。理论字节数为两份 K/V 张量元素数乘每元素字节。",
+    "explanation": "从 L、B、T、n_kv、d_h 和精度计算缓存。 需要特别保留这一边界：公式不含 allocator 碎片、分页表、临时 buffer 和并行副本。",
+    "knowledgePoints": [
+      "动机：长上下文和批量会线性放大常驻缓存及每步读取。",
+      "机制：理论字节数为两份 K/V 张量元素数乘每元素字节。",
+      "边界：公式不含 allocator 碎片、分页表、临时 buffer 和并行副本。"
+    ],
+    "followUps": [
+      "如果移除「KV Shape、显存与 Decode Bandwidth」，最先出现什么可观测问题？",
+      "公式中哪个量直接控制尺度、概率或成本？",
+      "它为什么依赖先修知识「inference.cache.kv」？",
+      "什么情况下「KV Shape、显存与 Decode Bandwidth」不会带来预期收益？"
+    ]
+  },
+  "node-089": {
+    "shortAnswer": "朴素实现会把 T×T score/probability 矩阵反复写入 HBM。在 SRAM 小块中融合 QK、softmax 和 AV，减少物化与数据移动。",
+    "explanation": "通过 tiling 与 online softmax 计算精确 dense attention。 需要特别保留这一边界：它不把 dense attention 算术复杂度变成线性，也不等同 KV Cache。",
+    "knowledgePoints": [
+      "动机：朴素实现会把 T×T score/probability 矩阵反复写入 HBM。",
+      "机制：在 SRAM 小块中融合 QK、softmax 和 AV，减少物化与数据移动。",
+      "边界：它不把 dense attention 算术复杂度变成线性，也不等同 KV Cache。"
+    ],
+    "followUps": [
+      "如果移除「FlashAttention」，最先出现什么可观测问题？",
+      "它改变的是表示、优化信号还是系统资源？",
+      "它为什么依赖先修知识「transformer.attention.softmax-stability」？",
+      "什么情况下「FlashAttention」不会带来预期收益？"
+    ]
+  },
+  "node-090": {
+    "shortAnswer": "请求长度动态变化会造成预留浪费与外部碎片。逻辑 token 顺序通过 block table 映射到物理页，无需整段连续内存。",
+    "explanation": "用固定块管理非连续 KV cache。 需要特别保留这一边界：分页解决内存管理，不消除 attention 读取历史 KV 的计算。",
+    "knowledgePoints": [
+      "动机：请求长度动态变化会造成预留浪费与外部碎片。",
+      "机制：逻辑 token 顺序通过 block table 映射到物理页，无需整段连续内存。",
+      "边界：分页解决内存管理，不消除 attention 读取历史 KV 的计算。"
+    ],
+    "followUps": [
+      "如果移除「PagedAttention」，最先出现什么可观测问题？",
+      "它改变的是表示、优化信号还是系统资源？",
+      "它为什么依赖先修知识「inference.cache.memory-bandwidth」？",
+      "什么情况下「PagedAttention」不会带来预期收益？"
+    ]
+  },
+  "node-091": {
+    "shortAnswer": "静态 batch 会被最长请求拖住并产生空槽。调度器持续补充活跃序列，提高设备利用率和吞吐。",
+    "explanation": "在 token step 边界动态加入/移除请求。 需要特别保留这一边界：吞吐提升可能增加排队延迟，需要明确服务级目标。",
+    "knowledgePoints": [
+      "动机：静态 batch 会被最长请求拖住并产生空槽。",
+      "机制：调度器持续补充活跃序列，提高设备利用率和吞吐。",
+      "边界：吞吐提升可能增加排队延迟，需要明确服务级目标。"
+    ],
+    "followUps": [
+      "如果移除「Continuous Batching」，最先出现什么可观测问题？",
+      "它改变的是表示、优化信号还是系统资源？",
+      "它为什么依赖先修知识「inference.cache.prefill-decode」？",
+      "什么情况下「Continuous Batching」不会带来预期收益？"
+    ]
+  },
+  "node-092": {
+    "shortAnswer": "大模型 decode 的每步串行成本高，而小 draft 可快速提出多个 token。当 draft 与 target 接近时，一次 target 前向可接受多个 token。",
+    "explanation": "draft 提案、target 并行验证并按接受规则保持目标分布。 需要特别保留这一边界：Draft 太弱导致低接受率，太大则自身成本吞掉收益。",
+    "knowledgePoints": [
+      "动机：大模型 decode 的每步串行成本高，而小 draft 可快速提出多个 token。",
+      "机制：当 draft 与 target 接近时，一次 target 前向可接受多个 token。",
+      "边界：Draft 太弱导致低接受率，太大则自身成本吞掉收益。"
+    ],
+    "followUps": [
+      "如果移除「Speculative Decoding」，最先出现什么可观测问题？",
+      "它改变的是表示、优化信号还是系统资源？",
+      "它为什么依赖先修知识「inference.generation.temperature」？",
+      "什么情况下「Speculative Decoding」不会带来预期收益？"
+    ]
+  },
+  "node-093": {
+    "shortAnswer": "权重和 KV 的字节数直接影响容量与带宽。整数通过 scale/zero-point 近似实数区间；低 bit 增大离散误差。",
+    "explanation": "区分浮点动态范围、尾数精度和整数缩放。 需要特别保留这一边界：标称 bit 数不等于端到端显存或速度按同比例变化。",
+    "knowledgePoints": [
+      "动机：权重和 KV 的字节数直接影响容量与带宽。",
+      "机制：整数通过 scale/zero-point 近似实数区间；低 bit 增大离散误差。",
+      "边界：标称 bit 数不等于端到端显存或速度按同比例变化。"
+    ],
+    "followUps": [
+      "如果移除「FP32 / FP16 / BF16 / INT8 / INT4」，最先出现什么可观测问题？",
+      "它改变的是表示、优化信号还是系统资源？",
+      "它为什么依赖先修知识「pretraining.training.precision」？",
+      "什么情况下「FP32 / FP16 / BF16 / INT8 / INT4」不会带来预期收益？"
+    ]
+  },
+  "node-094": {
+    "shortAnswer": "所有权重元素的相同误差对激活结果影响并不相同。GPTQ-style 方法利用二阶近似补偿；AWQ-style 方法保护激活敏感权重。",
+    "explanation": "用少量校准数据决定哪些量化误差最影响输出。 需要特别保留这一边界：不同 kernel、group size 和硬件决定实际收益，不能只看模型文件大小。",
+    "knowledgePoints": [
+      "动机：所有权重元素的相同误差对激活结果影响并不相同。",
+      "机制：GPTQ-style 方法利用二阶近似补偿；AWQ-style 方法保护激活敏感权重。",
+      "边界：不同 kernel、group size 和硬件决定实际收益，不能只看模型文件大小。"
+    ],
+    "followUps": [
+      "如果移除「Weight-only、Calibration、GPTQ/AWQ 直觉」，最先出现什么可观测问题？",
+      "它改变的是表示、优化信号还是系统资源？",
+      "它为什么依赖先修知识「inference.quantization.formats」？",
+      "什么情况下「Weight-only、Calibration、GPTQ/AWQ 直觉」不会带来预期收益？"
+    ]
+  },
+  "node-095": {
+    "shortAnswer": "FFN 占大量参数且每个 token 独立计算，天然适合稀疏选择。保留 attention 的跨 token 通信，只把逐 token 非线性变换专家化。",
+    "explanation": "对 position-wise FFN 做 token 级条件路由。 需要特别保留这一边界：通信和负载不均会让低 FLOPs 模型仍有高延迟。",
+    "knowledgePoints": [
+      "动机：FFN 占大量参数且每个 token 独立计算，天然适合稀疏选择。",
+      "机制：保留 attention 的跨 token 通信，只把逐 token 非线性变换专家化。",
+      "边界：通信和负载不均会让低 FLOPs 模型仍有高延迟。"
+    ],
+    "followUps": [
+      "如果移除「为什么 Experts 替换 FFN」，最先出现什么可观测问题？",
+      "它改变的是表示、优化信号还是系统资源？",
+      "它为什么依赖先修知识「transformer.ffn.standard」？",
+      "什么情况下「为什么 Experts 替换 FFN」不会带来预期收益？"
+    ]
+  },
+  "node-096": {
+    "shortAnswer": "全部专家都计算会失去稀疏收益。Router 产生 E 个 logits，softmax 后保留最高 k 个门值。",
+    "explanation": "为每个 token 选择少数专家并加权输出。 需要特别保留这一边界：Top-k 离散选择会带来训练稳定与负载问题。",
+    "knowledgePoints": [
+      "动机：全部专家都计算会失去稀疏收益。",
+      "机制：Router 产生 E 个 logits，softmax 后保留最高 k 个门值。",
+      "边界：Top-k 离散选择会带来训练稳定与负载问题。"
+    ],
+    "followUps": [
+      "如果移除「Router Softmax 与 Top-k」，最先出现什么可观测问题？",
+      "公式中哪个量直接控制尺度、概率或成本？",
+      "它为什么依赖先修知识「moe.routing.why-ffn」？",
+      "什么情况下「Router Softmax 与 Top-k」不会带来预期收益？"
+    ]
+  },
+  "node-097": {
+    "shortAnswer": "少数专家过载会丢 token 或形成通信热点，其余专家得不到训练。辅助损失通常同时关注分配频率和平均门概率。",
+    "explanation": "让 token 流量和门概率不过度集中。 需要特别保留这一边界：过强均衡会牺牲任务自然产生的非均匀专业化。",
+    "knowledgePoints": [
+      "动机：少数专家过载会丢 token 或形成通信热点，其余专家得不到训练。",
+      "机制：辅助损失通常同时关注分配频率和平均门概率。",
+      "边界：过强均衡会牺牲任务自然产生的非均匀专业化。"
+    ],
+    "followUps": [
+      "如果移除「Load Balancing 与 Expert Collapse」，最先出现什么可观测问题？",
+      "它改变的是表示、优化信号还是系统资源？",
+      "它为什么依赖先修知识「moe.routing.topk」？",
+      "什么情况下「Load Balancing 与 Expert Collapse」不会带来预期收益？"
+    ]
+  },
+  "node-098": {
+    "shortAnswer": "分布式 All-to-All 需要可规划的张量容量。Capacity factor 在平均 token/专家基础上留出冗余。",
+    "explanation": "为每个专家分配有限 token buffer。 需要特别保留这一边界：容量过低会 drop/overflow，过高则浪费内存与通信。",
+    "knowledgePoints": [
+      "动机：分布式 All-to-All 需要可规划的张量容量。",
+      "机制：Capacity factor 在平均 token/专家基础上留出冗余。",
+      "边界：容量过低会 drop/overflow，过高则浪费内存与通信。"
+    ],
+    "followUps": [
+      "如果移除「Capacity Factor 与 Dropped Tokens」，最先出现什么可观测问题？",
+      "它改变的是表示、优化信号还是系统资源？",
+      "它为什么依赖先修知识「moe.routing.balance」？",
+      "什么情况下「Capacity Factor 与 Dropped Tokens」不会带来预期收益？"
+    ]
+  },
+  "node-099": {
+    "shortAnswer": "单卡无法保存全部专家，且 token 路由跨设备。Dispatch 和 combine 两次数据重排通常需要 All-to-All。",
+    "explanation": "按专家切分参数，并把 token 发送到专家所在设备。 需要特别保留这一边界：总参数、激活参数、通信量和延迟必须分别报告。",
+    "knowledgePoints": [
+      "动机：单卡无法保存全部专家，且 token 路由跨设备。",
+      "机制：Dispatch 和 combine 两次数据重排通常需要 All-to-All。",
+      "边界：总参数、激活参数、通信量和延迟必须分别报告。"
+    ],
+    "followUps": [
+      "如果移除「Expert Parallel 与 All-to-All」，最先出现什么可观测问题？",
+      "它改变的是表示、优化信号还是系统资源？",
+      "它为什么依赖先修知识「moe.routing.capacity」？",
+      "什么情况下「Expert Parallel 与 All-to-All」不会带来预期收益？"
+    ]
+  },
+  "node-100": {
+    "shortAnswer": "多任务场景需要保存许多模型版本。Adapter 冻结底座，通过新增小网络学习任务增量。",
+    "explanation": "比较更新全部权重和插入小瓶颈模块。 需要特别保留这一边界：参数少不代表激活和底座前向成本按比例减少。",
+    "knowledgePoints": [
+      "动机：多任务场景需要保存许多模型版本。",
+      "机制：Adapter 冻结底座，通过新增小网络学习任务增量。",
+      "边界：参数少不代表激活和底座前向成本按比例减少。"
+    ],
+    "followUps": [
+      "如果移除「Full Fine-Tuning 与 Adapter」，最先出现什么可观测问题？",
+      "它改变的是表示、优化信号还是系统资源？",
+      "它为什么依赖先修知识「posttraining.sft.data-quality」？",
+      "什么情况下「Full Fine-Tuning 与 Adapter」不会带来预期收益？"
+    ]
+  },
+  "node-101": {
+    "shortAnswer": "下游适配可能只需在较低维方向改变权重。训练瘦矩阵 A/B，前向把其乘积作为冻结 W 的增量。",
+    "explanation": "把 ΔW 写成 B·A，并用 α/r 控制尺度。 需要特别保留这一边界：Rank 太小会欠拟合，太大逐渐失去参数效率。",
+    "knowledgePoints": [
+      "动机：下游适配可能只需在较低维方向改变权重。",
+      "机制：训练瘦矩阵 A/B，前向把其乘积作为冻结 W 的增量。",
+      "边界：Rank 太小会欠拟合，太大逐渐失去参数效率。"
+    ],
+    "followUps": [
+      "如果移除「LoRA Low-Rank Update」，最先出现什么可观测问题？",
+      "公式中哪个量直接控制尺度、概率或成本？",
+      "它为什么依赖先修知识「math.linear.rank-lowrank-svd」？",
+      "什么情况下「LoRA Low-Rank Update」不会带来预期收益？"
+    ]
+  },
+  "node-102": {
+    "shortAnswer": "不同模块控制不同功能且参数预算不同。Merge 预先把 (α/r)BA 加入 W，消除推理旁路算子。",
+    "explanation": "选择 Q/V/O/FFN 等插入位置，并理解部署合并。 需要特别保留这一边界：合并通常恢复基础线性层速度，不会自动比基础模型更快。",
+    "knowledgePoints": [
+      "动机：不同模块控制不同功能且参数预算不同。",
+      "机制：Merge 预先把 (α/r)BA 加入 W，消除推理旁路算子。",
+      "边界：合并通常恢复基础线性层速度，不会自动比基础模型更快。"
+    ],
+    "followUps": [
+      "如果移除「Target Modules 与 Merge」，最先出现什么可观测问题？",
+      "它改变的是表示、优化信号还是系统资源？",
+      "它为什么依赖先修知识「peft.lora.update」？",
+      "什么情况下「Target Modules 与 Merge」不会带来预期收益？"
+    ]
+  },
+  "node-103": {
+    "shortAnswer": "全精度底座仍可能让微调显存不可承受。量化权重参与前向，梯度沿激活流向 A/B，而不更新离散底座。",
+    "explanation": "冻结量化底座，只训练高精度 LoRA adapter。 需要特别保留这一边界：QLoRA 不是普通 INT4 部署，也不意味着激活和优化器都为 4 bit。",
+    "knowledgePoints": [
+      "动机：全精度底座仍可能让微调显存不可承受。",
+      "机制：量化权重参与前向，梯度沿激活流向 A/B，而不更新离散底座。",
+      "边界：QLoRA 不是普通 INT4 部署，也不意味着激活和优化器都为 4 bit。"
+    ],
+    "followUps": [
+      "如果移除「QLoRA」，最先出现什么可观测问题？",
+      "它改变的是表示、优化信号还是系统资源？",
+      "它为什么依赖先修知识「peft.lora.update」？",
+      "什么情况下「QLoRA」不会带来预期收益？"
+    ]
+  },
+  "node-104": {
+    "shortAnswer": "仅报告 trainable parameter count 会夸大显存节省。LoRA 主要减少可训练状态；QLoRA 进一步压缩冻结底座存储。",
+    "explanation": "分别核算底座、adapter、梯度、优化器和激活。 需要特别保留这一边界：长序列激活仍可能成为峰值显存主项。",
+    "knowledgePoints": [
+      "动机：仅报告 trainable parameter count 会夸大显存节省。",
+      "机制：LoRA 主要减少可训练状态；QLoRA 进一步压缩冻结底座存储。",
+      "边界：长序列激活仍可能成为峰值显存主项。"
+    ],
+    "followUps": [
+      "如果移除「PEFT Memory Accounting」，最先出现什么可观测问题？",
+      "它改变的是表示、优化信号还是系统资源？",
+      "它为什么依赖先修知识「peft.qlora.quantized-base」？",
+      "什么情况下「PEFT Memory Accounting」不会带来预期收益？"
+    ]
+  },
+  "node-105": {
+    "shortAnswer": "需要用多卡提高吞吐，但单卡仍放得下模型。每卡计算不同样本梯度，AllReduce 得到求和/平均并让副本保持一致。",
+    "explanation": "复制完整模型、切分数据并 AllReduce 梯度。 需要特别保留这一边界：DDP 不分片参数、梯度和优化器常驻状态。",
+    "knowledgePoints": [
+      "动机：需要用多卡提高吞吐，但单卡仍放得下模型。",
+      "机制：每卡计算不同样本梯度，AllReduce 得到求和/平均并让副本保持一致。",
+      "边界：DDP 不分片参数、梯度和优化器常驻状态。"
+    ],
+    "followUps": [
+      "如果移除「Data Parallel 与 DDP」，最先出现什么可观测问题？",
+      "它改变的是表示、优化信号还是系统资源？",
+      "它为什么依赖先修知识「pretraining.training.batch-accumulation」？",
+      "什么情况下「Data Parallel 与 DDP」不会带来预期收益？"
+    ]
+  },
+  "node-106": {
+    "shortAnswer": "单个线性层权重或计算无法由一张卡承担。Column/row parallel 让不同设备计算输出列或输入行，并用 AllGather/AllReduce 组合。",
+    "explanation": "在层内切分大矩阵并在每层通信部分结果。 需要特别保留这一边界：TP 通信频繁，对互联带宽和拓扑敏感。",
+    "knowledgePoints": [
+      "动机：单个线性层权重或计算无法由一张卡承担。",
+      "机制：Column/row parallel 让不同设备计算输出列或输入行，并用 AllGather/AllReduce 组合。",
+      "边界：TP 通信频繁，对互联带宽和拓扑敏感。"
+    ],
+    "followUps": [
+      "如果移除「Tensor Parallel」，最先出现什么可观测问题？",
+      "它改变的是表示、优化信号还是系统资源？",
+      "它为什么依赖先修知识「math.linear.matmul-shapes」？",
+      "什么情况下「Tensor Parallel」不会带来预期收益？"
+    ]
+  },
+  "node-107": {
+    "shortAnswer": "跨层放置能降低每卡参数，但会产生阶段等待。Micro-batch 让不同 pipeline stage 同时处理不同样本。",
+    "explanation": "按层切分模型并用 micro-batch 填充流水线。 需要特别保留这一边界：Bubble、负载不均和激活传输会限制利用率。",
+    "knowledgePoints": [
+      "动机：跨层放置能降低每卡参数，但会产生阶段等待。",
+      "机制：Micro-batch 让不同 pipeline stage 同时处理不同样本。",
+      "边界：Bubble、负载不均和激活传输会限制利用率。"
+    ],
+    "followUps": [
+      "如果移除「Pipeline Parallel」，最先出现什么可观测问题？",
+      "它改变的是表示、优化信号还是系统资源？",
+      "它为什么依赖先修知识「decoder.architecture.full-path」？",
+      "什么情况下「Pipeline Parallel」不会带来预期收益？"
+    ]
+  },
+  "node-108": {
+    "shortAnswer": "长序列激活可能成为显存瓶颈。对 Norm、dropout 等局部操作分片，并在需要跨 token 交互处通信。",
+    "explanation": "沿 sequence 轴切分可分解的激活/算子。 需要特别保留这一边界：不同框架的 SP 定义和与 TP 的组合方式并不完全相同。",
+    "knowledgePoints": [
+      "动机：长序列激活可能成为显存瓶颈。",
+      "机制：对 Norm、dropout 等局部操作分片，并在需要跨 token 交互处通信。",
+      "边界：不同框架的 SP 定义和与 TP 的组合方式并不完全相同。"
+    ],
+    "followUps": [
+      "如果移除「Sequence Parallel」，最先出现什么可观测问题？",
+      "它改变的是表示、优化信号还是系统资源？",
+      "它为什么依赖先修知识「distributed.tensor.tp」？",
+      "什么情况下「Sequence Parallel」不会带来预期收益？"
+    ]
+  },
+  "node-109": {
+    "shortAnswer": "专家数和总参数可远超单卡容量。设备持有专家子集，token 通过 All-to-All dispatch/combine。",
+    "explanation": "按专家切分 MoE 参数并路由 token。 需要特别保留这一边界：EP 与 MoE 强绑定，通信不规则且受负载均衡影响。",
+    "knowledgePoints": [
+      "动机：专家数和总参数可远超单卡容量。",
+      "机制：设备持有专家子集，token 通过 All-to-All dispatch/combine。",
+      "边界：EP 与 MoE 强绑定，通信不规则且受负载均衡影响。"
+    ],
+    "followUps": [
+      "如果移除「Expert Parallel」，最先出现什么可观测问题？",
+      "它改变的是表示、优化信号还是系统资源？",
+      "它为什么依赖先修知识「moe.system.expert-parallel」？",
+      "什么情况下「Expert Parallel」不会带来预期收益？"
+    ]
+  },
+  "node-110": {
+    "shortAnswer": "DDP 每卡复制完整模型状态，内存随 data-parallel world size 不下降。更高 stage 以更多通信和临时 gather 换更低常驻内存。",
+    "explanation": "依次分片 optimizer states、gradients、parameters。 需要特别保留这一边界：ZeRO 不直接减少 activation memory。",
+    "knowledgePoints": [
+      "动机：DDP 每卡复制完整模型状态，内存随 data-parallel world size 不下降。",
+      "机制：更高 stage 以更多通信和临时 gather 换更低常驻内存。",
+      "边界：ZeRO 不直接减少 activation memory。"
+    ],
+    "followUps": [
+      "如果移除「ZeRO-1 / 2 / 3」，最先出现什么可观测问题？",
+      "它改变的是表示、优化信号还是系统资源？",
+      "它为什么依赖先修知识「distributed.data.ddp」？",
+      "什么情况下「ZeRO-1 / 2 / 3」不会带来预期收益？"
+    ]
+  },
+  "node-111": {
+    "shortAnswer": "计算 kernel 需要当前层完整或适配的参数视图。Forward 前 AllGather 当前单元参数，backward 后 ReduceScatter 梯度。",
+    "explanation": "按层临时聚合参数并在反向后重新分片梯度。 需要特别保留这一边界：峰值受 prefetch、wrap 粒度和同时 materialize 的层数影响。",
+    "knowledgePoints": [
+      "动机：计算 kernel 需要当前层完整或适配的参数视图。",
+      "机制：Forward 前 AllGather 当前单元参数，backward 后 ReduceScatter 梯度。",
+      "边界：峰值受 prefetch、wrap 粒度和同时 materialize 的层数影响。"
+    ],
+    "followUps": [
+      "如果移除「FSDP AllGather / ReduceScatter 生命周期」，最先出现什么可观测问题？",
+      "它改变的是表示、优化信号还是系统资源？",
+      "它为什么依赖先修知识「distributed.zero.stages」？",
+      "什么情况下「FSDP AllGather / ReduceScatter 生命周期」不会带来预期收益？"
+    ]
+  },
+  "node-112": {
+    "shortAnswer": "训练需要连续、低方差的拟合指标。Perplexity 是平均 token NLL 的指数。",
+    "explanation": "衡量给定 token 分布上的平均 NLL。 需要特别保留这一边界：后训练后 perplexity 变差不一定代表指令遵循变差；不同 tokenizer 也难直接比较。",
+    "knowledgePoints": [
+      "动机：训练需要连续、低方差的拟合指标。",
+      "机制：Perplexity 是平均 token NLL 的指数。",
+      "边界：后训练后 perplexity 变差不一定代表指令遵循变差；不同 tokenizer 也难直接比较。"
+    ],
+    "followUps": [
+      "如果移除「Validation Loss 与 Perplexity」，最先出现什么可观测问题？",
+      "它改变的是表示、优化信号还是系统资源？",
+      "它为什么依赖先修知识「decoder.objective.logits-loss」？",
+      "什么情况下「Validation Loss 与 Perplexity」不会带来预期收益？"
+    ]
+  },
+  "node-113": {
+    "shortAnswer": "代码/数学任务常有确定性 checker，且允许多次采样。pass@k 估计 k 个候选中至少一个通过的概率。",
+    "explanation": "区分一次成功率和多候选至少一次成功概率。 需要特别保留这一边界：样本独立性、去重和测试覆盖会影响解释。",
+    "knowledgePoints": [
+      "动机：代码/数学任务常有确定性 checker，且允许多次采样。",
+      "机制：pass@k 估计 k 个候选中至少一个通过的概率。",
+      "边界：样本独立性、去重和测试覆盖会影响解释。"
+    ],
+    "followUps": [
+      "如果移除「Exact Match、Accuracy 与 pass@k」，最先出现什么可观测问题？",
+      "它改变的是表示、优化信号还是系统资源？",
+      "它为什么依赖先修知识「reasoning.inference.best-of-n」？",
+      "什么情况下「Exact Match、Accuracy 与 pass@k」不会带来预期收益？"
+    ]
+  },
+  "node-114": {
+    "shortAnswer": "单一参考答案无法覆盖风格和帮助性。Judge 在固定 rubric 下比较两个输出，减少绝对分数漂移。",
+    "explanation": "用成对比较评估难以自动打分的开放式回答。 需要特别保留这一边界：位置、长度、自偏好和提示注入都会造成 judge bias。",
+    "knowledgePoints": [
+      "动机：单一参考答案无法覆盖风格和帮助性。",
+      "机制：Judge 在固定 rubric 下比较两个输出，减少绝对分数漂移。",
+      "边界：位置、长度、自偏好和提示注入都会造成 judge bias。"
+    ],
+    "followUps": [
+      "如果移除「Pairwise Win Rate 与 LLM-as-a-Judge」，最先出现什么可观测问题？",
+      "它改变的是表示、优化信号还是系统资源？",
+      "它为什么依赖先修知识「posttraining.preference.bradley-terry」？",
+      "什么情况下「Pairwise Win Rate 与 LLM-as-a-Judge」不会带来预期收益？"
+    ]
+  },
+  "node-115": {
+    "shortAnswer": "高概率错误比低置信错误更危险。良好校准意味着声称 80% 的事件约有 80% 成功。",
+    "explanation": "比较预测置信度和真实正确频率。 需要特别保留这一边界：生成 token 概率不能直接当作整条答案正确概率。",
+    "knowledgePoints": [
+      "动机：高概率错误比低置信错误更危险。",
+      "机制：良好校准意味着声称 80% 的事件约有 80% 成功。",
+      "边界：生成 token 概率不能直接当作整条答案正确概率。"
+    ],
+    "followUps": [
+      "如果移除「Calibration 与 Uncertainty」，最先出现什么可观测问题？",
+      "它改变的是表示、优化信号还是系统资源？",
+      "它为什么依赖先修知识「math.probability.categorical」？",
+      "什么情况下「Calibration 与 Uncertainty」不会带来预期收益？"
+    ]
+  },
+  "node-116": {
+    "shortAnswer": "平均 benchmark 分数无法覆盖未知输入和错误恢复。可靠性评测应改变措辞、来源、时间和工具状态，观察失败模式。",
+    "explanation": "测试事实依据、扰动敏感性和部署分布变化。 需要特别保留这一边界：Hallucination 没有单一完美自动指标，需要任务化定义。",
+    "knowledgePoints": [
+      "动机：平均 benchmark 分数无法覆盖未知输入和错误恢复。",
+      "机制：可靠性评测应改变措辞、来源、时间和工具状态，观察失败模式。",
+      "边界：Hallucination 没有单一完美自动指标，需要任务化定义。"
+    ],
+    "followUps": [
+      "如果移除「Hallucination、Robustness 与 Distribution Shift」，最先出现什么可观测问题？",
+      "它改变的是表示、优化信号还是系统资源？",
+      "它为什么依赖先修知识「evaluation.metrics.loss-perplexity」？",
+      "什么情况下「Hallucination、Robustness 与 Distribution Shift」不会带来预期收益？"
+    ]
+  },
+  "node-117": {
+    "shortAnswer": "安全、金融或自动操作中，少量高代价错误可能主导风险。VaR 给出损失分位点；CVaR 关注超过该分位点后的平均损失。",
+    "explanation": "从平均损失转向最坏尾部的频率与严重度。 需要特别保留这一边界：CVaR 依赖损失定义和尾部样本量，估计可能高方差。",
+    "knowledgePoints": [
+      "动机：安全、金融或自动操作中，少量高代价错误可能主导风险。",
+      "机制：VaR 给出损失分位点；CVaR 关注超过该分位点后的平均损失。",
+      "边界：CVaR 依赖损失定义和尾部样本量，估计可能高方差。"
+    ],
+    "followUps": [
+      "如果移除「Expected Loss、VaR 与 CVaR」，最先出现什么可观测问题？",
+      "公式中哪个量直接控制尺度、概率或成本？",
+      "它为什么依赖先修知识「math.probability.random-expectation」？",
+      "什么情况下「Expected Loss、VaR 与 CVaR」不会带来预期收益？"
+    ]
+  },
+  "node-118": {
+    "shortAnswer": "参数知识不及时，工具动作又可能产生真实副作用。RAG 分离召回与重排；Agent 用显式 schema 和状态机执行可验证动作。",
+    "explanation": "用检索、重排、工具 schema、状态和幂等性约束外部能力。 需要特别保留这一边界：更多上下文不总更好，破坏性操作必须授权、确认并支持安全重试。",
+    "knowledgePoints": [
+      "动机：参数知识不及时，工具动作又可能产生真实副作用。",
+      "机制：RAG 分离召回与重排；Agent 用显式 schema 和状态机执行可验证动作。",
+      "边界：更多上下文不总更好，破坏性操作必须授权、确认并支持安全重试。"
+    ],
+    "followUps": [
+      "如果移除「RAG 与 Agent Reliability」，最先出现什么可观测问题？",
+      "它改变的是表示、优化信号还是系统资源？",
+      "它为什么依赖先修知识「evaluation.reliability.shift」？",
+      "什么情况下「RAG 与 Agent Reliability」不会带来预期收益？"
+    ]
+  },
+  "bank-tr-01": {
+    "shortAnswer": "Q、K、V承担不同角色：Q 表示“我在找什么”，K 表示“我能被怎样匹配”，V 表示“匹配后真正取走的信息”。不同投影让模型在匹配空间和内容空间中学习不同表示；若完全共享投影，会显著限制表达自由度。",
+    "explanation": "设输入 $X\\in\\mathbb{R}^{B\\times T\\times d}$，通常有 $Q=XW_Q$、$K=XW_K$、$V=XW_V$。注意力权重由 $QK^\\top$ 决定，而输出是这些权重对 $V$ 的加权和，因此“如何匹配”和“传递什么内容”可以解耦。",
+    "equations": [
+      "Q=XW_Q,\\quad K=XW_K,\\quad V=XW_V",
+      "\\mathrm{Attn}(Q,K,V)=\\mathrm{softmax}(QK^\\top/\\sqrt{d_k})V"
+    ],
+    "pitfalls": [
+      "不要把 Q/K/V 解释成固定语义标签；它们是训练中学习出的投影空间。"
+    ],
+    "followUps": [
+      "如果令 $W_Q=W_K$ 会怎样？",
+      "Cross-Attention 中 Q/K/V 分别来自哪里？"
+    ],
+    "sourceTags": [
+      "公开面经高频",
+      "Transformer"
+    ]
+  },
+  "bank-tr-02": {
+    "shortAnswer": "为了让点积 logits 的尺度不随维度 $d_k$ 增大而膨胀，避免 softmax 过早饱和、梯度变小。若 Q/K 各维近似独立、零均值、方差为 1，则点积方差约为 $d_k$，除以 $\\sqrt{d_k}$ 后方差回到 $O(1)$。",
+    "explanation": "这道题最重要的是能从方差推导，而不是只背“防止梯度消失”。设 $q_i,k_i$ 独立且方差为 1，则 $q^\\top k=\\sum_i q_i k_i$ 的方差随维度线性增长。logit 过大时 softmax 变得尖锐，非最大项梯度接近 0。",
+    "equations": [
+      "\\mathrm{Var}(q^\\top k)\\approx d_k",
+      "\\mathrm{Var}\\left(\\frac{q^\\top k}{\\sqrt{d_k}}\\right)\\approx 1"
+    ],
+    "pitfalls": [
+      "不是把 Attention 的时间复杂度从二次变成线性。",
+      "“除以 $d_k$”会让 logits 尺度过小。"
+    ],
+    "followUps": [
+      "如果初始化方差不是 1，推导怎么改？",
+      "为什么不是除以 $d_k$？"
+    ],
+    "sourceTags": [
+      "小红书相关公开面经",
+      "牛客高频",
+      "Transformer"
+    ]
+  },
+  "bank-tr-03": {
+    "shortAnswer": "多头允许模型并行地在不同表示子空间、不同位置关系上形成不同注意模式。单头并非不能表达复杂关系，但多头提供更结构化的并行子空间与更好的优化/容量折中。",
+    "explanation": "将总维度 $d_{model}$ 划分为 $H$ 个 head，常取 $d_h=d_{model}/H$。每个 head 独立计算注意力，再拼接并经过输出投影。总 FLOPs 与同维度单头同阶，但表示结构不同。",
+    "equations": [
+      "\\mathrm{MHA}(X)=\\mathrm{Concat}(head_1,\\ldots,head_H)W_O"
+    ],
+    "pitfalls": [
+      "不要说“每个 head 一定学一种语法关系”；这只是可能出现的现象，不是结构保证。"
+    ],
+    "followUps": [
+      "head 数越多一定越好吗？",
+      "$d_h$ 太小时有什么问题？"
+    ],
+    "sourceTags": [
+      "公开面经高频"
+    ]
+  },
+  "bank-tr-04": {
+    "shortAnswer": "因果语言模型必须禁止位置 $t$ 读取未来 token。做法是在 attention logits 上把未来位置置为负无穷，再 softmax，使相应概率严格变为 0。",
+    "explanation": "若在 softmax 后简单乘 0 而不重新归一化，剩余权重之和不再是 1；因此最自然的方法是在 logits 级别屏蔽。实际实现中常用一个足够小的有限值以兼容数据类型。",
+    "equations": [
+      "S_{ij}=\\begin{cases}q_i^\\top k_j/\\sqrt{d_k}, & j\\le i\\\\ -\\infty,&j>i\\end{cases}"
+    ],
+    "pitfalls": [
+      "FP16 中直接写非常大的负数要注意溢出和内核实现。"
+    ],
+    "followUps": [
+      "padding mask 与 causal mask 如何组合？",
+      "FlashAttention 中 mask 如何处理？"
+    ],
+    "sourceTags": [
+      "公开面经高频"
+    ]
+  },
+  "bank-tr-05": {
+    "shortAnswer": "纯 self-attention 对输入位置的排列具有置换等变性，仅凭 token 内容无法知道先后顺序。位置编码把序列位置信息注入表示或注意力计算中。",
+    "explanation": "如果同时对输入 token 做相同置换，纯 attention 的输出会按同样方式置换，因此模型没有天然的“第几个 token”概念。绝对位置、相对位置、RoPE、ALiBi 等方法都在打破这种位置不辨识性。",
+    "equations": [],
+    "pitfalls": [
+      "不要简单说“Attention 看不到顺序”而不解释置换性质。"
+    ],
+    "followUps": [
+      "绝对位置和相对位置有什么差别？",
+      "长上下文外推为什么困难？"
+    ],
+    "sourceTags": [
+      "公开面经高频"
+    ]
+  },
+  "bank-tr-06": {
+    "shortAnswer": "RoPE 把 Q/K 的二维通道对按位置相关角度旋转。两个位置旋转后的内积只依赖于角度差，因此自然把相对位置信息带入 attention score。",
+    "explanation": "把隐藏维度两两配对。位置 $m$ 的向量乘旋转矩阵 $R(m)$，位置 $n$ 的另一个向量乘 $R(n)$；由于 $R(m)^\\top R(n)=R(n-m)$，内积中显式出现相对位置 $n-m$。不同维度使用不同频率，形成多尺度位置表示。",
+    "equations": [
+      "\\langle R(m)q, R(n)k\\rangle=q^\\top R(n-m)k"
+    ],
+    "pitfalls": [
+      "不要把 RoPE 说成简单“把位置 embedding 加到 token embedding”。",
+      "RoPE 有长度外推能力不等于任意长度都能无损外推。"
+    ],
+    "followUps": [
+      "RoPE 为什么只作用于 Q/K 而通常不作用于 V？",
+      "频率基底如何影响长上下文？"
+    ],
+    "sourceTags": [
+      "小红书相关公开面经",
+      "RoPE"
+    ]
+  },
+  "bank-tr-07": {
+    "shortAnswer": "LayerNorm 同时减均值并按标准差缩放；RMSNorm 不做中心化，只按均方根缩放，再乘可学习尺度。RMSNorm 计算更简单，现代 decoder-only LLM 中非常常见。",
+    "explanation": "LayerNorm 对每个 token 的隐藏维做归一化。RMSNorm 去掉均值减法，保留 re-scaling invariance；这不是说 RMSNorm 永远比 LayerNorm 好，而是它在很多 LLM 架构中有很好的效率/稳定性折中。",
+    "equations": [
+      "\\mathrm{RMS}(x)=\\sqrt{\\frac{1}{d}\\sum_{i=1}^{d}x_i^2+\\epsilon}",
+      "\\mathrm{RMSNorm}(x)=g\\odot x/\\mathrm{RMS}(x)"
+    ],
+    "pitfalls": [
+      "不要把 RMSNorm 说成“没有可学习参数”；通常仍有 scale $g$。"
+    ],
+    "followUps": [
+      "LayerNorm 到底沿哪个维度做？",
+      "为什么 BatchNorm 不适合直接替代它？"
+    ],
+    "sourceTags": [
+      "公开面经高频"
+    ]
+  },
+  "bank-tr-08": {
+    "shortAnswer": "Post-Norm 先做子层和残差，再归一化；Pre-Norm 在进入子层前归一化。Pre-Norm 通常让深层 Transformer 的梯度路径更直接、训练更稳定，因此现代 LLM 常采用 Pre-Norm/RMSNorm 变体。",
+    "explanation": "从残差路径看，Pre-Norm 允许恒等残差分支不经过归一化层直接向深层传播，有利于优化；但不同架构与训练配方可能有不同取舍。",
+    "equations": [
+      "x_{l+1}=x_l+F(\\mathrm{Norm}(x_l))"
+    ],
+    "pitfalls": [
+      "不要把“Pre-Norm 更稳定”说成数学上无条件成立。"
+    ],
+    "followUps": [
+      "DeepNorm、Sandwich Norm 在解决什么问题？"
+    ],
+    "sourceTags": [
+      "公开面经高频"
+    ]
+  },
+  "bank-tr-09": {
+    "shortAnswer": "Attention 负责依据上下文动态聚合不同位置的信息；FFN 对每个位置独立做更强的非线性特征变换。前者改变信息来源，后者提高每个 token 表示的非线性变换能力。",
+    "explanation": "“token mixing / channel mixing”可作直觉，但不能当作严格定义。Attention 输出是输入 token 的内容相关加权组合，FFN 则是 position-wise 的 MLP。现代 LLM 中 FFN 往往占据很大比例参数。",
+    "equations": [
+      "\\mathrm{FFN}(x)=W_2\\,\\phi(W_1x)"
+    ],
+    "pitfalls": [
+      "不要说 FFN 完全“不处理 token 关系”；它不显式跨 token 混合，但其输入已经包含注意力聚合后的上下文。"
+    ],
+    "followUps": [
+      "为什么 FFN 中间维度通常扩大？",
+      "MoE 为什么通常替换 FFN？"
+    ],
+    "sourceTags": [
+      "公开面经高频"
+    ]
+  },
+  "bank-tr-10": {
+    "shortAnswer": "SwiGLU 引入门控分支：一支经 SiLU/Swish，另一支作为门值，与之逐元素相乘后再投影回模型维度。它增加了条件式门控表达能力，是许多现代 LLM 的标准组件。",
+    "explanation": "典型形式是 $\\mathrm{SwiGLU}(x)=W_2(\\mathrm{SiLU}(xW_a)\\odot xW_b)$。为了控制总参数量，中间维度常与普通 4$d$ FFN 选择不同。",
+    "equations": [
+      "\\mathrm{SwiGLU}(x)=W_2\\left(\\mathrm{SiLU}(xW_a)\\odot xW_b\\right)"
+    ],
+    "pitfalls": [
+      "不要忽略 SwiGLU 有两条 up-projection 分支。"
+    ],
+    "followUps": [
+      "参数量如何和普通 FFN 对齐？"
+    ],
+    "sourceTags": [
+      "公开面经高频"
+    ]
+  },
+  "bank-tr-11": {
+    "shortAnswer": "区别主要在 K/V head 的共享程度：MHA 每个 query head 都有独立 K/V head；MQA 所有 query heads 共享一组 K/V；GQA 让一组 query heads 共享一个 K/V head。共享越多，KV Cache 越小、decode 内存带宽压力越低，但可能牺牲部分模型容量。",
+    "explanation": "若 query heads 数为 $H_q$、KV heads 为 $H_{kv}$，KV Cache 大小近似与 $H_{kv}$ 成正比。GQA 在 MHA 的质量和 MQA 的推理效率之间取得折中。",
+    "equations": [
+      "\\text{KV cache} \\propto H_{kv}\\,T\\,d_h"
+    ],
+    "pitfalls": [
+      "FlashAttention 与 GQA 不是同一层面的替代关系：前者优化 attention 计算/IO，后者改变 KV head 结构。"
+    ],
+    "followUps": [
+      "为什么 GQA 能加速 decode？",
+      "训练时是否也一定更快？"
+    ],
+    "sourceTags": [
+      "小红书相关公开面经",
+      "牛客高频"
+    ]
+  },
+  "bank-tr-12": {
+    "shortAnswer": "标准 dense attention 的注意力矩阵大小是 $T\\times T$，计算 $QK^T$ 和 $AV$ 的主项为 $O(T^2d)$；显式存 attention matrix 时中间激活空间为 $O(T^2)$。线性投影本身还有 $O(Td^2)$。",
+    "explanation": "面试时最好区分“attention 核心”和“整个 Transformer layer”。短序列/大 hidden 时线性层可能很重，长序列时二次 attention 更突出。",
+    "equations": [
+      "O(Td^2+T^2d)"
+    ],
+    "pitfalls": [
+      "FlashAttention 降低的是 IO 和中间存储，并没有把 exact dense attention 的 FLOPs 从 $O(T^2d)$ 改成线性。"
+    ],
+    "followUps": [
+      "prefill 和 decode 的复杂度分别如何看？"
+    ],
+    "sourceTags": [
+      "公开面经高频"
+    ]
+  },
+  "bank-tr-13": {
+    "shortAnswer": "FlashAttention 是 IO-aware 的 exact attention：通过 tiling 和在线 softmax，避免把完整 $T\\times T$ attention matrix 反复写入/读取 HBM，减少高成本内存访问。它在数值误差范围内计算同一个 dense attention，而不是近似稀疏化。",
+    "explanation": "GPU 上很多 attention 场景受 HBM-SRAM 数据搬运限制。FlashAttention 把 Q/K/V 分块搬进片上 SRAM，逐块累计 softmax 的归一化量和输出，因此显著降低 HBM 读写。",
+    "equations": [],
+    "pitfalls": [
+      "“FlashAttention 把复杂度从 $O(n^2)$ 变成 $O(n)$”是常见错误。"
+    ],
+    "followUps": [
+      "为什么 online softmax 能分块计算？",
+      "FlashAttention 对 decode 阶段收益为什么和 prefill 不同？"
+    ],
+    "sourceTags": [
+      "小红书相关公开面经",
+      "vLLM/推理高频"
+    ]
+  },
+  "bank-tr-14": {
+    "shortAnswer": "缓存每一层历史 token 的 K 和 V。生成第 $t$ 个 token 时，历史 token 的 K/V 不需要重新计算，只需计算新 token 的 Q/K/V，再让新 Q 与缓存 K 做 attention。",
+    "explanation": "没有 cache 时，每一步都把整个前缀重新通过网络，重复计算大量历史表示；有 cache 后，decode 每层只新增一个位置的 K/V。代价是显存随 batch、序列长度、层数、KV heads 线性增长。",
+    "equations": [],
+    "pitfalls": [
+      "通常不缓存历史 Q，因为下一步只需要当前 query 去查询历史 K/V。"
+    ],
+    "followUps": [
+      "为什么 KV Cache 不用于训练的同一种方式？",
+      "GQA 如何降低 KV Cache？"
+    ],
+    "sourceTags": [
+      "小红书相关公开面经",
+      "牛客高频"
+    ]
+  },
+  "bank-tr-15": {
+    "shortAnswer": "Decoder-only 用统一的 causal next-token objective 处理任意文本序列，训练目标简单、数据利用方便、架构易扩展，并天然适合开放式生成。Encoder-only 更适合理解表征，Encoder-Decoder 对条件生成很自然，但系统结构更复杂。",
+    "explanation": "这不是“Decoder-only 在所有任务都更优”。选择取决于数据、任务和工程目标；只是大规模通用生成场景中，统一自回归建模非常有利于规模化。",
+    "equations": [],
+    "pitfalls": [
+      "不要把 BERT 的 encoder 说成“不能生成”；它的预训练目标和架构不是为标准左到右生成设计。"
+    ],
+    "followUps": [
+      "Prefix LM 与 decoder-only causal LM 有什么不同？"
+    ],
+    "sourceTags": [
+      "公开面经高频"
+    ]
+  },
+  "bank-tr-16": {
+    "shortAnswer": "典型回答应抓住现代 decoder block 的核心：Pre-Norm/RMSNorm、SwiGLU、RoPE、纯 Decoder causal LM，以及具体版本中的 attention 头设计等。回答时应区分“LLaMA 系列共同思想”和“某一代模型的具体配置”。",
+    "explanation": "不要把优化器、数据配方和网络结构混在一个层次。面试官通常想看你能否从原始 Transformer 的 Post-LN + sinusoidal PE + ReLU FFN 过渡到现代 decoder-only block。",
+    "equations": [],
+    "pitfalls": [
+      "不同 LLaMA 版本的 GQA 等细节并不完全相同，回答要注明版本。"
+    ],
+    "followUps": [
+      "画出一个现代 LLaMA-style block。"
+    ],
+    "sourceTags": [
+      "小红书相关公开面经"
+    ]
+  },
+  "bank-pt-01": {
+    "shortAnswer": "把输入序列左移一位作为监督：位置 $t$ 的 logits 用来预测 token $x_{t+1}$。实现中通常一次 forward 产生所有位置 logits，并对有效位置并行计算交叉熵。",
+    "explanation": "例如 token 为 [A,B,C,D]，输入可视为 [A,B,C]，目标为 [B,C,D]；实际框架常保留等长张量，通过 shift logits/labels 完成。训练虽然是自回归目标，但所有已知 target 位置可以并行计算。",
+    "equations": [
+      "\\mathcal{L}=-\\sum_{t=1}^{T-1}\\log p_\\theta(x_{t+1}\\mid x_{\\le t})"
+    ],
+    "pitfalls": [
+      "训练时并不是一次只算一个 token；推理时才因为未知未来 token 必须逐步生成。"
+    ],
+    "followUps": [
+      "为什么 teacher forcing 不造成信息泄漏？"
+    ],
+    "sourceTags": [
+      "公开面经高频"
+    ]
+  },
+  "bank-pt-02": {
+    "shortAnswer": "对 one-hot target，cross entropy 就是正确类别的 negative log-likelihood。更一般地，交叉熵 $H(q,p)=H(q)+D_{KL}(q||p)$；数据分布 $q$ 固定时，最小化交叉熵等价于最小化 KL。",
+    "explanation": "语言模型训练把经验数据分布当作 target；单个 token 的 one-hot 分布熵为 0，所以损失就是 $-\\log p(y)$。知识蒸馏时 target 不是 one-hot，此时完整 soft distribution 的交叉熵更有意义。",
+    "equations": [
+      "H(q,p)=-\\sum_i q_i\\log p_i=H(q)+D_{KL}(q\\Vert p)"
+    ],
+    "pitfalls": [
+      "KL 不是对称距离。"
+    ],
+    "followUps": [
+      "label smoothing 会改变什么？",
+      "DPO 中为什么大量使用 log-prob difference？"
+    ],
+    "sourceTags": [
+      "公开面经高频"
+    ]
+  },
+  "bank-pt-03": {
+    "shortAnswer": "若 loss 是按 token 平均的自然对数交叉熵，则 perplexity = $\\exp(\\text{loss})$。它可理解为模型平均面对的“有效分支数”，但跨 tokenizer/数据集直接比较要谨慎。",
+    "explanation": "",
+    "equations": [
+      "\\mathrm{PPL}=\\exp\\left(-\\frac1N\\sum_{t=1}^N\\log p(x_t\\mid x_{<t})\\right)"
+    ],
+    "pitfalls": [
+      "不同 tokenization 会改变 token 数和每-token loss，因此 PPL 不宜跨 tokenizer 直接比。"
+    ],
+    "followUps": [
+      "bits-per-byte 为什么更利于跨 tokenizer 比较？"
+    ],
+    "sourceTags": [
+      "公开面经高频"
+    ]
+  },
+  "bank-pt-04": {
+    "shortAnswer": "不一定。大词表可能减少序列长度、降低 decode steps，但会增大 embedding/LM head 参数与 softmax 成本，并可能让稀有 token 学得不充分；小词表则序列更长。最优点取决于语种、代码比例、计算预算和模型规模。",
+    "explanation": "面试时可以从“序列长度 vs 词表参数/覆盖率”两个方向回答。多语言场景还要考虑不同语言 token fertility 和公平性。",
+    "equations": [],
+    "pitfalls": [
+      "不要只回答“词表越大序列越短，所以更好”。"
+    ],
+    "followUps": [
+      "为什么 byte-level tokenizer 有吸引力？"
+    ],
+    "sourceTags": [
+      "公开面经高频"
+    ]
+  },
+  "bank-pt-05": {
+    "shortAnswer": "从较小符号单元开始，统计相邻 pair 频率，反复把高频 pair 合并成新 token，直到达到目标词表规模或停止条件。推理时使用学习到的 merge 规则进行分词。",
+    "explanation": "现代 tokenizer 具体实现可能基于 byte-level BPE、Unigram 等，面试时要区分算法思想与具体模型 tokenizer。",
+    "equations": [],
+    "pitfalls": [
+      "BPE 是数据驱动的压缩式词表学习，不等同于“按词切分”。"
+    ],
+    "followUps": [
+      "BPE 和 Unigram LM tokenizer 的主要差别？"
+    ],
+    "sourceTags": [
+      "公开面经高频"
+    ]
+  },
+  "bank-pt-06": {
+    "shortAnswer": "两者通常都是 16 bit，但 BF16 保留与 FP32 相同的 8-bit exponent，动态范围更大；FP16 exponent 更窄而 mantissa 更长。BF16 更不容易 overflow/underflow，常更适合大模型训练；代价是有效精度更低。",
+    "explanation": "FP16 训练常配合 loss scaling；BF16 在支持良好的硬件上通常更省心。具体选择也取决于 GPU、kernel、通信和模型数值行为。",
+    "equations": [],
+    "pitfalls": [
+      "“BF16 精度更高”不准确；它是动态范围更大、尾数精度更低。"
+    ],
+    "followUps": [
+      "TF32 又是什么？",
+      "为什么 optimizer state 常保留 FP32？"
+    ],
+    "sourceTags": [
+      "公开面经高频"
+    ]
+  },
+  "bank-pt-07": {
+    "shortAnswer": "在自适应优化器中，把 L2 正则直接加到梯度会被 Adam 的逐坐标缩放影响，不再等价于统一的参数衰减。AdamW 将参数衰减单独施加，使“优化梯度”和“缩小权重”两个机制解耦。",
+    "explanation": "因此 AdamW 更新可看作先按 Adam 方向更新，再对参数做与学习率相关的乘性衰减。实践中通常不对 bias、normalization scale 等参数做相同 weight decay。",
+    "equations": [],
+    "pitfalls": [
+      "L2 regularization 与 decoupled weight decay 对 SGD 可等价，对 Adam 一般不等价。"
+    ],
+    "followUps": [
+      "为什么 LayerNorm/RMSNorm 参数常不 weight decay？"
+    ],
+    "sourceTags": [
+      "公开面经高频"
+    ]
+  },
+  "bank-pt-08": {
+    "shortAnswer": "Warmup 在训练初期逐步增大学习率，降低随机初始化/统计量尚未稳定时的大步更新风险；gradient clipping 则限制异常大的梯度范数，防止单个 batch 造成灾难性更新。二者解决的问题不同。",
+    "explanation": "大模型训练中常用 global norm clipping。clip 不应被理解为“让所有梯度都变小”，只有超过阈值时才整体缩放。",
+    "equations": [
+      "g\\leftarrow g\\cdot\\min\\left(1,\\frac{c}{\\|g\\|_2}\\right)"
+    ],
+    "pitfalls": [
+      "clip 阈值不是越小越稳定；过小会长期压制有效更新。"
+    ],
+    "followUps": [
+      "如何从日志判断 gradient explosion？"
+    ],
+    "sourceTags": [
+      "公开面经高频"
+    ]
+  },
+  "bank-pt-09": {
+    "shortAnswer": "核心不是背一个固定比例，而是：在有限计算预算下，模型参数量和训练 token 数存在资源分配权衡；只增大参数但数据不足会“欠训练”。后续模型和数据配方已不断变化，因此不应把早期经验比例当成永恒定律。",
+    "explanation": "面试回答应强调 empirical scaling law：loss 随模型规模、数据规模、compute 呈可拟合的幂律趋势，计算最优点依赖训练配置和数据质量。",
+    "equations": [],
+    "pitfalls": [
+      "不要把某个“每参数 20 tokens”当成所有模型都严格适用。"
+    ],
+    "followUps": [
+      "如果数据质量提高，compute-optimal 分配会怎样变化？"
+    ],
+    "sourceTags": [
+      "公开面经高频"
+    ]
+  },
+  "bank-pt-10": {
+    "shortAnswer": "重复数据会浪费训练 compute、放大某些样本权重并增加 benchmark contamination 风险；低质量/垃圾数据会降低有效信号密度。高质量数据配比常比盲目增加 raw tokens 更重要。",
+    "explanation": "工程上会做 exact/near-duplicate 去重、语言/质量过滤、PII/安全处理、benchmark contamination 检查以及不同域混合权重设计。",
+    "equations": [],
+    "pitfalls": [
+      "“数据越多越好”是过度简化。"
+    ],
+    "followUps": [
+      "如何做 near-duplicate detection？"
+    ],
+    "sourceTags": [
+      "公开面经高频"
+    ]
+  },
+  "bank-rl-01": {
+    "shortAnswer": "很多 SFT 仍使用 token-level causal cross entropy，数学形式与预训练相同；差别主要在数据分布、格式和 loss mask。SFT 常只对 assistant response token 计算损失，而 prompt 部分可 mask 掉。",
+    "explanation": "因此“换了数据/监督结构”往往比“换了 loss”更准确。Chat template、EOS、tool-call 格式一致性也非常关键。",
+    "equations": [],
+    "pitfalls": [
+      "不要说 SFT 天生就是另一种损失函数。"
+    ],
+    "followUps": [
+      "为什么 prompt token 常不算 loss？"
+    ],
+    "sourceTags": [
+      "公开面经高频"
+    ]
+  },
+  "bank-rl-02": {
+    "shortAnswer": "经典流程可概括为：预训练模型 -> SFT -> 收集偏好 -> 训练 reward model -> 用 PPO 等 RL 方法优化 policy，并用 reference/KL 约束防止偏离过大。现代系统可能使用 DPO、RLAIF、verifier-based RL 等变体。",
+    "explanation": "面试时要说清楚每个模型的职责，而不是只背三个缩写。Reward model 近似人类偏好，value model/critic 用于估计 advantage，reference policy 用于 KL 约束。",
+    "equations": [],
+    "pitfalls": [
+      "DPO 不需要显式 reward model，但仍依赖偏好数据和 reference policy（标准形式）。"
+    ],
+    "followUps": [
+      "为什么 reward model 会被 policy exploit？"
+    ],
+    "sourceTags": [
+      "小红书相关公开面经",
+      "牛客高频"
+    ]
+  },
+  "bank-rl-03": {
+    "shortAnswer": "给定同一 prompt 的 preferred response $y_w$ 和 rejected response $y_l$，令奖励为 $r_w,r_l$，常用 Bradley-Terry/logistic ranking loss，让 $r_w-r_l$ 越大越好。",
+    "explanation": "这种损失只约束相对顺序，不直接规定奖励的绝对尺度。数据质量、偏好一致性和长度偏置都会影响 RM。",
+    "equations": [
+      "\\mathcal{L}_{RM}=-\\log\\sigma(r_w-r_l)"
+    ],
+    "pitfalls": [
+      "reward score 不是“真实人类效用”的绝对测量。"
+    ],
+    "followUps": [
+      "如何处理 ties / 多级评分？"
+    ],
+    "sourceTags": [
+      "公开面经高频"
+    ]
+  },
+  "bank-rl-04": {
+    "shortAnswer": "Reward model 评价“这条生成最终有多好”；critic/value model 估计从当前状态/前缀继续下去的期望回报，用于构造 advantage、降低 policy-gradient 方差。二者目标、输入和训练信号不同。",
+    "explanation": "在 LLM PPO 中，RM 常对完整 response 给最终/过程奖励，value head 则可为每个 token state 估计 value。GRPO 的一个重要动机就是避免额外的 critic。",
+    "equations": [],
+    "pitfalls": [
+      "不要把 critic 说成 reward model 的复制品。"
+    ],
+    "followUps": [
+      "为什么 value baseline 不改变 policy gradient 的期望？"
+    ],
+    "sourceTags": [
+      "小红书相关公开面经"
+    ]
+  },
+  "bank-rl-05": {
+    "shortAnswer": "通过 log-derivative trick，把对期望回报的梯度写成“动作 log-prob 梯度 × 回报/优势”的期望。优势为正时提高该动作概率，为负时降低。",
+    "explanation": "关键直觉是无需对 reward 本身求导；只需知道采样动作得到的相对好坏，再沿 log probability 梯度更新 policy。",
+    "equations": [
+      "\\nabla_\\theta J(\\theta)=\\mathbb{E}[\\nabla_\\theta\\log\\pi_\\theta(a_t|s_t)\\,A_t]"
+    ],
+    "pitfalls": [
+      "实际 LLM RL 还涉及 token-level credit、importance ratio、KL、mask 等工程细节。"
+    ],
+    "followUps": [
+      "为什么减 baseline 不引入 bias？"
+    ],
+    "sourceTags": [
+      "公开面经高频"
+    ]
+  },
+  "bank-rl-06": {
+    "shortAnswer": "$V(s)$ 是从状态 $s$ 出发按 policy 行动的期望回报；$Q(s,a)$ 是在 $s$ 先执行 $a$ 后的期望回报；$A(s,a)=Q(s,a)-V(s)$ 表示该动作相对当前平均水平有多好。",
+    "explanation": "在 token generation 中，state 可理解为当前前缀，action 是下一个 token。使用 advantage 比直接使用 return 往往能降低梯度方差。",
+    "equations": [
+      "A(s,a)=Q(s,a)-V(s)"
+    ],
+    "pitfalls": [],
+    "followUps": [
+      "为什么 advantage 的均值通常接近 0？"
+    ],
+    "sourceTags": [
+      "公开面经高频"
+    ]
+  },
+  "bank-rl-07": {
+    "shortAnswer": "GAE 用不同长度的 TD residual 加权组合，在 bias 和 variance 之间折中。$\\lambda$ 小更依赖 value bootstrap、方差低但偏差可能大；$\\lambda$ 接近 1 更接近 Monte Carlo return、偏差小但方差大。",
+    "explanation": "先定义 TD residual $\\delta_t=r_t+\\gamma V(s_{t+1})-V(s_t)$，再对未来 residual 做指数加权。",
+    "equations": [
+      "\\hat A_t^{GAE}=\\sum_{l=0}^{\\infty}(\\gamma\\lambda)^l\\delta_{t+l}"
+    ],
+    "pitfalls": [
+      "$\\lambda$ 并不是“学习率”。"
+    ],
+    "followUps": [
+      "LLM episode 很长时 GAE 有哪些数值/credit 问题？"
+    ],
+    "sourceTags": [
+      "公开面经高频"
+    ]
+  },
+  "bank-rl-08": {
+    "shortAnswer": "PPO 使用 old policy 采集的 rollout，但优化过程中 policy 已更新。ratio $r_t=\\pi_\\theta/\\pi_{old}$ 用 importance weighting 近似校正“数据分布来自旧策略、目标是新策略”的差异。",
+    "explanation": "如果不加控制，重复多个 epoch 后新旧策略差距会变大，ratio 方差和估计误差也会变大；因此 PPO 进一步用 clip/KL 限制更新。",
+    "equations": [
+      "r_t(\\theta)=\\frac{\\pi_\\theta(a_t|s_t)}{\\pi_{old}(a_t|s_t)}=\\exp(\\log\\pi_\\theta-\\log\\pi_{old})"
+    ],
+    "pitfalls": [],
+    "followUps": [
+      "为什么实现里通常用 logprob difference 再 exp？"
+    ],
+    "sourceTags": [
+      "小红书相关公开面经",
+      "PPO"
+    ]
+  },
+  "bank-rl-09": {
+    "shortAnswer": "PPO 希望保留有利更新，但不让 ratio 沿“过度改善 surrogate”的方向无限走。对正 advantage，过大的 ratio 被上界截断；对负 advantage，过小的 ratio 被下界截断。用 min 选取更保守的 surrogate，使越过 trust-like 区域后不再获得额外收益。",
+    "explanation": "关键是分 $A>0$ 和 $A<0$ 看。若 $A>0$，希望提高概率，但 $r>1+\\epsilon$ 后被截；若 $A<0$，希望降低概率，但 $r<1-\\epsilon$ 后被截。由于乘上负数会反转大小关系，单看 clip 而不看 min 很容易答错。",
+    "equations": [
+      "L^{CLIP}=\\mathbb E[\\min(r_tA_t,\\mathrm{clip}(r_t,1-\\epsilon,1+\\epsilon)A_t)]"
+    ],
+    "pitfalls": [
+      "PPO 论文写的是最大化 surrogate；代码库常最小化其负值，所以 loss 可以出现负数。"
+    ],
+    "followUps": [
+      "当 $r=1.2,A=-2$ 时两项分别是多少？",
+      "$r=0.7,A=-2$ 呢？"
+    ],
+    "sourceTags": [
+      "小红书相关公开面经",
+      "PPO 极高频"
+    ]
+  },
+  "bank-rl-10": {
+    "shortAnswer": "论文通常定义要最大化的 policy objective。深度学习框架统一做 gradient descent，因此实现里常令 $loss_{policy}=-L^{CLIP}$。objective 本身可正可负，取负后的 loss 也可正可负；“loss 必须非负”不是优化算法的要求。",
+    "explanation": "只要梯度方向正确，目标函数可以加任意常数而不影响最优解。Value MSE、entropy bonus、KL 等再按系数组合成总 loss。",
+    "equations": [],
+    "pitfalls": [
+      "不要把“loss”与“概率/距离”混为一谈。"
+    ],
+    "followUps": [
+      "总 PPO loss 的各项符号怎么定？"
+    ],
+    "sourceTags": [
+      "PPO 高频"
+    ]
+  },
+  "bank-rl-11": {
+    "shortAnswer": "不是。old policy 是采样 rollout 时的 policy 快照，用于 importance ratio；reference policy 通常是固定的 SFT/reference 模型，用于 KL regularization，防止 policy 偏离语言先验过远。",
+    "explanation": "一个训练 iteration 内 old policy 与当前 policy 很接近且周期性更新；reference 往往长期冻结。某些实现可用更复杂的 reference-free/implicit KL 变体，但标准概念应区分。",
+    "equations": [],
+    "pitfalls": [
+      "这是面试常见陷阱。"
+    ],
+    "followUps": [
+      "如果没有 reference model，可能用什么正则/约束替代？"
+    ],
+    "sourceTags": [
+      "小红书相关公开面经"
+    ]
+  },
+  "bank-rl-12": {
+    "shortAnswer": "概念上常见有 policy/actor、reference policy、reward model、value/critic；实现中 actor 与 critic 可共享 backbone 或 value head，old policy 可通过冻结快照/logprobs 表示，因此“几个完整模型”取决于工程实现。",
+    "explanation": "面试不要机械回答“四个模型”后停止，要说明哪些是固定、哪些训练、哪些可以共享权重/只存 logprobs。",
+    "equations": [],
+    "pitfalls": [
+      "old policy 不一定作为一个永久独立的大模型驻留。"
+    ],
+    "followUps": [
+      "显存怎么估算？"
+    ],
+    "sourceTags": [
+      "公开面经高频"
+    ]
+  },
+  "bank-rl-13": {
+    "shortAnswer": "DPO 把 KL-regularized RLHF 的最优 policy 与 reward 的关系重新参数化，直接用 chosen/rejected 的 policy-vs-reference log-ratio 差做二分类式优化，从而避免显式训练 reward model 和在线 RL rollout。",
+    "explanation": "对同一 prompt，若 chosen 相对 reference 的提升比 rejected 更大，DPO 希望该差值增大。$\\beta$ 控制与 reference 的偏离强度/偏好 margin 尺度。",
+    "equations": [
+      "\\mathcal L_{DPO}=-\\mathbb E\\log\\sigma\\left(\\beta[(\\log\\pi_\\theta(y_w|x)-\\log\\pi_{ref}(y_w|x))-(\\log\\pi_\\theta(y_l|x)-\\log\\pi_{ref}(y_l|x))]\\right)"
+    ],
+    "pitfalls": [
+      "DPO 不等于“没有 reward”；它隐式对应一个 reward parameterization。",
+      "DPO 也不是在所有数据/任务上必然优于 PPO。"
+    ],
+    "followUps": [
+      "为什么一定要 reference？",
+      "$\\beta$ 大小如何影响更新？"
+    ],
+    "sourceTags": [
+      "小红书相关公开面经",
+      "DPO 极高频"
+    ]
+  },
+  "bank-rl-14": {
+    "shortAnswer": "$\\beta$ 与 KL regularization/temperature 尺度相关。直观上它缩放 preference logit：较大的 $\\beta$ 让同样的 log-ratio 差产生更尖锐的分类信号；但不同实现/推导里参数化解释要结合具体目标。",
+    "explanation": "实际调参时不能简单说“beta 越大越偏离 reference”。应看目标函数参数化、数据 margin、训练稳定性和 KL 结果；最可靠的是同时监控 chosen/rejected rewards、margin、KL 和 downstream eval。",
+    "equations": [],
+    "pitfalls": [
+      "不要把 beta 和生成 temperature 混为一谈。"
+    ],
+    "followUps": [
+      "如何从训练曲线判断 beta 不合适？"
+    ],
+    "sourceTags": [
+      "公开面经高频"
+    ]
+  },
+  "bank-rl-15": {
+    "shortAnswer": "PPO 是在线/近在线 policy optimization：需要 rollout、reward signal、通常还有 critic，能直接优化可计算奖励并探索当前 policy 分布；DPO 是基于离线 preference pairs 的直接偏好优化，系统更简单稳定，但受偏好数据覆盖与离线分布限制。",
+    "explanation": "不要用“DPO 一定更好/更便宜”作绝对结论。PPO 可利用 online exploration 和 verifiable rewards；DPO 工程简单、训练像 supervised classification。选择取决于数据、奖励可得性、计算预算和目标。",
+    "equations": [],
+    "pitfalls": [],
+    "followUps": [
+      "为什么 coding/math reasoning 常重新重视 online RL？"
+    ],
+    "sourceTags": [
+      "小红书相关公开面经"
+    ]
+  },
+  "bank-rl-16": {
+    "shortAnswer": "GRPO 对同一 prompt 采样一组 responses，用组内 rewards 的相对位置构造 advantage，从而避免单独训练 value/critic 模型；同时保留 PPO-like ratio/clipping 与 KL regularization 思想。",
+    "explanation": "最简单的组相对优势可写成 $(r_i-\\bar r)/(s_r+\\epsilon)$。这样 baseline 来自同 prompt 的同组样本。优点是省 critic 显存/训练成本；代价是每个 prompt 需要多次 rollout，advantage 质量强依赖 group diversity 和 reward。",
+    "equations": [
+      "\\hat A_i=\\frac{r_i-\\mathrm{mean}(r_1,\\ldots,r_G)}{\\mathrm{std}(r_1,\\ldots,r_G)+\\epsilon}"
+    ],
+    "pitfalls": [
+      "“GRPO 就是 PPO 去掉 critic”过于粗糙；组采样和相对 normalization 是关键。"
+    ],
+    "followUps": [
+      "group size 太小/奖励全相同会怎样？",
+      "GRPO 还需要 reference model 吗？"
+    ],
+    "sourceTags": [
+      "小红书相关公开面经",
+      "GRPO 极高频"
+    ]
+  },
+  "bank-rl-17": {
+    "shortAnswer": "典型 GRPO 至少需要可训练 policy 和用于 KL 的 reference policy；reward 可以来自规则/verifier、外部 reward model 或混合信号。它的关键节省是通常不需要 PPO 那样的独立 critic/value model。",
+    "explanation": "如果 reward 是可验证数学答案，可能不需要神经 reward model；如果是开放式偏好任务，仍可能使用 judge/reward model。",
+    "equations": [],
+    "pitfalls": [
+      "不要回答“GRPO 只有一个模型”而忽略 reference/reward source。"
+    ],
+    "followUps": [
+      "DeepSeek-style reasoning reward 常有哪些组成？"
+    ],
+    "sourceTags": [
+      "小红书相关公开面经"
+    ]
+  },
+  "bank-rl-18": {
+    "shortAnswer": "Outcome reward 只看最终结果；process reward 对中间推理步骤提供反馈；verifier 是能判断答案或步骤正确性的机制，可是规则、程序或模型。可验证任务中 verifier 能提供低噪声 reward，但开放域任务更难。",
+    "explanation": "过程奖励可能改善 credit assignment，但标注/验证成本更高，也可能被模型利用。最终系统常混合 correctness、format、safety、length 等信号。",
+    "equations": [],
+    "pitfalls": [
+      "reward shaping 设计不当会造成 reward hacking。"
+    ],
+    "followUps": [
+      "如何检测 reward hacking？"
+    ],
+    "sourceTags": [
+      "公开面经高频"
+    ]
+  },
+  "bank-in-01": {
+    "shortAnswer": "Prefill 一次处理整段 prompt，Q/K/V 都对所有 prompt token 计算，计算密集且可高度并行；Decode 每步只生成少量 token，复用 KV Cache，常更受内存带宽和 KV 访问限制。",
+    "explanation": "因此优化策略不同：FlashAttention/大 GEMM 对 prefill 很重要；GQA/MQA、KV 管理、continuous batching 对 decode 吞吐尤其关键。",
+    "equations": [],
+    "pitfalls": [],
+    "followUps": [
+      "TTFT 主要由哪个阶段决定？",
+      "TPOT 主要受什么影响？"
+    ],
+    "sourceTags": [
+      "vLLM/推理高频"
+    ]
+  },
+  "bank-in-02": {
+    "shortAnswer": "近似为：batch × sequence length × layers × 2(K,V) × KV heads × head_dim × bytes_per_element。若使用 GQA/MQA，应使用 KV heads 而不是 query heads。",
+    "explanation": "这是面试中非常实用的估算题。还要考虑 block/padding/allocator overhead、不同层结构、prefix sharing 等实际因素。",
+    "equations": [
+      "M_{KV}\\approx B\\,T\\,L\\,2\\,H_{kv}\\,d_h\\,b"
+    ],
+    "pitfalls": [
+      "不要忘记 K 和 V 的因子 2。"
+    ],
+    "followUps": [
+      "给 32 层、8 KV heads、head_dim=128、BF16、8k context 算单请求缓存。"
+    ],
+    "sourceTags": [
+      "公开面经高频"
+    ]
+  },
+  "bank-in-03": {
+    "shortAnswer": "对批量自回归生成，left padding 让不同长度 prompt 的“最后一个真实 token”对齐到右侧，便于从统一的最后位置开始生成并维护 position/mask 逻辑。具体要求取决于框架实现和 position-id 处理。",
+    "explanation": "训练时常见 right padding，并不矛盾。不能把“所有模型推理必须 left padding”说成绝对规则。",
+    "equations": [],
+    "pitfalls": [
+      "正确的 attention mask 和 position IDs 比 padding 方向本身更本质。"
+    ],
+    "followUps": [
+      "RoPE 下 left padding 如何处理 position ids？"
+    ],
+    "sourceTags": [
+      "公开面经高频"
+    ]
+  },
+  "bank-in-04": {
+    "shortAnswer": "主要解决动态请求的 KV Cache 内存管理：传统连续分配易产生内部/外部碎片，也难以灵活共享 prefix。PagedAttention 把 KV Cache 分成固定大小 blocks，用类似虚拟内存分页的映射管理逻辑块与物理块，提高利用率并支持共享。",
+    "explanation": "注意：PagedAttention 首先是 KV memory management + attention access 机制，不是说 attention 数学本身变成 sparse/approximate。更高 batch size 带来的吞吐提升是重要收益。",
+    "equations": [],
+    "pitfalls": [
+      "不要与 FlashAttention 混淆。"
+    ],
+    "followUps": [
+      "PagedAttention 为什么有利于 beam/search prefix sharing？"
+    ],
+    "sourceTags": [
+      "小红书相关公开面经",
+      "vLLM 高频"
+    ]
+  },
+  "bank-in-05": {
+    "shortAnswer": "传统 static batch 要等整批请求都结束才能补新请求，短请求完成后 GPU 槽位空闲；continuous batching 在 token-step/request 边界动态加入/移除请求，让 batch 始终尽量饱满。",
+    "explanation": "代价是调度、KV 管理和公平性更复杂；追求 throughput 时还要兼顾 tail latency、优先级和 prefill/decode 干扰。",
+    "equations": [],
+    "pitfalls": [],
+    "followUps": [
+      "chunked prefill 为什么有帮助？"
+    ],
+    "sourceTags": [
+      "公开面经高频"
+    ]
+  },
+  "bank-in-06": {
+    "shortAnswer": "draft model 先一次提议多个 token，target model 并行验证。通过基于 target/draft 概率的接受-拒绝规则和必要的校正采样，可以在数学上保持 target distribution，同时减少 target model 串行调用次数。",
+    "explanation": "速度收益取决于 draft 足够便宜且 acceptance rate 足够高。若 draft 与 target 差距大，验证拒绝多，反而收益有限。",
+    "equations": [],
+    "pitfalls": [
+      "不要把 speculative decoding 说成简单“用小模型生成、直接交给大模型接受”。"
+    ],
+    "followUps": [
+      "draft length 如何影响吞吐？"
+    ],
+    "sourceTags": [
+      "公开面经高频"
+    ]
+  },
+  "bank-in-07": {
+    "shortAnswer": "Temperature 缩放 logits：$T<1$ 更尖锐，$T>1$ 更平；Top-k 只保留概率最高的 k 个 token；Top-p 保留累计概率达到阈值 p 的最小候选集合。它们常组合使用。",
+    "explanation": "Temperature 不是直接乘概率，而是通常先用 $z_i/T$ 再 softmax。Top-p 的候选集合大小会随分布自适应。",
+    "equations": [
+      "p_i(T)=\\frac{e^{z_i/T}}{\\sum_j e^{z_j/T}}"
+    ],
+    "pitfalls": [
+      "temperature=0 通常在 API 层被特殊处理为 greedy，并非严格代入公式。"
+    ],
+    "followUps": [
+      "什么时候 top-p 比 top-k 更合理？"
+    ],
+    "sourceTags": [
+      "公开面经高频"
+    ]
+  },
+  "bank-in-08": {
+    "shortAnswer": "把权重/激活从 FP16/BF16 压到 INT8/INT4 等格式可减少显存占用和内存带宽，并在有合适 kernel/硬件时提高吞吐；代价是量化误差、校准成本、kernel 支持与某些层的敏感性。",
+    "explanation": "weight-only quantization 主要减少权重带宽；activation quantization 进一步压低计算/传输，但更难。是否真的更快取决于 kernel 和 batch/硬件，不是 bit 数越低就必然越快。",
+    "equations": [],
+    "pitfalls": [
+      "显存减少不等于 latency 同比例降低。"
+    ],
+    "followUps": [
+      "为什么 outlier channel 会让量化困难？"
+    ],
+    "sourceTags": [
+      "公开面经高频"
+    ]
+  },
+  "bank-in-09": {
+    "shortAnswer": "两者都常用于低比特 weight-only LLM quantization。GPTQ 侧重基于二阶/逐层误差补偿做 post-training quantization；AWQ 强调利用 activation 统计保护少量重要权重/通道并做尺度调整。具体实现和 kernel 生态会影响效果。",
+    "explanation": "回答重点是“它们都是 PTQ，但优化量化误差的策略不同”，不要把两者说成完全不同任务。",
+    "equations": [],
+    "pitfalls": [],
+    "followUps": [
+      "QLoRA 与 GPTQ/AWQ 的目标有什么不同？"
+    ],
+    "sourceTags": [
+      "公开面经高频"
+    ]
+  },
+  "bank-in-10": {
+    "shortAnswer": "TTFT 是从请求到第一个 token 的时间，受 queue/prefill 影响大；TPOT 是首 token 后每个输出 token 的平均时间，更多反映 decode；end-to-end latency 是完整响应时间；throughput 是单位时间处理的 token/request 数。",
+    "explanation": "系统优化常存在 latency-throughput tradeoff：增大 batch 能提高 throughput，但可能增加排队和单请求延迟。",
+    "equations": [],
+    "pitfalls": [
+      "不要只报告 tokens/s 而不说明 batch、输入/输出长度和并发。"
+    ],
+    "followUps": [
+      "为什么在线服务更关心 P95/P99？"
+    ],
+    "sourceTags": [
+      "公开面经高频"
+    ]
+  },
+  "bank-in-11": {
+    "shortAnswer": "把单个大矩阵的计算/参数沿维度切到多个 GPU，使单模型能放得下并并行 GEMM。代价是层内 collective communication（如 all-reduce/all-gather）与跨卡同步，因此规模过大时通信会抵消计算收益。",
+    "explanation": "TP 与 data parallel 不同：DP 复制整个模型处理不同请求；TP 切一个模型层。推理服务常组合 TP + DP。",
+    "equations": [],
+    "pitfalls": [],
+    "followUps": [
+      "Column Parallel 和 Row Parallel Linear 如何通信？"
+    ],
+    "sourceTags": [
+      "公开面经高频"
+    ]
+  },
+  "bank-in-12": {
+    "shortAnswer": "至少包括 attention 的二次 prefill 计算、KV Cache 线性显存增长、RoPE/位置外推带来的质量问题、长 prompt 的 TTFT，以及服务中的调度/碎片/带宽压力。不能只回答“Attention O(n^2)”。",
+    "explanation": "不同阶段瓶颈不同：prefill 更偏算力和 attention IO；decode 更偏 KV bandwidth。长上下文训练还增加 activation memory 和数据 pipeline 压力。",
+    "equations": [],
+    "pitfalls": [],
+    "followUps": [
+      "GQA、FlashAttention、PagedAttention 分别解决长上下文的哪一部分？"
+    ],
+    "sourceTags": [
+      "公开面经高频"
+    ]
+  },
+  "bank-pe-01": {
+    "shortAnswer": "冻结原权重 $W$，只学习低秩增量 $\\Delta W=BA$，其中 rank $r\\ll\\min(d_{in},d_{out})$。训练参数从 $d_{out}d_{in}$ 降为 $r(d_{in}+d_{out})$，并可在推理前把增量 merge 回权重。",
+    "explanation": "低秩假设不是说原权重低秩，而是任务适配所需的更新可能集中在较低维子空间。常有 scale $\\alpha/r$ 控制更新幅度。",
+    "equations": [
+      "W\\leftarrow W+\\frac{\\alpha}{r}BA"
+    ],
+    "pitfalls": [
+      "rank 越大不保证越好；会增加参数、显存和过拟合风险。"
+    ],
+    "followUps": [
+      "LoRA 常加在哪些投影层？为什么？"
+    ],
+    "sourceTags": [
+      "小红书相关公开面经",
+      "LoRA 极高频"
+    ]
+  },
+  "bank-pe-02": {
+    "shortAnswer": "常见初始化让 $BA=0$，从而训练开始时模型函数与原模型完全一致；同时另一矩阵随机初始化，保证首步有有效梯度路径。具体框架可交换 A/B 角色或使用其他初始化，但“零初始增量”是关键直觉。",
+    "explanation": "若 A、B 都初始化为 0，则对双线性乘积而言初始梯度可能同时为 0，训练无法启动。",
+    "equations": [],
+    "pitfalls": [
+      "这是非常常见的面试细节题。"
+    ],
+    "followUps": [
+      "两边都随机初始化有什么影响？"
+    ],
+    "sourceTags": [
+      "小红书相关公开面经"
+    ]
+  },
+  "bank-pe-03": {
+    "shortAnswer": "没有只由矩阵维度决定的万能 rank。应综合任务复杂度、目标模块、数据规模、预算和验证集效果。实践可从较小 rank 做 ablation，并监控质量、训练参数、显存和过拟合。",
+    "explanation": "不同层可能需要不同 rank；AdaLoRA 等方法就是尝试动态分配 rank。回答“通常 8/16”只能算经验，不是原理。",
+    "equations": [],
+    "pitfalls": [],
+    "followUps": [
+      "如何设计 LoRA vs full fine-tuning 的公平实验？"
+    ],
+    "sourceTags": [
+      "小红书相关公开面经"
+    ]
+  },
+  "bank-pe-04": {
+    "shortAnswer": "QLoRA 把冻结的 base model 权重量化到 4-bit，并让梯度通过量化权重流到 16-bit LoRA adapters，从而大幅降低微调显存。原论文还引入 NF4、double quantization 和 paged optimizers。",
+    "explanation": "注意 base 权重通常不被直接训练；量化只是保存/计算形式，真正可学习参数是 LoRA adapter。",
+    "equations": [],
+    "pitfalls": [
+      "QLoRA 不是“把 LoRA 参数也全部量化成 4 bit 然后训练”。"
+    ],
+    "followUps": [
+      "NF4 为什么针对近似正态权重？"
+    ],
+    "sourceTags": [
+      "公开面经高频"
+    ]
+  },
+  "bank-moe-01": {
+    "shortAnswer": "MoE 通过 router 为每个 token 只激活少量 experts，使总参数容量很大但每 token 计算量相对可控。代价包括路由不均衡、expert parallel 通信、capacity overflow、训练稳定性和部署复杂度。",
+    "explanation": "MoE 通常替换 FFN 层。Top-k routing 让 token 发送到 k 个专家，router/load-balancing loss 用于避免少数专家过载。",
+    "equations": [],
+    "pitfalls": [
+      "MoE 的总参数大不等于每 token FLOPs 同比例变大。"
+    ],
+    "followUps": [
+      "为什么 all-to-all communication 是瓶颈？"
+    ],
+    "sourceTags": [
+      "公开面经高频"
+    ]
+  },
+  "bank-moe-02": {
+    "shortAnswer": "若 router 总把 token 发给少数专家，会产生热点、容量溢出，其他专家学不到东西。辅助 loss 鼓励 token 分配和 router probability 在 experts 间更均衡。",
+    "explanation": "但过强的均衡约束可能妨碍真正的 specialization，所以现代 MoE 也探索 auxiliary-loss-free balancing 等方法。",
+    "equations": [],
+    "pitfalls": [
+      "均衡只是系统与优化目标之一，不代表所有 experts 必须完全均匀。"
+    ],
+    "followUps": [
+      "Top-1 与 Top-2 routing 的取舍？"
+    ],
+    "sourceTags": [
+      "公开面经高频"
+    ]
+  },
+  "bank-ds-01": {
+    "shortAnswer": "DP：每卡有模型副本，切 batch；TP：切单层张量/矩阵；PP：按层切模型并用 micro-batches 流水。它们可以组成 3D parallelism。",
+    "explanation": "DP 的主要通信是梯度同步；TP 高频做层内 collective；PP 主要在 stage 边界发送 activations/gradients，并存在 pipeline bubbles。",
+    "equations": [],
+    "pitfalls": [],
+    "followUps": [
+      "大模型训练为什么常组合三种并行？"
+    ],
+    "sourceTags": [
+      "公开面经高频"
+    ]
+  },
+  "bank-ds-02": {
+    "shortAnswer": "ZeRO-1 分片 optimizer states；ZeRO-2 再分片 gradients；ZeRO-3 进一步分片 parameters。随着 stage 提高，每卡常驻内存降低，但参数 gather 等通信/实现复杂度上升。",
+    "explanation": "FSDP 与 ZeRO-3 在“参数/梯度/优化器状态分片”思想上非常接近，具体 API、通信时机和系统实现不同。",
+    "equations": [],
+    "pitfalls": [
+      "不要把 ZeRO 当成 Tensor Parallel；ZeRO 本质上是消除数据并行中的状态冗余。"
+    ],
+    "followUps": [
+      "ZeRO-Offload 又做了什么？"
+    ],
+    "sourceTags": [
+      "小红书相关公开面经",
+      "分布式高频"
+    ]
+  },
+  "bank-ds-03": {
+    "shortAnswer": "最基础先算参数：7B × 每参数字节。BF16 参数约 14GB。训练还要梯度、master weights（若有）以及 Adam 的一阶/二阶状态，通常远大于纯推理权重；再加 activations、temporary buffers 和通信缓存。",
+    "explanation": "经典混合精度 Adam 粗估常能到每参数十几个字节量级，但具体依赖优化器实现、是否 FP32 master、ZeRO/FSDP、8-bit optimizer 等。面试应说明假设后再算。",
+    "equations": [],
+    "pitfalls": [
+      "不要只用“7B×2 bytes=14GB”回答训练显存。"
+    ],
+    "followUps": [
+      "activation checkpointing 能省哪部分？"
+    ],
+    "sourceTags": [
+      "公开面经高频"
+    ]
+  },
+  "bank-ag-01": {
+    "shortAnswer": "离线：文档解析 -> chunk -> embedding -> index；在线：query processing/rewrite -> retrieval -> optional hybrid/rerank -> context assembly -> generation -> citation/evaluation。高质量回答要说明每一步的失败模式和指标。",
+    "explanation": "RAG 的价值是给模型提供外部、可更新、可引用的知识，但它并不能自动消除幻觉；检索错误、上下文冲突和生成不忠实仍需评测。",
+    "equations": [],
+    "pitfalls": [
+      "只回答“检索+生成”太浅。"
+    ],
+    "followUps": [
+      "如何定位召回低和生成不忠实？"
+    ],
+    "sourceTags": [
+      "小红书相关公开面经",
+      "Agent/RAG 高频"
+    ]
+  },
+  "bank-ag-02": {
+    "shortAnswer": "小 chunk 定位精细但上下文可能不完整、索引数量增多；大 chunk 语义完整但检索向量被更多无关内容稀释。需要结合文档结构、embedding 模型、query 粒度和上下文窗口调节 overlap/parent-child 等策略。",
+    "explanation": "可按标题/段落/语义切分，并用 retrieval metrics + end-to-end answer metrics 做 ablation。",
+    "equations": [],
+    "pitfalls": [],
+    "followUps": [
+      "表格、代码、PDF 怎么切？"
+    ],
+    "sourceTags": [
+      "小红书相关公开面经"
+    ]
+  },
+  "bank-ag-03": {
+    "shortAnswer": "第一阶段 embedding/BM25 检索追求高 recall，通常用较便宜的相似度；reranker 对 query-document pair 做更精细的交互评分，把真正相关的候选排到前面，提高 precision 和最终上下文质量。",
+    "explanation": "常见是 cross-encoder、LLM reranker 或融合分数。代价是 latency/成本，因此通常只重排 top-N。",
+    "equations": [],
+    "pitfalls": [],
+    "followUps": [
+      "什么时候 BM25 比 embedding 更有优势？"
+    ],
+    "sourceTags": [
+      "公开面经高频"
+    ]
+  },
+  "bank-ag-04": {
+    "shortAnswer": "检索召回失败、chunk 粒度不合适、embedding domain mismatch、知识冲突/时效性、上下文过长、生成不忠实、索引更新和权限控制，以及 end-to-end 评估困难。",
+    "explanation": "面试应给出“症状 -> 指标 -> 排查”的工程视角。例如答案错先区分 retrieval failure 还是 generation failure。",
+    "equations": [],
+    "pitfalls": [],
+    "followUps": [
+      "如何构建 RAG evaluation set？"
+    ],
+    "sourceTags": [
+      "小红书相关公开面经"
+    ]
+  },
+  "bank-ag-05": {
+    "shortAnswer": "Workflow 的控制流主要由开发者预先定义；Agent 把部分下一步决策交给模型，根据当前状态动态选择工具/计划/分支。两者不是非黑即白，生产系统常是确定性 workflow 包裹有限 agentic decision。",
+    "explanation": "Agent 的灵活性带来更高的不确定性、成本和评测难度，因此关键是把权限边界、最大步数、重试/降级和可观测性设计好。",
+    "equations": [],
+    "pitfalls": [
+      "不要把“调用一次工具”就等同于完整 Agent。"
+    ],
+    "followUps": [
+      "ReAct 属于哪类？",
+      "什么时候不该用 Agent？"
+    ],
+    "sourceTags": [
+      "小红书相关公开面经",
+      "2026 Agent 高频"
+    ]
+  },
+  "bank-ag-06": {
+    "shortAnswer": "Tool 是模型可调用的具体能力/函数；MCP 是让 AI 应用以标准协议发现和调用外部 tools/resources/prompts 的连接层；Skill 更像可复用的程序性知识包/工作流说明，按需加载指导 agent 如何完成一类任务。",
+    "explanation": "一个 Skill 可以指导 agent 何时、怎样组合多个 MCP tools；MCP 本身不等于“知识教程”，它主要标准化连接与能力暴露。Skills 的 progressive disclosure 能减少启动时把所有详细说明塞进上下文。",
+    "equations": [],
+    "pitfalls": [
+      "不同产品对 Skill 的实现细节可能不同，应说明语境。"
+    ],
+    "followUps": [
+      "为什么 Skill 可以省 context token？",
+      "MCP 和普通 REST API 的差别是什么？"
+    ],
+    "sourceTags": [
+      "小红书后训练/Agent公开面经",
+      "2026 高频"
+    ]
+  },
+  "bank-ag-07": {
+    "shortAnswer": "不能只看最终“回答像不像”。应分层评估 task success、tool selection、argument correctness、trajectory efficiency、cost/latency、recovery、safety/permission、groundedness，并用可复现环境记录完整 trajectory。",
+    "explanation": "对多步 Agent，最终成功率可能掩盖中间异常；需要 step-level traces、失败类型 taxonomy 和 regression set。线上还要看 tail latency、token/tool cost 和 human escalation。",
+    "equations": [],
+    "pitfalls": [],
+    "followUps": [
+      "如何评估一个社区审核 Agent？",
+      "LLM-as-Judge 有哪些偏差？"
+    ],
+    "sourceTags": [
+      "小红书后训练/Agent公开面经"
+    ]
+  },
+  "bank-ev-01": {
+    "shortAnswer": "根据任务组合自动指标、可验证 correctness、LLM-as-Judge 和人工评测。开放式生成通常要分 helpfulness、factuality、instruction following、style/safety，并报告置信区间和 judge 一致性。",
+    "explanation": "单一 BLEU/ROUGE 不足以评估通用聊天。代码/数学可用 pass@k/exact match，RAG 还应分 retrieval 和 answer groundedness。",
+    "equations": [],
+    "pitfalls": [
+      "LLM-as-Judge 可能有 position/verbosity/self-preference bias。"
+    ],
+    "followUps": [
+      "如何做 pairwise A/B evaluation？"
+    ],
+    "sourceTags": [
+      "小红书相关公开面经"
+    ]
+  },
+  "bank-ev-02": {
+    "shortAnswer": "先区分“随机性”和“任务约束不稳定”。可降低 temperature/限制采样、使用结构化输出/schema、明确 prompt、固定工具/版本、做 constrained decoding；更根本的行为一致性需要高质量 SFT/preference data 和回归评测。",
+    "explanation": "对生产系统，不应靠 temperature=0 就宣称“完全确定”；底层 kernel、模型版本、并发/服务更新也可能影响结果。",
+    "equations": [],
+    "pitfalls": [],
+    "followUps": [
+      "结构化 JSON 输出如何保证？"
+    ],
+    "sourceTags": [
+      "小红书相关公开面经"
+    ]
+  },
+  "bank-ret-01": {
+    "shortAnswer": "InfoNCE 把一个 query 的正样本与一组负样本放进 softmax，对比学习直接优化正样本相对负样本的相似度 margin，非常适合双塔 embedding 检索。batch 内其他 item 可作为便宜的 negatives。",
+    "explanation": "关键工程问题是假负样本：某些“负例”其实语义相关，会向错误方向推；可用曝光约束、语义过滤、hard-negative mining 或 debiasing 缓解。",
+    "equations": [
+      "\\mathcal L_i=-\\log\\frac{\\exp(s(q_i,k_i^+)/\\tau)}{\\sum_j\\exp(s(q_i,k_j)/\\tau)}"
+    ],
+    "pitfalls": [],
+    "followUps": [
+      "温度 $\\tau$ 有什么作用？",
+      "in-batch negatives 为什么有效？"
+    ],
+    "sourceTags": [
+      "小红书 2026 大模型算法岗公开面经"
+    ]
+  },
+  "bank-ret-02": {
+    "shortAnswer": "点式 MSE 优化绝对分数误差，并不直接保证候选间相对排序；标签噪声、scale mismatch、样本分布也可能让 MSE 下降但 AUC/NDCG 变差。可引入 BCE、pairwise/ranking loss、InfoNCE 或多任务目标，让训练目标更贴近排序指标。",
+    "explanation": "面试应强调先验证评估 pipeline 和数据分布，再决定换 loss，而不是看到排序差就机械调学习率。",
+    "equations": [],
+    "pitfalls": [],
+    "followUps": [
+      "pointwise / pairwise / listwise ranking loss 的区别？"
+    ],
+    "sourceTags": [
+      "小红书 2026 大模型算法岗公开面经"
+    ]
+  }
+}

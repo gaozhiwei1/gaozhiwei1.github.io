@@ -1,0 +1,117 @@
+\part{模型评测}
+
+\chapter{LLM Evaluation}\label{sec:evaluation}
+
+\begin{motivationbox}{为什么不能只看 validation loss？}
+验证损失衡量模型对某个数据分布的下一个词元预测，却没有直接测量指令遵循、事实忠实性、代码可执行性、安全性和用户偏好。后训练还可能主动改变回答风格，使通用语料上的困惑度变差，但任务成功率更高。因此商业系统需要把“概率拟合得怎样”拆成“任务是否完成、用户是否认可、风险是否可控”。
+\end{motivationbox}
+
+\section{指标分别回答什么问题}
+
+设有效验证词元的平均负对数似然为 $\mathcal L_{\rm token}$，困惑度为
+\[
+\operatorname{PPL}=\exp(\mathcal L_{\rm token}).
+\]
+它可以直观理解为模型在每一步面对的“有效候选不确定度”，但这一解释只是直觉。不同分词器会把同一字符串切成不同数量的词元，损失的计量单位随之改变，所以不能直接用 token-level PPL 公平比较采用不同分词器的模型。
+
+\begin{center}
+\small
+\begin{tabularx}{0.96\textwidth}{lYY}
+\toprule
+指标 & 适合回答 & 主要盲区\\
+\midrule
+Validation loss / PPL & 是否拟合验证语料的词元分布 & 不直接测任务体验；受分词器影响\\
+Accuracy / Exact Match & 分类或唯一答案是否正确 & 忽略等价表述和部分正确\\
+pass@$k$ & $k$ 次代码采样中至少一次通过测试的能力 & 强依赖测试覆盖率与采样设置\\
+Pairwise win rate & 两个回答中哪一个更受偏好 & 顺序、长度、评审模型会引入偏差\\
+Human evaluation & 人类对有用性、正确性和风格的判断 & 成本高、标注一致性有限\\
+LLM-as-a-judge & 低成本、可扩展的成对或量表评审 & 自偏好、位置偏差、 verbosity 偏差\\
+Online metrics & 真实用户任务成功率、留存或投诉 & 有延迟、混杂因素和实验风险\\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+若对同一道代码题独立采样 $n$ 个候选，其中 $c$ 个通过单元测试，从中不放回选 $k$ 个时，常用无偏估计为
+\[
+\widehat{\operatorname{pass@}k}
+=1-\frac{\binom{n-c}{k}}{\binom{n}{k}}.
+\]
+当 $n-c<k$ 时，至少会选中一个已知通过样本，估计值为 $1$。pass@1 关注单次可靠性，pass@10 还混入了多样采样和选择预算；后者高而前者低，说明模型能够偶尔找到答案，但默认一次生成还不稳定。
+
+\begin{lstlisting}
+from math import comb
+
+
+def pass_at_k(num_samples: int, num_correct: int, k: int) -> float:
+    """Estimate the probability that at least one of k samples passes."""
+    if not 0 <= num_correct <= num_samples:
+        raise ValueError("num_correct must be in [0, num_samples]")
+    if not 1 <= k <= num_samples:
+        raise ValueError("k must be in [1, num_samples]")
+
+    # Fewer than k failed samples means every size-k subset contains a pass.
+    if num_samples - num_correct < k:
+        return 1.0
+
+    # Probability of at least one pass = 1 - probability of all failures.
+    return 1.0 - comb(num_samples - num_correct, k) / comb(num_samples, k)
+\end{lstlisting}
+
+\begin{exercisebox}{pass@k 的直觉}
+某模型为一道代码题生成 $n=20$ 个候选，其中 $c=4$ 个通过测试。则
+\[
+\widehat{\operatorname{pass@}1}=1-\frac{16}{20}=0.2,
+\qquad
+\widehat{\operatorname{pass@}5}
+=1-\frac{\binom{16}{5}}{\binom{20}{5}}
+\approx 0.718.
+\]
+这不表示线上单次调用有 $71.8\%$ 正确率，而是表示在同一采样协议下，五个候选中至少一个通过测试的估计概率。
+\end{exercisebox}
+
+\section{污染、评审偏差与线上闭环}
+
+评测集污染（benchmark contamination）指题目、答案或高度相似变体进入训练数据。模型可能依靠记忆获得高分，使离线榜单不再代表泛化能力。仅检查逐字重复不够，还要关注释义、翻译、题解和生成数据回流。可靠评测应保留时间切分或私有集合，记录提示模板、采样参数、模型版本和评审版本。
+
+LLM-as-a-judge 可以快速评价开放式回答，但评审模型可能偏好更长的答案、特定位置、与自己相似的表达或熟悉的模型家族。缓解方式包括交换候选顺序、隐藏模型身份、使用明确量表、对关键样本做人类复核，并报告一致性而不是只报告一个总分。
+
+离线评测适合快速迭代和故障回归，线上评测则观察真实分布中的任务完成率、用户修正率、延迟与成本。二者不能互相替代：离线分数改善可能在真实输入上无效；线上总体指标也可能掩盖某类高风险用户的退化。
+
+\begin{interviewbox}{validation loss 下降为什么不代表模型一定更好用？}
+\textbf{20 秒回答：}它只测给定验证语料上的词元概率，不直接测指令遵循、事实正确性、安全性或用户偏好；数据分布和分词器还会影响数值。后训练可能牺牲通用语料似然，换取更符合任务目标的行为。
+
+\textbf{深入解释：}交叉熵是 proper scoring rule，适合比较同一 tokenization 和分布下的概率预测；产品体验却是多目标函数。评测应把基础能力、目标任务、行为约束、延迟和成本分开测量，并检查平均值是否掩盖长尾退化。
+
+\textbf{面试官继续追问：}
+1. 为什么不同 tokenizer 的 PPL 不宜直接比较？
+2. SFT 后 PPL 变差一定是灾难性遗忘吗？
+3. 什么时候应使用 exact match，什么时候需要语义评审？
+\end{interviewbox}
+
+\begin{interviewbox}{pass@1、pass@10 与 Best-of-N 有什么关系？}
+\textbf{20 秒回答：}它们都衡量多次采样带来的覆盖收益，但 pass@$k$ 用可执行测试定义“通过”，Best-of-N 还需要 verifier 从候选中选出一个。候选里存在正确答案，不等于选择器一定能找到它。
+
+\textbf{深入解释：}提高 $k$ 通常会提高“至少一个通过”的概率，同时增加推理成本。若候选高度相关、测试不完整或 verifier 不可靠，收益会饱和甚至产生错误选择。因此必须同时报告采样温度、候选数、测试集和最终选择策略。
+
+\textbf{面试官继续追问：}
+1. pass@10 高但 pass@1 低说明什么？
+2. 测试用例覆盖不足会造成什么假阳性？
+3. 为什么不能只报最优一次运行？
+\end{interviewbox}
+
+\begin{interviewbox}{LLM-as-a-judge 可以代替人类评测吗？}
+\textbf{20 秒回答：}它适合低成本扩大覆盖和做回归筛查，但不能无条件替代人类。评审模型存在位置、长度、自偏好和领域知识偏差，高风险或主观任务仍需校准与人工复核。
+
+\textbf{深入解释：}应把 judge 看作一个有误差的测量工具：先用人工标注集估计一致性，再固定提示和版本，交换答案顺序，保留分项理由，并对分歧样本复核。judge score 与 reward model score 都是代理指标，不是真实质量本身。
+
+\textbf{面试官继续追问：}
+1. 如何检测位置偏差？
+2. pairwise win rate 为什么不具备绝对标尺？
+3. 离线 judge 胜率怎样与线上 A/B 结果联动？
+\end{interviewbox}
+
+\begin{wrongbox}
+\textbf{容易答错：}“后训练后困惑度变差，说明模型整体退化。”
+
+\textbf{更准确：}需要先确认分词器、数据和计算口径一致，再区分通用语言建模似然与目标行为。模型可能因学习简洁拒答、指令格式或偏好而降低某类语料似然，却在目标任务上更可靠；也可能真的发生遗忘，必须用分层评测判断。
+\end{wrongbox}

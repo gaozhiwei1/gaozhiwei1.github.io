@@ -1,0 +1,554 @@
+\part{基础}
+
+\chapter{分词与词元化（Tokenization）}
+\label{sec:tokenization}
+
+\begin{motivationbox}{从原始文本到有限词表}
+神经网络只能接收数值张量，而原始文本是长度不定的 Unicode 字符串。若按整词建表，训练语料中没有出现过的词会成为未登录词（out-of-vocabulary，OOV），词表也会迅速膨胀；若逐字符或逐字节处理，虽然覆盖完整，序列却明显变长。分词器（tokenizer）的提出，就是为了在“有限词表、完整覆盖、较短序列”之间取得可训练的折中。
+\end{motivationbox}
+
+分词器的任务是把文本切成词元（token），再把每个词元映射为词元编号（token id）。LLM 训练和推理真正处理的是这些整数编号；分词器的质量会影响上下文利用率、未登录词处理、跨语言鲁棒性和生成边界。
+
+\section{常见方案}
+
+\textbf{字节对编码（Byte Pair Encoding，BPE）} 是为了解决词级词表存在未登录词、字符级序列又过长的矛盾。它从字符或字节开始，反复合并高频相邻片段：常见词可被压成较少词元，罕见词仍能拆回更小单元。优点是简单、可控、压缩率高；缺点是合并规则依赖训练语料分布。
+
+\textbf{字节级 BPE（Byte-level BPE）} 针对字符表仍可能遗漏罕见文字、表情符号或控制符的问题，把最底层单位退回到字节。256 种字节值即可表示任何输入，因此理论上不再需要未知词元（unknown token）。代价是一个非英文字符通常由多个 UTF-8 字节组成，可能被切得更碎。
+
+\textbf{SentencePiece} 针对传统分词器依赖英文空格和语言专用预分词的问题，直接在原始文本上学习子词单元，常见一元语言模型（unigram language model）与 BPE 两类方案。它把空格也视为普通符号，不依赖“先分词再建词表”，因此更适合中日韩和多语言混合文本。
+
+\begin{examplebox}{“机器学习”如何变成词元编号}
+假设训练语料只有“机器学习”和“机器翻译”。最初按字符切开：
+\[
+[\text{机},\text{器},\text{学},\text{习}],\qquad
+[\text{机},\text{器},\text{翻},\text{译}].
+\]
+相邻片段“机器”出现两次，频率最高，于是 BPE 把它合并为一个新词元：
+\[
+[\text{机器},\text{学},\text{习}],\qquad
+[\text{机器},\text{翻},\text{译}].
+\]
+若之后“学习”也被合并，输入“我爱机器学习”可能被切成
+\[
+[\text{我},\text{爱},\text{机器},\text{学习}].
+\]
+再假设词表映射为“我”$\mapsto17$、“爱”$\mapsto42$、“机器”$\mapsto310$、“学习”$\mapsto908$，模型真正收到的就是整数序列 $[17,42,310,908]$。词元编号只是词表下标，本身没有大小或距离含义；后续的嵌入（embedding）查表才把它变成向量。
+
+若新词“机器视觉”从未整体出现，只需退回已有子词 $[\text{机器},\text{视},\text{觉}]$，而不是把整词变成未知词元。字节级方案还能把词表未覆盖的罕见字符退回 UTF-8 字节，因此任何输入最终都能编码。
+\end{examplebox}
+
+\begin{table}[htbp]
+\centering
+\small
+\begin{tabularx}{0.86\textwidth}{lYYY}
+\toprule
+维度 & 小词表 & 大词表 & 面试要点\\
+\midrule
+序列长度 & 更长 & 更短 & 长序列增加 attention 与键值缓存成本\\
+稀有词 & 更可组合 & 可能有专用词元 & 大词表需要更多嵌入参数\\
+多语言 & 更稳健 & 依赖语料覆盖 & 中文常需平衡字、词、标点与英文混合\\
+\bottomrule
+\end{tabularx}
+\caption{词表大小的主要权衡。}
+\end{table}
+
+\begin{takeawaybox}
+分词器不是预处理小细节；它直接改变序列长度、词表维度、嵌入参数量、键值缓存成本和多语言泛化。
+\end{takeawaybox}
+
+\section{中文分词的注意点}
+
+中文没有天然空格边界，字符粒度虽然稳健但序列长；词粒度压缩率好但受分词词典影响。现代 LLM 常使用字节级或 SentencePiece 类方案，使中文、英文、代码、表情符号和罕见字符都能统一编码。
+
+\subsection{面试追问链}
+
+\begin{interviewbox}{为什么分词方案会改变模型的系统成本？}
+\textbf{20 秒回答：}分词器决定同一段文本会变成多少个词元 $T$。训练和提示词预填充中的稠密 attention 位置对随 $T^2$ 增长，键值缓存则随 $T$ 线性增长；词表变大虽然可能缩短序列，却会扩大嵌入层和 LM Head。因此它同时改变计算、显存和参数量。
+
+\textbf{深入解释：}设平均每个字符对应 $r$ 个词元，一段长度为 $N$ 的文本约有 $T=rN$ 个词元。把 $r$ 增大 $25\%$，attention 分数位置对近似增至 $1.25^2=1.5625$ 倍，键值缓存增至 $1.25$ 倍。反过来，大词表使嵌入矩阵参数量 $Vd_{\rm model}$ 增长，而且低频词元可能得不到充分训练。
+
+\textbf{面试官继续追问：}
+\begin{enumerate}
+  \item 为什么不能只比较词表大小，而要比较同一评测集上的词元数？
+  \item 不同 tokenizer 的困惑度为什么不能直接横向比较？
+  \item 字节回退解决了什么问题，又付出了什么代价？
+\end{enumerate}
+\end{interviewbox}
+
+\section*{面试高频问题}
+\addcontentsline{toc}{section}{面试高频问题：分词与词元化}
+
+\textbf{Q: 为什么不全部按字符切分？}
+
+20 秒回答：字符切分简单且没有未登录词，但序列会变长，attention 计算和键值缓存显存都会上升，而且语义组合要由模型完全学习。
+
+深入解释：自注意力在提示词预填充（prefill）阶段近似需要处理 $O(T^2)$ 个位置对，逐词元解码（decode）的键值缓存需要 $O(T)$ 存储。这里 $T$ 表示序列中的词元数。字符级分词器把同样文本变成更大的 $T$，会同时放大训练和推理成本。
+
+\textbf{Q: 词表变大一定更好吗？}
+
+不是。词表变大会缩短序列，但嵌入层和语言模型输出头（LM head）的参数增加，低频词元学得差，还可能降低跨域泛化。
+
+\chapter{Transformer 基础}
+
+\figTransformerOverview
+
+\section{词元嵌入与位置}
+\label{sec:embedding-lmhead}
+
+\begin{motivationbox}{为什么内容表示之外还需要位置？}
+自注意力只根据向量之间的相似度工作。若交换两个词元，同时交换对应的 $Q,K,V$ 行，注意力结果也只会跟着交换，模型本身无法区分“我喜欢你”和“你喜欢我”的顺序。位置编码因此不是装饰信息，而是打破这种置换对称性的必要条件。
+\end{motivationbox}
+
+输入词元编号序列 $x_{1:T}=(x_1,\ldots,x_T)$ 先查嵌入表，得到 $X\in\mathbb R^{B\times T\times d_{\rm model}}$。其中，$x_t$ 是第 $t$ 个位置的词元编号，$T$ 是序列长度，$B$ 是批次中的样本数，$d_{\rm model}$ 是每个词元向量的维度。由于自注意力本身对位置置换不敏感，模型必须注入位置信息：绝对位置编码、ALiBi 或 RoPE 都是在解决“顺序从哪里来”的问题。
+
+有了“内容是什么”和“位于哪里”的输入表示后，下一个问题是如何让任意位置直接交换信息。RNN 需要沿时间步串行传递，卷积的感受野又受核宽和层数限制，这正是自注意力出现的背景。
+
+\section{从词元嵌入到 LM Head}
+
+设词表大小为 $V$，模型隐藏维度为 $d_{\rm model}$。词元嵌入矩阵
+\[
+E\in\mathbb R^{V\times d_{\rm model}}
+\]
+的第 $i$ 行就是词元编号 $i$ 的初始向量。经过多层 Transformer 后，位置 $t$ 得到隐藏状态 $h_t\in\mathbb R^{d_{\rm model}}$。语言模型输出头（LM Head）再把它投影回词表维度：
+\[
+z_t=h_tW_{\rm lm}+b,\qquad
+W_{\rm lm}\in\mathbb R^{d_{\rm model}\times V},\quad
+z_t\in\mathbb R^V.
+\]
+$z_t$ 是未归一化词表分数而不是概率。只有沿词表维执行 softmax 后，才得到 $V$ 个候选词元的概率分布。隐藏状态也不是概率：它是可含正负值、没有归一化约束的内部特征向量。
+
+嵌入层和 LM Head 可以使用权重绑定（weight tying），即令 $W_{\rm lm}=E^\top$。这样输入侧“词元如何表示”和输出侧“隐藏状态与哪个词元相似”共享同一组几何基，并节省 $Vd_{\rm model}$ 个参数。代价是输入表示与输出分类器不再完全独立，是否绑定仍取决于模型设计。
+
+\begin{exercisebox}{大词表为什么昂贵？}
+设 $V=128000$、$d_{\rm model}=4096$。单个嵌入矩阵有
+\[
+Vd_{\rm model}=128000\times4096=524{,}288{,}000
+\]
+个参数，BF16 权重约占 $1.05$ GB。若嵌入层与 LM Head 不绑定，两者合计约 $10.49$ 亿参数；绑定后可省去一份约 $5.24$ 亿参数的矩阵。
+\end{exercisebox}
+
+\begin{interviewbox}{为什么 LM Head 必须投影到词表维？}
+\textbf{20 秒回答：}Transformer 输出的是 $d_{\rm model}$ 维隐藏特征，而下一个词元预测是一个 $V$ 分类问题。LM Head 用 $W_{\rm lm}\in\mathbb R^{d_{\rm model}\times V}$ 为每个词元生成一个分数，再沿 $V$ 维 softmax，才能得到词表上的条件分布。
+
+\textbf{深入解释：}若批量隐藏状态为 $H\in\mathbb R^{B\times T\times d_{\rm model}}$，矩阵乘法后 logits 形状为 $[B,T,V]$。softmax 必须沿最后的词表维做，因为每个样本、每个位置都要在 $V$ 个互斥候选中归一化；若沿时间维 softmax，得到的会是“不同位置互相竞争”，不再对应下一个词元分布。
+
+\textbf{面试官继续追问：}
+\begin{enumerate}
+  \item 为什么 logits 可以是任意实数？
+  \item weight tying 节省多少参数？
+  \item 词表很大时，LM Head 的参数量和计算量如何变化？
+  \item temperature 为什么更自然地作用在 logits 上？
+\end{enumerate}
+\end{interviewbox}
+
+\section{自注意力（Self-Attention）推导}
+\label{sec:attention}
+
+\begin{motivationbox}{并行建模长距离依赖}
+序列模型既要让远距离词元交互，又希望训练时能并行。RNN 的信息必须逐步传递，长路径不利于梯度和吞吐；卷积要堆叠多层才能覆盖远距离。自注意力让每个查询向量（query）直接与所有键向量（key）比较，把任意两点之间的交互路径缩短为一步，代价则是长度 $T$ 上的二次计算和显存。
+\end{motivationbox}
+
+给定一层输入 $X\in\mathbb R^{B\times T\times d_{\rm model}}$，线性投影得到：
+\[
+Q=XW_Q,\qquad K=XW_K,\qquad V=XW_V.
+\]
+这里 $W_Q,W_K,W_V$ 是三组可学习投影矩阵；$Q$ 是查询矩阵（query），表示当前位置“想找什么”；$K$ 是键矩阵（key），表示每个位置“可用什么特征被匹配”；$V$ 是值矩阵（value），表示匹配后真正取回的内容。三组投影不是多余复制：把匹配空间与内容空间分开后，模型可以用一种特征判断相关性，再传递另一种特征；不同注意力头又能在不同子空间学习语法、指代、位置或主题关系。
+
+单头时 $W_Q,W_K,W_V\in\mathbb R^{d_{\rm model}\times d_k}$，因此 $Q,K,V\in\mathbb R^{B\times T\times d_k}$，其中 $d_k$ 是单头查询和键的维度。多头时通常重排为 $[B,H,T,d_h]$：$H$ 是注意力头数，$d_h$ 是每个头的维度，常见设置满足 $d_{\rm model}=H d_h$。
+
+对批次中的某个样本、某个注意力头，位置 $i$ 到位置 $j$ 的分数可逐元素写成
+\[
+s_{ij}=\frac{1}{\sqrt{d_h}}\sum_{r=1}^{d_h}q_{ir}k_{jr}+M_{ij},
+\qquad
+M_{ij}=\begin{cases}
+0,&j\le i,\\
+-\infty,&j>i.
+\end{cases}
+\]
+这里 $i$ 是发起查询的位置，$j$ 是被读取的键和值的位置，$r$ 枚举头内的第 $r$ 个向量分量；$q_{ir}$ 与 $k_{jr}$ 分别是对应分量。$M_{ij}$ 是因果遮罩：允许读取历史和当前位置时取 $0$，禁止读取未来时取 $-\infty$。因此 $s_{ij}$ 表示缩放并遮罩后的相关性分数。这一定义也说明了因果遮罩为什么能令未来位置的 softmax 权重严格为零。
+
+\figSelfAttention
+
+不考虑遮罩时，每个查询与每个键的原始注意力分数是内积：
+\[
+S_{ij}=q_i^\top k_j.
+\]
+加入因果遮罩矩阵 $M$ 后：
+\[
+A=\softmax\left(\frac{QK^\top}{\sqrt{d_k}}+M\right),\qquad Y=AV.
+\]
+其中 $S$ 是原始分数矩阵，$A\in\mathbb R^{B\times H\times T\times T}$ 是沿最后一维归一化后的注意力权重，$Y\in\mathbb R^{B\times H\times T\times d_h}$ 是对值矩阵 $V$ 加权求和后的输出。
+
+\begin{examplebox}{一个查询如何读取历史词元}
+考虑三个位置“我 / 喜欢 / 机器”，当前计算位置 2“喜欢”的输出。假设除以 $\sqrt{d_h}$ 后，它与三个键的分数为
+\[
+[2,\ 1,\ 4].
+\]
+第三个位置“机器”属于未来，因果遮罩把它改成 $-\infty$：
+\[
+[2,\ 1,\ -\infty].
+\]
+Softmax 后约为 $[0.731,0.269,0]$。若 $v_1=(1,0)$、$v_2=(0,2)$，则
+\[
+y_2=0.731v_1+0.269v_2=(0.731,0.538).
+\]
+这就是 attention 的实际含义：先用查询和键决定“从每个可见位置取多少”，再对值向量做加权求和。未来位置即使原始分数最高，也会因遮罩得到零权重。
+\end{examplebox}
+
+\begin{mathbox}
+若查询向量 $q$ 和键向量 $k$ 的每个分量独立、均值为 $0$、方差为 $1$，则
+\[
+\operatorname{Var}(q^\top k)=\operatorname{Var}\left(\sum_{\ell=1}^{d_k}q_\ell k_\ell\right)=d_k.
+\]
+求和下标 $\ell$ 枚举向量的 $d_k$ 个分量。不缩放时，$d_k$ 越大，softmax 输入方差越大，分布越尖，梯度容易饱和。除以 $\sqrt{d_k}$ 后方差约回到 $1$。
+\end{mathbox}
+
+对第 $i$ 个查询，softmax 权重和输出分别为
+\[
+a_{ij}=\frac{e^{s_{ij}}}{\sum_{u\le i}e^{s_{iu}}},
+\qquad
+y_i=\sum_{j\le i}a_{ij}v_j.
+\]
+其中 $a_{ij}$ 表示位置 $i$ 分配给位置 $j$ 的权重，$y_i$ 是位置 $i$ 的输出。因此 $a_{ij}\ge 0$ 且 $\sum_{j\le i}a_{ij}=1$，$y_i$ 是可见值向量的凸组合。softmax 对输入分数的雅可比矩阵（Jacobian）元素为
+\[
+\frac{\partial a_{ij}}{\partial s_{ik}}
+=a_{ij}(\mathbf 1[j=k]-a_{ik}),
+\]
+这里 $k$ 是另一个分数位置的下标，$\mathbf 1[j=k]$ 是指示函数：条件成立取 $1$，否则取 $0$。该式解释了当某个 $a_{ij}$ 接近 $1$、其余权重接近 $0$ 时，大部分梯度会变小。
+
+单头 attention 只能在一套相似度空间中形成一张权重图。多头注意力（Multi-Head Attention，MHA）的提出，是为了让模型并行保留多种关系：每个头使用独立投影和较小的 $d_h$，最后拼接回 $d_{\rm model}$。它提高表示多样性，但也让键值缓存随键值头数增长，这一代价随后促成了 MQA 与 GQA。
+
+\subsection{为什么 Q、K、V 使用不同投影？}
+
+令 $Q=K=V=X$ 仍然可以计算注意力，但模型只能在原始残差空间中用同一组特征同时承担“发起查询、被匹配、传递内容”三种职责。独立的 $W_Q,W_K,W_V$ 允许模型在匹配空间中强调一种特征，在值空间中传递另一种特征。例如，一个头可以用实体类型判断指代关系，却把实体的语义内容作为值返回。
+
+查询/键维度 $d_k$ 决定内积分数的尺度，因此缩放项使用 $\sqrt{d_k}$；值维度 $d_v$ 决定每个头输出的宽度。数学上 $d_k$ 不必等于 $d_v$，只是很多实现为了规则的张量布局和高效内核令二者都等于 $d_h$。
+
+多头输出先得到
+\[
+Y^{(h)}\in\mathbb R^{B\times T\times d_v},\qquad h=1,\ldots,H,
+\]
+再沿特征维拼接并经过输出投影：
+\[
+Y=\operatorname{Concat}(Y^{(1)},\ldots,Y^{(H)})W_O,\qquad
+W_O\in\mathbb R^{Hd_v\times d_{\rm model}}.
+\]
+$W_O$ 不只是为“凑形状”：它让不同头的特征重新线性混合，并把结果投影回残差流宽度。没有 $W_O$ 时，各头输出只能机械并排，下一条残差相加还要求恰好满足 $Hd_v=d_{\rm model}$。
+
+\begin{interviewbox}{为什么不能直接令 $Q=K=V=X$？}
+\textbf{20 秒回答：}这样仍能形成注意力，但会把“用什么特征匹配”和“匹配后传递什么内容”绑在同一空间。独立投影让查询、键和值形成不同的可学习子空间，模型可以用一种特征决定相关性，再传递另一种特征。
+
+\textbf{深入解释：}分数由 $(x_iW_Q)(x_jW_K)^\top$ 决定，输出内容由 $x_jW_V$ 决定。三组矩阵使双线性匹配矩阵 $W_QW_K^\top$ 与内容变换 $W_V$ 独立可学。若直接使用 $X$，匹配度固定为 $x_i x_j^\top$，模型失去按头改变相似度度量和内容编码的能力。
+
+\textbf{面试官继续追问：}
+\begin{enumerate}
+  \item $d_k$ 必须等于 $d_v$ 吗？
+  \item 为什么分数缩放看 $d_k$ 而不是 $d_v$？
+  \item 为什么值向量不参与相似度计算？
+  \item RoPE 为什么通常只作用于 Q/K？
+\end{enumerate}
+\end{interviewbox}
+
+\begin{interviewbox}{多头数量越多一定越好吗？}
+\textbf{20 秒回答：}不一定。固定 $d_{\rm model}$ 时，头数 $H$ 增加会使单头维度 $d_h=d_{\rm model}/H$ 变小；关系子空间更多，但每个头的表达宽度下降，内核效率、训练稳定性和键值缓存布局也会变化。
+
+\textbf{深入解释：}多头提供多组独立的投影与权重图，不是重复计算同一注意力。但当 $d_h$ 过小时，单头难以承载复杂特征；头数过多还会增加调度开销。输出投影 $W_O$ 负责混合各头，否则头之间直到下一层前都没有显式的信息融合。
+
+\textbf{面试官继续追问：}
+\begin{enumerate}
+  \item $d_{\rm model}=4096,H=32$ 时单头维度是多少？
+  \item 增加 Q 头数是否一定增加键值缓存？
+  \item GQA 为什么能保持 Q 头数而减少 KV 头数？
+\end{enumerate}
+\end{interviewbox}
+
+\begin{mathbox}
+忽略常数后，QKV 与输出投影的计算量为 $O(BTd_{\rm model}^2)$；分数矩阵和加权求和各为
+\[
+O(BHT^2d_h)=O(BT^2d_{\rm model}).
+\]
+标准实现还要保存 $A\in\mathbb R^{B\times H\times T\times T}$，其激活显存是 $O(BHT^2)$。这就是长序列下 FlashAttention、稀疏注意力和滑动窗口有价值的根源。
+\end{mathbox}
+
+\codesubsection{对应实现：Scaled Dot-Product Attention}
+
+下面的实现刻意返回注意力权重，便于在面试中检查张量形状（shape）。生产环境通常优先使用 PyTorch 的融合缩放点积注意力实现，以获得更好的速度和显存效率。
+
+\begin{lstlisting}
+import math
+import torch
+
+def causal_mask(seq_len, device):
+    # 先构造 [T, T] 上三角矩阵；对角线以上代表未来位置。
+    # 这里约定 True 表示“禁止关注”，False 表示“可以关注”。
+    mask = torch.ones(
+        seq_len, seq_len, dtype=torch.bool, device=device
+    ).triu(diagonal=1)
+
+    # 增加 batch 和 head 维，得到 [1, 1, T, T]。
+    # 后续会自动广播到每个样本和每个注意力头。
+    return mask[None, None, :, :]
+
+def scaled_dot_product_attention(q, k, v, mask=None):
+    # q, k, v: [B, H, T, D]
+    # k.transpose(-2, -1): [B, H, D, T]
+    scale = 1.0 / math.sqrt(q.size(-1))
+    scores = torch.matmul(q, k.transpose(-2, -1)) * scale
+    # scores: [B, H, T, T]
+
+    if mask is not None:
+        # 被 mask 的位置在 softmax 后应严格接近 0。
+        scores = scores.masked_fill(mask, float("-inf"))
+
+    # 半精度下先转 FP32 做 softmax，可降低溢出和下溢风险。
+    weights = torch.softmax(scores.float(), dim=-1).to(q.dtype)
+
+    # 每个 query 对所有可见 value 做加权求和。
+    output = torch.matmul(weights, v)  # [B, H, T, D]
+    return output, weights
+\end{lstlisting}
+
+最容易出错的是遮罩方向：第 $i$ 行对应第 $i$ 个查询，第 $j$ 列对应第 $j$ 个键，因此应屏蔽 $j>i$ 的右上三角，而不是左下三角。$[1,1,T,T]$ 中的两个长度为 $1$ 的维度利用广播机制（broadcasting），把同一个因果约束应用到全部批次样本和注意力头。
+
+\section{因果遮罩、残差与归一化}
+\label{sec:residual}
+
+\begin{motivationbox}{让注意力既守因果约束，又能堆得足够深}
+裸 attention 有两个问题。第一，训练时整段序列同时输入，若不遮挡未来位置，模型会偷看答案；第二，几十到上百层子网络连续变换会让激活尺度和梯度路径越来越不稳定。因果遮罩（causal mask）解决信息泄漏，残差连接提供恒等梯度通路，归一化则控制每层输入尺度。
+\end{motivationbox}
+
+因果遮罩把未来词元的分数置为 $-\infty$，确保第 $t$ 个词元 $x_t$ 只能依赖当前位置及其左侧词元 $x_{\le t}$。它解决的是训练目标的合法性，而不是计算加速：普通实现即使遮掉右上三角，也可能仍构造完整 $T\times T$ 分数矩阵。
+
+残差连接让每个子层只需学习对当前表示的增量，并让梯度有短路径。前置归一化（Pre-Norm）把归一化放在 attention 或前馈网络之前，使残差主干更接近恒等映射，深层训练通常比后置归一化（Post-Norm）稳定。均方根归一化（RMSNorm）则去掉均值中心化，只按均方根缩放，以更少统计量维持尺度稳定。
+
+\begin{table}[htbp]
+\centering
+\small
+\begin{tabularx}{0.86\textwidth}{lYY}
+\toprule
+项目 & LayerNorm & RMSNorm\\
+\midrule
+公式 & $(x-\mu)/\sqrt{\sigma^2+\epsilon}$ & $x/\sqrt{\frac{1}{d}\sum_i x_i^2+\epsilon}$\\
+参数 & 常有缩放与偏置参数 & 通常只有缩放参数\\
+效果 & 通用稳定 & 更省计算，现代 LLM 常用\\
+\bottomrule
+\end{tabularx}
+\caption{LayerNorm 与 RMSNorm 对比。}
+\end{table}
+
+表中 $x=(x_1,\ldots,x_d)$ 是一个位置上的 $d$ 维隐藏向量，$\mu$ 和 $\sigma^2$ 分别是这些分量的均值与方差，$\epsilon$ 是防止分母为零的小常数。LayerNorm 先减去 $\mu$，RMSNorm 则直接用原始分量的均方进行缩放。
+
+\subsection{残差流为什么保持固定宽度？}
+
+可以把 Transformer 看成一条贯穿所有层的残差流：
+\[
+X_{\ell+1}=X_\ell+F_\ell(X_\ell),\qquad
+X_\ell\in\mathbb R^{B\times T\times d_{\rm model}}.
+\]
+每个子层可以在内部扩张、分头或门控，但最终必须返回 $d_{\rm model}$ 维，才能与 $X_\ell$ 逐元素相加。固定宽度让不同层共享统一接口，也避免整条网络永久工作在更昂贵的 $d_{\rm ff}$ 宽度。若子层输出宽度不同，必须额外使用投影或改变残差支路；标准 Transformer 选择在子层内部完成投影回收。
+
+残差连接的作用也不只是“防止梯度消失”。对 $X_{\ell+1}=X_\ell+F_\ell(X_\ell)$ 求导：
+\[
+\frac{\partial X_{\ell+1}}{\partial X_\ell}
+=I+J_{F_\ell}(X_\ell),
+\]
+其中 $I$ 是恒等映射，$J_{F_\ell}$ 是子层的雅可比矩阵。梯度有一条不依赖子层参数的直接路径；同时每层只需学习对已有表示的增量，使深层优化更接近连续的小步修正。它不能保证梯度永不爆炸或消失，归一化、初始化和残差缩放仍然重要。
+
+\begin{interviewbox}{为什么 attention 和 FFN 都必须回到 $d_{\rm model}$？}
+\textbf{20 秒回答：}它们都要把输出加回同一条残差流。子层内部可以使用多头或 $d_{\rm ff}$ 宽空间，但输出必须投影到 $d_{\rm model}$，才能逐元素残差相加并保持各层接口与总体成本稳定。
+
+\textbf{深入解释：}固定残差宽度把“模型的长期状态容量”和“单个子层的临时计算容量”分开。attention 用 $W_O$ 回收各头，FFN 用下投影回收中间特征。若全网永久保持 $d_{\rm ff}$，attention 投影、激活和每层参数都会按更大宽度增长，成本远高于只在 FFN 内短暂扩张。
+
+\textbf{面试官继续追问：}
+\begin{enumerate}
+  \item 如果子层输出维度不同，能否给 shortcut 加投影？
+  \item Pre-Norm 为什么让恒等路径更干净？
+  \item 残差连接能否单独保证超深网络稳定？
+\end{enumerate}
+\end{interviewbox}
+
+\section{前馈网络（FFN）与 SwiGLU}
+\label{sec:ffn}
+
+\begin{motivationbox}{注意力让词元交换信息，谁来做逐位置非线性变换？}
+Attention 的独特作用是跨序列位置通信：注意力权重让一个位置聚合其他可见位置的信息。但它并非只做词元混合，因为 $W_Q,W_K,W_V,W_O$ 也会对特征通道做线性变换。前馈网络（feed-forward network，FFN）不交换不同词元的信息，而是为每个位置独立提供更强的高维非线性计算。SwiGLU 又在普通 FFN 上引入数据相关门控，让网络决定哪些中间特征应通过。
+\end{motivationbox}
+
+\subsection{为什么先升维再降维？}
+
+标准 FFN 对每个词元独立执行
+\[
+h=\phi(xW_1+b_1),\qquad
+W_1\in\mathbb R^{d_{\rm model}\times d_{\rm ff}},
+\]
+\[
+y=hW_2+b_2,\qquad
+W_2\in\mathbb R^{d_{\rm ff}\times d_{\rm model}},
+\qquad d_{\rm ff}>d_{\rm model}.
+\]
+常说“attention 做词元混合、FFN 做通道混合”，它适合作为第一层直觉，却不是严格的数学分解。更准确地说：attention 是 Transformer 中实现\textbf{跨词元通信}的组件，注意力权重决定不同位置如何聚合；与此同时，Q/K/V/O 投影也会混合特征通道。FFN 则是\textbf{逐位置}的，它不跨词元交换信息，而是在每个词元内部执行更强的非线性特征变换。上投影提供更多中间特征方向，激活函数或门控在这些方向上选择性地产生非线性响应，下投影再把丰富的临时特征压回固定残差宽度。
+
+\begin{wrongbox}
+\textbf{错误说法：}Attention 只负责 token mixing，FFN 只负责 channel mixing。
+
+\textbf{更准确：}Attention 的独特能力是跨 token 通信，但 Q/K/V/O 线性投影本身也会混合特征维度；FFN 则不跨 token，而是在每个 token 内执行更强的非线性特征变换。
+\end{wrongbox}
+
+“高维一定更强”并不是完整答案。关键是扩张只发生在局部子层：模型获得较大的非线性特征基，却不要求 attention、残差流和所有层间接口永久承担 $d_{\rm ff}$ 的成本。若只做 $d_{\rm model}\to d_{\rm model}$，参数更省但中间可激活的特征基更少；若永远保持 $d_{\rm ff}$，整网参数与矩阵乘法成本都会显著上升。
+
+\figFFNExpansion
+
+若去掉非线性激活，两层线性层会塌缩成一层：
+\[
+y=(xW_1)W_2=x(W_1W_2).
+\]
+$W_1W_2$ 仍是一个线性变换，升维没有带来新的函数类别。真正让 FFN 能形成分段或平滑非线性特征的，是中间的激活函数与门控。
+
+\begin{interviewbox}{为什么 FFN 要先升维再降维？}
+\textbf{20 秒回答：}残差流必须维持固定 $d_{\rm model}$，而 FFN 需要更大的中间特征空间完成逐词元的非线性变换，因此先扩张到 $d_{\rm ff}$，在宽空间中激活或门控，再投影回 $d_{\rm model}$。这样提高局部非线性容量，又不让整个网络永久承担 $d_{\rm ff}$ 的成本。
+
+\textbf{深入解释：}扩张层学习大量候选特征，非线性使不同输入激活不同子集，下投影把它们重新组合成对残差流的增量。$d_{\rm ff}$ 增大通常会提升容量，但参数和 FLOPs 近似线性增长，也可能受数据规模、正则化和硬件效率限制，因此不是越大越好。
+
+\textbf{面试官继续追问：}
+\begin{enumerate}
+  \item 为什么不能只做 $d_{\rm model}\to d_{\rm model}$？
+  \item 如果没有激活函数，两层 linear 会发生什么？
+  \item 为什么升维后必须降回来？
+  \item 为什么 MoE 通常替换 FFN 而不是 attention？
+\end{enumerate}
+\end{interviewbox}
+
+\subsection{SwiGLU 的两条上投影}
+
+SwiGLU 用门控改善表达能力：
+\[
+\operatorname{SwiGLU}(x)=
+\left(\operatorname{SiLU}(xW_g)\odot xW_u\right)W_d.
+\]
+设输入 $x$ 的最后一维为 $d_{\rm model}$，门控中间维度为 $d_{\rm ff}$，则 $W_g,W_u\in\mathbb R^{d_{\rm model}\times d_{\rm ff}}$，$W_d\in\mathbb R^{d_{\rm ff}\times d_{\rm model}}$；$\odot$ 表示逐元素相乘。门控投影 $W_g$ 决定哪些中间特征通过，上投影 $W_u$ 提供被门控的内容，下投影 $W_d$ 把结果送回残差流。
+
+SiLU 定义为 $\operatorname{SiLU}(u)=u\sigma(u)$。它不是纯粹限制在 $[0,1]$ 的 sigmoid 门，而是平滑、可带小负值且幅度随输入变化的门控激活。SwiGLU 有三块大矩阵，若与普通两矩阵 FFN 使用同一 $d_{\rm ff}$，参数会多约 $50\%$。为保持相近参数预算，实践中常把 SwiGLU 的中间维调到约普通 $4d_{\rm model}$ FFN 的 $2/3$，再对齐到硬件友好的整数倍。
+
+\begin{exercisebox}{估算一个 SwiGLU 层的参数量}
+设 $d_{\rm model}=4096$、$d_{\rm ff}=11008$，忽略偏置。三块矩阵共有
+\[
+3d_{\rm model}d_{\rm ff}
+=3\times4096\times11008
+=135{,}266{,}304
+\]
+个参数，约 $1.35$ 亿。普通两矩阵 FFN 在相同中间维下约 $0.90$ 亿参数。SwiGLU 的中间维通常需要重新调整，不能只说“换激活函数而参数不变”。
+\end{exercisebox}
+
+\begin{interviewbox}{SwiGLU 为什么需要两条上投影？}
+\textbf{20 秒回答：}$W_g$ 产生经过 SiLU 的门控信号，$W_u$ 产生内容特征，两者逐元素相乘后，模型可以按输入动态控制每个中间特征的通过量；$W_d$ 再把门控后的宽特征投影回残差流。
+
+\textbf{深入解释：}普通 FFN 只对一组上投影特征应用固定形式的激活。SwiGLU 把“是否通过”和“传递什么”解耦成两组可学习投影。代价是三块权重矩阵，因此比较架构时必须同时比较中间维和总参数，而不能只比较激活名称。
+
+\textbf{面试官继续追问：}
+\begin{enumerate}
+  \item gate projection 与 up projection 分别做什么？
+  \item 为什么门不直接用 sigmoid？
+  \item 为什么最终仍需 down projection？
+  \item 如何调整 $d_{\rm ff}$ 才能与普通 FFN 参数量近似？
+\end{enumerate}
+\end{interviewbox}
+
+\begin{wrongbox}
+\textbf{错误说法：}MoE 替换 FFN，只是因为 FFN 参数多。
+
+\textbf{更准确：}参数多是收益来源之一，更关键的是 FFN 对每个词元独立计算，天然适合先按词元路由、再在专家上批量执行；attention 需要跨词元构造匹配关系，若把它按专家稀疏路由，会同时改变信息可见性和通信结构，远比替换逐位置 FFN 复杂。
+\end{wrongbox}
+
+\codesubsection{对应实现：SwiGLU}
+
+\begin{lstlisting}
+import torch.nn as nn
+import torch.nn.functional as F
+
+class SwiGLU(nn.Module):
+    def __init__(self, dim, hidden_dim):
+        super().__init__()
+        # gate_proj 产生门控分支，up_proj 产生内容分支。
+        self.gate_proj = nn.Linear(dim, hidden_dim, bias=False)
+        self.up_proj = nn.Linear(dim, hidden_dim, bias=False)
+
+        # down_proj 把中间维度还原为模型维度，供残差相加。
+        self.down_proj = nn.Linear(hidden_dim, dim, bias=False)
+
+    def forward(self, x):
+        # x: [B, T, C]
+        gate = F.silu(self.gate_proj(x))  # [B, T, hidden_dim]
+        value = self.up_proj(x)           # [B, T, hidden_dim]
+
+        # 逐元素门控，而不是矩阵乘法。
+        hidden = gate * value
+        return self.down_proj(hidden)     # [B, T, C]
+\end{lstlisting}
+
+\codesubsection{对应实现：最小前置归一化 Transformer 块}
+
+下面把前面的 attention、归一化、SwiGLU 和残差连接串起来。它省略了随机失活（dropout）、RoPE、GQA 与推理缓存，目的是把一层中的数据流说清楚。
+
+\begin{lstlisting}
+class TransformerBlock(nn.Module):
+    def __init__(self, dim, num_heads, hidden_dim):
+        super().__init__()
+        assert dim % num_heads == 0
+
+        self.num_heads = num_heads
+        self.head_dim = dim // num_heads
+        self.attn_norm = nn.RMSNorm(dim)
+        self.ffn_norm = nn.RMSNorm(dim)
+
+        # 一次投影后切成 Q、K、V，减少代码重复。
+        self.qkv_proj = nn.Linear(dim, 3 * dim, bias=False)
+        self.out_proj = nn.Linear(dim, dim, bias=False)
+        self.ffn = SwiGLU(dim, hidden_dim)
+
+    def forward(self, x):
+        # x: [B, T, C]
+        batch, seq_len, dim = x.shape
+
+        # Pre-Norm：先归一化，再进入注意力子层。
+        q, k, v = self.qkv_proj(self.attn_norm(x)).chunk(3, dim=-1)
+
+        # [B, T, C] -> [B, H, T, D]
+        def split_heads(tensor):
+            tensor = tensor.view(
+                batch, seq_len, self.num_heads, self.head_dim
+            )
+            return tensor.transpose(1, 2)
+
+        q, k, v = map(split_heads, (q, k, v))
+        mask = causal_mask(seq_len, x.device)
+        attn_out, _ = scaled_dot_product_attention(q, k, v, mask)
+
+        # transpose 后内存通常不连续；contiguous 后才能安全 view。
+        attn_out = attn_out.transpose(1, 2).contiguous()
+        attn_out = attn_out.view(batch, seq_len, dim)
+
+        # 第一条残差：原输入 + 注意力输出。
+        x = x + self.out_proj(attn_out)
+
+        # 第二条残差：注意力结果 + FFN 输出。
+        return x + self.ffn(self.ffn_norm(x))
+\end{lstlisting}
+
+从梯度角度看，每个子层都写成 $x+F(\operatorname{Norm}(x))$。其中 $F$ 表示注意力或前馈子层，$\operatorname{Norm}$ 表示归一化操作。即使 $F$ 在训练早期不稳定，梯度仍可沿恒等残差路径传播；这正是前置归一化深层网络较容易训练的核心原因。
+
+至此，基础 Transformer 已经回答了“如何表示顺序、如何跨位置交换信息、如何稳定堆叠和如何逐位置变换”四个问题。后续现代结构并不是推翻这些组件，而是继续处理它们在更大模型和更长上下文下暴露出的计算、显存与稳定性瓶颈。
+
+\begin{pitfallbox}
+不要把多头注意力理解为“重复算多次一样的注意力”。不同头有不同投影矩阵，学习不同子空间；但键值缓存显存也随键值头数增长。
+\end{pitfallbox}
+
+\section*{面试高频问题}
+\addcontentsline{toc}{section}{面试高频问题：Transformer 基础}
+
+\textbf{Q: 为什么 attention 要除以 $\sqrt{d_k}$？}
+
+20 秒回答：内积方差随 $d_k$ 增长，softmax 会过早饱和；除以 $\sqrt{d_k}$ 把分数尺度稳定在可训练范围。
+
+\textbf{Q: 前置归一化为什么更适合深层 Transformer？}
+
+20 秒回答：归一化在子层前，残差路径更接近恒等映射，梯度更容易穿过很多层，训练稳定性通常优于后置归一化。

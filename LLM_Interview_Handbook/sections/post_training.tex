@@ -1,0 +1,467 @@
+\part{后训练}
+
+\chapter{监督微调与奖励模型}
+
+\figRLHFStages
+
+\section{监督微调（SFT）}
+\label{sec:sft}
+
+\begin{motivationbox}{预训练会续写文本，但不会天然遵循指令}
+预测下一个词元的预训练学到的是互联网文本分布。面对用户问题，模型可能继续补写问题、模仿网页格式，或生成与任务无关的延续，而不是稳定地扮演助手。监督微调（Supervised Fine-Tuning，SFT）用“指令--回答”示范重新塑造条件分布，使模型学会任务格式、回答风格和基本指令遵循。
+\end{motivationbox}
+
+SFT 使用“指令--回答”数据继续计算下一个词元损失。常见做法是只在回答词元上计算损失，提示词词元作为条件但不计入监督，避免模型学习“复述用户问题”。
+
+\begin{lstlisting}
+import torch.nn.functional as F
+
+# input_ids: [B, T]，包含 prompt 与 response。
+# labels: [B, T]；prompt、padding 位置已填成 -100。
+logits = model(input_ids)  # [B, T, V]
+
+# 与预训练一样做 next-token shift。
+shift_logits = logits[:, :-1, :].contiguous()
+shift_labels = labels[:, 1:].contiguous()
+
+loss = F.cross_entropy(
+    shift_logits.view(-1, shift_logits.size(-1)),
+    shift_labels.view(-1),
+    # 被设为 -100 的 prompt 与 padding 不贡献 loss。
+    ignore_index=-100,
+)
+\end{lstlisting}
+
+“提示词不计入损失”不等于“模型看不到提示词”。提示词词元仍参与前向并生成 $K,V$，回答位置也仍可注意它们；只是提示词位置对应的预测误差不参与梯度平均。这样训练目标集中在学习如何回答，而不是要求模型复现用户输入。
+
+\begin{examplebox}{SFT 中哪些词元参与损失}
+把样本简化为
+\[
+[\text{用户:},\ \text{法国首都?},\ \text{助手:},\ \text{巴黎},\ \mathrm{EOS}].
+\]
+输入序列保持完整，因此生成“巴黎”时仍能注意“法国首都?”。但 labels 可设为
+\[
+[-100,-100,-100,\ \text{巴黎},\ \mathrm{EOS}],
+\]
+其中 $-100$ 的位置被交叉熵忽略。这样模型只因回答“巴黎”和正确结束而获得监督，不会被要求预测用户问题本身。若连回答也误设为 $-100$，该样本虽然完成前向，却不会产生有效训练梯度。
+\end{examplebox}
+
+\begin{interviewbox}{为什么提示词可以 mask loss，却仍参与 attention？}
+\textbf{20 秒回答：}提示词词元仍在输入中，产生隐藏状态和 K/V，回答位置可以读取它们；mask 只把提示词位置对应的预测标签设为忽略值，不让这些位置的交叉熵进入损失。条件信息保留了，只是不训练模型复述用户输入。
+
+\textbf{深入解释：}若把提示词从输入中删掉，回答位置失去任务条件，训练目标变成无条件生成。assistant-only loss 聚焦回答行为；full-sequence loss 也训练提示词本身的语言建模，可能浪费容量或学习复现模板，但在某些持续预训练混合目标中仍有用途。
+
+\textbf{面试官继续追问：}
+\begin{enumerate}
+  \item mask label 与 attention mask 有什么区别？
+  \item prompt K/V 会不会收到来自回答损失的梯度？
+  \item assistant-only loss 与 full-sequence loss 如何选择？
+  \item SFT 能否学到示范中完全没有的信息？
+\end{enumerate}
+\end{interviewbox}
+
+SFT 的风险是灾难性遗忘（catastrophic forgetting）：过窄的指令数据可能损伤预训练能力。因此通常混入少量通用数据、使用较小学习率，或采用低秩适配（Low-Rank Adaptation，LoRA）等参数高效微调方法。
+
+全量微调还要求保存全部参数对应的梯度和优化器状态，在多任务或多客户场景中每个版本都复制完整模型。LoRA 因此把原权重矩阵 $W$ 的更新写成低秩矩阵 $\Delta W=BA$，其中 $A$ 和 $B$ 是新增的可训练小矩阵。它只训练少量参数，解决训练和存储成本；但秩（rank）太小会限制可表达的更新方向，也不能保证消除遗忘。
+
+\begin{table}[htbp]
+\centering
+\small
+\begin{tabularx}{0.86\textwidth}{lYY}
+\toprule
+方式 & 优点 & 风险\\
+\midrule
+全量微调 & 容量最大，行为改变充分 & 显存高，容易遗忘\\
+LoRA & 训练参数少，部署可合并 & 秩太小会欠拟合\\
+适配器（Adapter） & 模块化强 & 推理结构更复杂\\
+\bottomrule
+\end{tabularx}
+\caption{LoRA 与全量微调的核心权衡。}
+\end{table}
+
+\section{奖励建模（Reward Modeling）}
+\label{sec:reward-model}
+
+\begin{motivationbox}{示范数据难以写出，但偏好比较更容易获得}
+对开放问题，唯一“标准答案”往往不存在，人工持续编写高质量完整回答成本很高；相比之下，让标注者在两个候选中选择更好的一个更容易且一致性更高。奖励模型把这种成对偏好压缩为可比较的标量，为后续策略优化提供自动反馈。
+\end{motivationbox}
+
+偏好数据写作 $(x,y_w,y_l)$，其中 $x$ 是提示词，$y_w$ 是被选中的较优回答，$y_l$ 是被拒绝的较差回答。参数为 $\phi$ 的奖励模型对回答 $y$ 输出标量 $r_\phi(x,y)$。Bradley--Terry 模型假设偏好概率为：
+\[
+P(y_w\succ y_l\mid x)=\sigma\left(r_\phi(x,y_w)-r_\phi(x,y_l)\right).
+\]
+最大化该概率等价于最小化：
+\[
+\mathcal L_{\rm RM}
+=-\log\sigma\left(r_\phi(x,y_w)-r_\phi(x,y_l)\right).
+\]
+这里 $\sigma(a)=1/(1+e^{-a})$ 是逻辑函数。若较优回答的奖励高于较差回答，差值为正，损失变小；反之损失增大并推动模型拉开奖励差。
+
+令 $\Delta r=r_\phi(x,y_w)-r_\phi(x,y_l)$，则
+\[
+\frac{\partial\mathcal L_{\rm RM}}{\partial\Delta r}
+=\sigma(\Delta r)-1=-\sigma(-\Delta r).
+\]
+其中 $\Delta r$ 是两条回答的奖励差。当排序错误且 $\Delta r\ll0$ 时，梯度绝对值接近 $1$；排序已正确且间隔（margin）足够大时，梯度逐渐趋近 $0$。这说明 Bradley--Terry 损失学的是相对顺序，而不是奖励的绝对标尺。
+
+\begin{examplebox}{奖励差如何变成偏好概率}
+若较优回答的奖励为 $r_w=2.0$，较差回答为 $r_l=0.5$，则奖励间隔为 $1.5$，模型预测较优回答获胜的概率是
+\[
+\sigma(1.5)\approx0.818,
+\qquad \mathcal L=-\log0.818\approx0.201.
+\]
+若排序反了，$r_w=0.5,r_l=2.0$，概率变为 $\sigma(-1.5)\approx0.182$，loss 增大到约 $1.701$。训练因此只关心两者差值；把两个奖励同时加 $100$，概率完全不变。
+\end{examplebox}
+
+\codesubsection{对应实现：奖励模型成对损失}
+
+\begin{lstlisting}
+import torch.nn.functional as F
+
+def pairwise_reward_loss(chosen_reward, rejected_reward):
+    # 两个输入均为 [B]，每个回答最终只对应一个标量奖励。
+    reward_margin = chosen_reward - rejected_reward
+
+    # -log(sigmoid(margin)) 的稳定写法。
+    # 不要先手动 sigmoid 再取 log，否则大幅值时更易下溢。
+    per_pair_loss = -F.logsigmoid(reward_margin)
+    return per_pair_loss.mean()
+\end{lstlisting}
+
+奖励值整体加上同一个常数不会改变差值，也不会改变损失，所以奖励模型没有天然的绝对零点。真正参与偏好判断的是奖励间隔；部署时若把奖励绝对值当成跨模型、跨数据集可直接比较的分数，往往会得出错误结论。
+
+奖励模型只学会“评价”，还不会直接改变生成策略。由于采样出的词元是离散动作，奖励也通常在整段回答结束后才能得到，不能像普通监督学习那样直接对文本求导；这就引出了策略梯度与 PPO。
+
+\begin{interviewbox}{奖励模型为什么输出一个标量？}
+\textbf{20 秒回答：}后续策略优化需要对完整回答做可比较的偏好排序，标量奖励把多维偏好压缩成统一优化信号。成对 Bradley--Terry 损失只要求较优回答的标量更高，不要求奖励具有绝对零点。
+
+\textbf{深入解释：}标量便于排序和策略梯度，但也会丢失帮助性、事实性、安全性等维度之间的结构。成对比较通常比让标注者给绝对分数更一致，因为人更擅长判断 A/B 哪个好；模型仍可能学习标注偏差，并被策略通过分布外输出利用。
+
+\textbf{面试官继续追问：}
+\begin{enumerate}
+  \item reward 的绝对值重要吗？
+  \item pairwise ranking 为什么往往比直接打分稳定？
+  \item Bradley--Terry 假设了什么？
+  \item reward hacking 与过拟合奖励模型有什么区别？
+\end{enumerate}
+\end{interviewbox}
+
+\chapter{PPO、DPO 与 GRPO}
+
+\figPpoGrpo
+
+\section{近端策略优化（PPO）与人类反馈强化学习}
+\label{sec:ppo}
+
+\begin{motivationbox}{把不可微的整段奖励传回生成策略}
+奖励模型给出的是回答级标量，而策略需要决定每个词元的概率。策略梯度可以用采样估计把奖励传回动作概率，但直接更新方差大，而且一次过强更新可能让新策略远离收集数据的旧策略，导致训练失稳或钻奖励模型漏洞。近端策略优化（Proximal Policy Optimization，PPO）用优势基线降低方差，用概率比裁剪限制单轮策略变化，并用参考模型的 KL 散度保持语言质量。
+\end{motivationbox}
+
+在人类反馈强化学习（Reinforcement Learning from Human Feedback，RLHF）中，参数为 $\theta$ 的策略 $\pi_\theta$ 生成回答，奖励模型给出回答级奖励，参考策略 $\pi_{\rm ref}$ 用 KL 约束防止策略偏离 SFT 模型过远。对第 $t$ 个生成位置，状态 $s_t$ 是“提示词加上已经生成的回答前缀”，动作 $a_t$ 是当前选择的词元。PPO 使用旧策略 $\pi_{\theta_{\rm old}}$ 收集样本，并定义概率比：
+\[
+r_t(\theta)=
+\frac{\pi_\theta(a_t\mid s_t)}
+{\pi_{\theta_{\rm old}}(a_t\mid s_t)}.
+\]
+这里 $r_t(\theta)$ 表示新旧策略对同一动作的概率之比，\textbf{不是奖励}；$r_t>1$ 表示新策略提高了该动作概率。若优势 $A_t>0$，希望提高该动作概率；若 $A_t<0$，希望降低。直接优化 $r_tA_t$ 可能一步更新过大，因此裁剪代理目标为：
+\[
+L^{\mathrm{CLIP}}=
+\mathbb E\left[
+\min\left(
+r_tA_t,
+\operatorname{clip}(r_t,1-\epsilon,1+\epsilon)A_t
+\right)
+\right].
+\]
+其中 $\epsilon>0$ 是允许概率比变化的裁剪宽度，期望 $\mathbb E$ 对采样到的有效动作取平均；训练希望最大化 $L^{\rm CLIP}$。裁剪形成近似的信赖域（trust region），限制单轮策略变化。
+
+\begin{examplebox}{PPO clip 如何阻止一次更新过大}
+某词元在旧策略中的概率为 $0.20$，新策略提高到 $0.30$，所以概率比为 $r=1.5$。若优势 $A=2>0$、$\epsilon=0.2$，未裁剪收益为 $rA=3.0$，裁剪后为
+\[
+\operatorname{clip}(1.5,0.8,1.2)\times2=2.4.
+\]
+目标取二者较小值 $2.4$，因此继续把概率从 $0.20$ 大幅推高不会再获得额外收益。若 $A<0$ 且概率朝错误方向变化，$\min$ 仍会保留惩罚，这就是 PPO 不是简单“把所有概率比截断”的原因。
+\end{examplebox}
+
+\codesubsection{对应实现：PPO 裁剪策略损失}
+
+\begin{lstlisting}
+import torch
+
+def ppo_policy_loss(
+    new_logp, old_logp, advantages, valid_mask, clip_eps=0.2
+):
+    # new_logp/old_logp: [B, T]，动作 token 的对数概率。
+    # advantages: [B, T]；实际使用前通常已经 detach。
+    # valid_mask: [B, T]，排除 prompt 与 padding token。
+
+    # 概率相除在 log 空间中写成先相减再 exp，更稳定。
+    ratio = torch.exp(new_logp - old_logp)
+
+    unclipped = ratio * advantages
+    clipped_ratio = ratio.clamp(1.0 - clip_eps, 1.0 + clip_eps)
+    clipped = clipped_ratio * advantages
+
+    # PPO 最大化两者较小值；训练代码用负号改成最小化。
+    token_loss = -torch.minimum(unclipped, clipped)
+
+    # 只平均有效 response token，避免 padding 改变 loss 尺度。
+    token_loss = token_loss * valid_mask
+    return token_loss.sum() / valid_mask.sum().clamp_min(1)
+\end{lstlisting}
+
+裁剪不是简单地把所有概率比截到区间内。目标取 $\min$，只在更新会让代理目标“过度变好”时截断收益；如果策略朝错误方向移动，目标仍保留惩罚梯度。因此裁剪是保守更新机制，而不是把梯度普遍裁小。
+
+\subsection{旧策略与参考策略不是同一个概念}
+
+PPO/RLHF 中常同时出现两份“固定模型”，但作用不同：
+
+\begin{itemize}
+  \item \textbf{旧策略 $\pi_{\theta_{\rm old}}$：}生成当前 rollout，并作为 PPO 重要性采样概率比的分母；每轮优化后会周期性更新为新的策略快照。
+  \item \textbf{参考策略 $\pi_{\rm ref}$：}通常是冻结的 SFT 基线，用 KL 惩罚限制长期行为漂移；它不会因为每轮 PPO 更新而同步前进。
+\end{itemize}
+
+训练开始时二者可能来自同一检查点，但语义和生命周期不同。若把 reference 也随策略每轮更新，KL 锚点会移动，无法约束模型长期偏离原有语言分布；若用一个很旧的策略做 PPO ratio 分母，重要性权重会极端，代理目标变得不可靠。
+
+\begin{interviewbox}{PPO 为什么同时需要 old policy 和 reference policy？}
+\textbf{20 秒回答：}old policy 是短期优化基线，负责说明当前数据由什么策略采样，并进入 probability ratio；reference policy 是长期行为锚点，通过 KL 防止策略远离 SFT 模型。二者初始可能相同，但更新频率和数学职责不同。
+
+\textbf{深入解释：}$\pi_{\theta_{\rm old}}$ 解决 on-policy 数据在多步更新中的分布校正，PPO clip 限制相对它的单轮变化；$\pi_{\rm ref}$ 解决奖励最大化导致的长期漂移和语言质量退化。PPO clipping 也不是严格 KL 约束，它只裁剪采样动作上的代理收益，仍需监控实际 KL。
+
+\textbf{面试官继续追问：}
+\begin{enumerate}
+  \item probability ratio 为什么不是 reward？
+  \item clipping 限制的是参数距离还是动作概率变化？
+  \item reference model 可以多久不更新？
+  \item old policy 与当前 policy 相差太大会怎样？
+\end{enumerate}
+\end{interviewbox}
+
+\begin{table}[htbp]
+\centering
+\small
+\begin{tabularx}{0.9\textwidth}{lY}
+\toprule
+概念 & 含义\\
+\midrule
+奖励（reward） & 环境或奖励模型给出的即时标量\\
+回报（return） & 从当前步开始的累计折扣奖励\\
+状态价值 $V(s)$ & 状态 $s$ 下未来回报的期望\\
+动作价值 $Q(s,a)$ & 执行动作 $a$ 后未来回报的期望\\
+优势 $A$ & 动作比平均行为好多少，常为 $Q(s,a)-V(s)$\\
+\bottomrule
+\end{tabularx}
+\caption{RLHF 中容易混淆的概念。}
+\end{table}
+
+\section{直接偏好优化（DPO）}
+\label{sec:dpo}
+
+\begin{motivationbox}{能否绕开昂贵且脆弱的在线强化学习？}
+PPO 通常要同时维护策略、参考模型、奖励模型和价值模型，还要在线采样并反复协调多种损失，显存、系统和调参成本都很高。直接偏好优化（Direct Preference Optimization，DPO）从 KL 正则化最优策略中反解隐式奖励，把偏好学习直接化为“较优回答/较差回答”的分类式目标，从而保留参考策略约束并省去显式奖励模型与在线强化学习环路。
+\end{motivationbox}
+
+DPO 的目标是直接用偏好数据优化策略，而不显式训练奖励模型。关键直觉是：在 KL 约束下，最优策略相对参考策略的对数概率比可解释为隐式奖励：
+\[
+r(x,y)=\beta\log\frac{\pi_\theta(y\mid x)}{\pi_{\rm ref}(y\mid x)}+C(x).
+\]
+其中 $x$ 是提示词，$y$ 是一条回答，$\pi_\theta$ 是当前策略，$\pi_{\rm ref}$ 是冻结的参考策略，$\beta$ 控制偏离参考策略的代价，$C(x)$ 是只与提示词有关的常数。代入偏好概率，常用 DPO 损失为：
+\[
+\mathcal L_{\rm DPO}
+=-\log\sigma\left[
+\beta\left(
+\log\frac{\pi_\theta(y_w\mid x)}{\pi_{\rm ref}(y_w\mid x)}
+-
+\log\frac{\pi_\theta(y_l\mid x)}{\pi_{\rm ref}(y_l\mid x)}
+\right)\right].
+\]
+
+\begin{examplebox}{DPO 比较的是相对参考模型的改变量}
+设当前策略对较优/较差回答的序列对数概率分别为 $-2.0,-3.0$，策略间隔为 $1.0$；参考模型对应值为 $-2.4,-2.8$，参考间隔为 $0.4$。当前策略相对参考模型多偏向较优回答的程度为
+\[
+1.0-0.4=0.6.
+\]
+若 $\beta=0.1$，DPO 的分类分数为 $0.06$，损失为 $-\log\sigma(0.06)\approx0.664$。若只看当前策略间隔而不减参考间隔，就无法区分“策略新学到的偏好”和“参考模型原本已有的偏好”。
+\end{examplebox}
+
+\begin{mathbox}
+从单个提示词上的 KL 正则化目标出发：
+\[
+\max_\pi\sum_y\pi(y\mid x)r(x,y)
+-\beta\sum_y\pi(y\mid x)\log\frac{\pi(y\mid x)}{\pi_{\rm ref}(y\mid x)},
+\quad \text{s.t. }\sum_y\pi(y\mid x)=1.
+\]
+加入拉格朗日乘子并对 $\pi(y\mid x)$ 求导，可得
+\[
+\pi^*(y\mid x)
+=\frac{1}{Z(x)}\pi_{\rm ref}(y\mid x)e^{r(x,y)/\beta}.
+\]
+反解奖励即
+\[
+r(x,y)=\beta\log\frac{\pi^*(y\mid x)}{\pi_{\rm ref}(y\mid x)}+\beta\log Z(x).
+\]
+这里 $\pi(y\mid x)$ 是待优化的回答分布，$r(x,y)$ 是回答奖励，约束保证所有回答概率之和为 $1$；$Z(x)$ 是归一化常数，$\pi^*$ 是该目标的最优策略。同一提示词下对较优/较差回答做差时，未知的 $\log Z(x)$ 正好抵消，从而得到上面的 DPO 损失。
+\end{mathbox}
+
+$\beta$ 是原 KL 正则目标中的惩罚系数：较大时更强地约束策略靠近参考模型，较小时允许更大偏移。实现中它也会缩放 DPO 的分类分数，因此应结合学习率、数据噪声与实际 KL 一起调节。
+
+\codesubsection{对应实现：DPO 成对偏好损失}
+
+\begin{lstlisting}
+import torch.nn.functional as F
+
+def dpo_loss(
+    policy_chosen_logp,
+    policy_rejected_logp,
+    ref_chosen_logp,
+    ref_rejected_logp,
+    beta=0.1,
+):
+    # 四个输入均为 [B]。
+    # 每个值是 response 所有有效 token 的 log-prob 之和。
+
+    # 当前策略更偏爱 chosen 的程度。
+    policy_margin = policy_chosen_logp - policy_rejected_logp
+
+    # 参考策略原本就可能更偏爱 chosen，必须减掉这部分基线。
+    reference_margin = ref_chosen_logp - ref_rejected_logp
+
+    # 正值表示当前策略相对参考策略更偏向 chosen。
+    preference_logit = beta * (policy_margin - reference_margin)
+
+    # 最大化 sigmoid(preference_logit) 的稳定负对数形式。
+    return -F.logsigmoid(preference_logit).mean()
+\end{lstlisting}
+
+这里的对数概率必须只汇总回答中的有效词元，不能把提示词或补齐位置算进去。参考模型也必须使用同一分词器、同一截断和同一遮罩，否则两组对数概率比不可比。训练时参考模型参数冻结，但其对数概率仍是 DPO 基线的一部分。
+
+DPO 简化了系统，但只能从固定偏好对学习，难以在训练过程中主动探索新回答；当任务具有可自动验证的奖励，例如数学答案或代码测试时，在线采样仍然有价值。GRPO 正是在保留在线策略优化的同时，尝试去掉昂贵价值模型。
+
+\begin{interviewbox}{DPO 为什么不训练显式奖励模型，却仍需要参考策略？}
+\textbf{20 秒回答：}DPO 把 KL 正则化最优策略中的隐式奖励写成当前策略相对参考策略的对数概率比，再直接对偏好对做分类式优化。参考策略提供“原本有多偏好”的基线并约束漂移；没有它，目标会退化成只拉大当前策略的 chosen/rejected 间隔。
+
+\textbf{深入解释：}$\beta$ 同时缩放相对参考策略的偏好 logit。过大时目标更保守、梯度尺度也会变化；过小时允许更大偏移，但更容易过拟合偏好数据。DPO 源自 KL 正则化 RL 目标，但训练过程是离线可微的成对似然优化，没有在线环境交互；是否把它简称为“RL”应先说明所指的是目标来源还是优化过程。
+
+\textbf{面试官继续追问：}
+\begin{enumerate}
+  \item reference policy 去掉会怎样？
+  \item $\beta$ 太大或太小分别意味着什么？
+  \item DPO 与普通 pairwise classification 的区别在哪里？
+  \item DPO 为什么难以主动探索新回答？
+\end{enumerate}
+\end{interviewbox}
+
+\section{组相对策略优化（GRPO）}
+\label{sec:grpo}
+
+\begin{motivationbox}{在线 RL 中价值模型成本高且未必容易学准}
+PPO 的价值模型要为开放式语言状态估计未来回报，需要额外参数、激活和训练目标；在稀疏的回答级奖励下，这个估计本身也可能不稳定。组相对策略优化（Group Relative Policy Optimization，GRPO）对同一提示词采样多个候选，用组内相对奖励充当基线（baseline），借候选之间的比较降低方差，从而省去独立价值模型。
+\end{motivationbox}
+
+GRPO 对同一提示词采样 $G$ 个回答并得到奖励 $r_1,\ldots,r_G$。这里 $G$ 是组内回答数，$r_i$ 是第 $i$ 个回答的奖励。它用组内归一化构造相对优势：
+\[
+\bar r=\frac{1}{G}\sum_{i=1}^{G}r_i,\qquad
+A_i=\frac{r_i-\bar r}{\sigma_r+\epsilon}.
+\]
+
+\begin{examplebox}{三个回答怎样产生组内优势}
+同一提示词的三个回答奖励为 $[1,3,2]$。组均值 $\bar r=2$，总体标准差
+\[
+\sigma_r=\sqrt{\frac{(1-2)^2+(3-2)^2+(2-2)^2}{3}}
+\approx0.816.
+\]
+忽略很小的 $\epsilon$，三个优势约为
+\[
+[-1.225,\ 1.225,\ 0].
+\]
+第二个回答高于同组平均，因此其词元概率会被提高；第一个被降低；第三个接近基线。奖励的绝对值若整体加 $10$，优势不变，这正是“组内相对”二字的含义。
+\end{examplebox}
+其中 $\bar r$ 是组内平均奖励，$\sigma_r$ 是组内奖励标准差，$A_i$ 是第 $i$ 个回答的标准化优势，$\epsilon$ 是防止除零的小常数。这样可以不训练显式价值模型，节省显存和训练复杂度。风险是组内奖励方差过小、奖励稀疏或噪声大时，优势估计会不稳定，因此仍需要 KL 控制、足够采样数和奖励归一化。
+
+对第 $i$ 个回答的第 $t$ 个词元，记新旧策略概率比
+\[
+\rho_{i,t}(\theta)=
+\frac{\pi_\theta(y_{i,t}\mid x,y_{i,<t})}
+{\pi_{\theta_{\rm old}}(y_{i,t}\mid x,y_{i,<t})}.
+\]
+GRPO 可使用与 PPO 类似的裁剪代理目标
+\[
+\mathcal L_{\rm GRPO}
+=-\frac{1}{G}\sum_{i=1}^G\frac{1}{|y_i|}\sum_t
+\min\!\left(\rho_{i,t}A_i,
+\operatorname{clip}(\rho_{i,t},1-\epsilon,1+\epsilon)A_i\right)
++\beta D_{\rm KL}(\pi_\theta\Vert\pi_{\rm ref}).
+\]
+式中，$y_{i,t}$ 是第 $i$ 个回答的第 $t$ 个词元，$y_{i,<t}$ 是它之前的回答前缀，$|y_i|$ 是该回答的有效长度；$\rho_{i,t}$ 是新旧策略概率比，$\epsilon$ 是裁剪宽度，$\beta$ 是参考策略 KL 惩罚系数。组内标准化解决的是基线估计，不会自动限制策略漂移；最后的 KL 项仍然有独立作用。
+
+\codesubsection{对应实现：GRPO 组内优势}
+
+\begin{lstlisting}
+import torch
+
+def group_relative_advantages(rewards, eps=1e-6):
+    # rewards: [B, G]
+    # B 个 prompt，每个 prompt 有 G 个候选回答。
+    group_mean = rewards.mean(dim=1, keepdim=True)
+
+    # unbiased=False 使用总体标准差；G 较小时更适合此处归一化。
+    group_std = rewards.std(
+        dim=1, keepdim=True, unbiased=False
+    )
+
+    # 同一 prompt 内高于均值为正优势，低于均值为负优势。
+    advantages = (rewards - group_mean) / (group_std + eps)
+    return advantages  # [B, G]
+\end{lstlisting}
+
+优势的比较范围只能是同一提示词内部，因为不同提示词的奖励难度和标尺可能不同。当一组回答奖励完全相同时，分子为零，优势也全部为零；$\epsilon$ 只能防止除零，不能凭空创造学习信号。因此 GRPO 依赖组内存在可辨别的质量差异。
+
+\begin{interviewbox}{GRPO 为什么可以不训练独立价值模型？}
+\textbf{20 秒回答：}它对同一提示词采样多个回答，用组内奖励均值和标准差构造相对优势，把同组候选当作彼此的基线。因此不需要另一个网络预测 $V(s)$，但仍然存在 baseline，并不是“没有 critic 就没有基线”。
+
+\textbf{深入解释：}组内中心化降低不同题目奖励尺度带来的方差。组大小增加通常改善均值和方差估计，也提高探索覆盖，但 rollout 成本线性上升；候选高度相关时边际收益有限。若奖励标准差很小，除法会放大噪声；若全相等，优势全为零。稀疏奖励下，一整组都失败是常见挑战。
+
+\textbf{面试官继续追问：}
+\begin{enumerate}
+  \item 为什么每个 prompt 要生成多个 responses？
+  \item group size 增大会怎样？
+  \item reward std 很小时如何处理？
+  \item GRPO 与 PPO 最本质的区别是什么？
+  \item GRPO 是否完全不需要 critic-like signal？
+\end{enumerate}
+\end{interviewbox}
+
+\begin{wrongbox}
+\textbf{错误说法：}GRPO 没有价值模型，所以没有 baseline。
+
+\textbf{更准确：}GRPO 没有\emph{独立训练的} value model，但组均值 $\bar r$ 就承担了 baseline 的角色。它把回答奖励变成同题候选之间的相对优势，仍需要 KL、裁剪或其他机制限制策略漂移。
+\end{wrongbox}
+
+SFT、PPO、DPO 与 GRPO 不是简单的新旧替代关系：SFT 提供稳定行为起点，PPO 适合需要在线探索且能承担复杂系统的场景，DPO 适合高质量离线偏好对，GRPO 则适合能批量采样并获得可靠可验证奖励的任务。选择方法前应先判断反馈从哪里来、是否需要探索，以及能否承担额外模型和采样成本。
+
+\begin{table}[htbp]
+\centering
+\small
+\begin{tabularx}{0.95\textwidth}{lYYYY}
+\toprule
+方法 & 数据 & 是否需奖励模型 & 是否需价值模型 & 典型特点\\
+\midrule
+SFT & 指令回答 & 否 & 否 & 简单稳定，受数据质量限制\\
+PPO & 在线采样 + 奖励 & 是 & 通常是 & 强但复杂，显存和调参成本高\\
+DPO & 偏好对 & 否 & 否 & 离线稳定，依赖参考模型对数概率\\
+GRPO & 多回答奖励 & 可用规则或奖励模型 & 否 & 省价值模型，适合可验证奖励\\
+\bottomrule
+\end{tabularx}
+\caption{SFT、PPO、DPO 与 GRPO 对比。}
+\end{table}
+
+\section*{面试高频问题}
+\addcontentsline{toc}{section}{面试高频问题：后训练}
+
+\textbf{Q: DPO 和 PPO 最大区别是什么？}
+
+20 秒回答：PPO 把偏好转成奖励再做强化学习；DPO 直接把偏好对转成策略相对参考策略的对数概率优化目标，省掉在线强化学习和价值模型。
+
+\textbf{Q: GRPO 为什么能省显存？}
+
+20 秒回答：它用同一提示词多个回答的组内奖励构造优势，不需要额外价值模型，少存一套模型与相应激活。

@@ -1,0 +1,372 @@
+\tikzset{
+  block/.style={draw=linegray, fill=white, rounded corners=1.2mm, minimum width=34mm,
+    minimum height=10mm, align=center, inner sep=2.2mm, font=\sffamily\small, text=ink},
+  wideblock/.style={block, minimum width=48mm},
+  compact/.style={block, minimum width=22mm, minimum height=9mm, inner sep=1.5mm},
+  blueblock/.style={block, fill=softblue, draw=blue!65},
+  greenblock/.style={block, fill=softgreen, draw=green!65},
+  amberblock/.style={block, fill=softamber, draw=amber!65},
+  coralblock/.style={block, fill=softcoral, draw=coral!65},
+  layerbox/.style={draw=linegray, fill=codebg, rounded corners=2mm, inner sep=4mm},
+  head/.style={draw=linegray, fill=white, rounded corners=0.8mm, minimum width=8mm,
+    minimum height=7mm, inner sep=0.8mm, font=\sffamily\small},
+  arrow/.style={-{Stealth[length=2.4mm,width=1.7mm]}, line width=0.75pt, draw=ink,
+    rounded corners=1.5mm},
+  bluearrow/.style={arrow, draw=blue},
+  greenarrow/.style={arrow, draw=green},
+  amberarrow/.style={arrow, draw=amber},
+  lightarrow/.style={-{Stealth[length=2.1mm]}, line width=0.6pt, draw=muted,
+    rounded corners=1.5mm},
+  labeltext/.style={font=\sffamily\small, text=muted, align=center},
+  tinylabel/.style={font=\sffamily\footnotesize, text=muted, align=center},
+  vectorlabel/.style={font=\sffamily\footnotesize, text=muted, align=center,
+    fill=white, fill opacity=0.92, text opacity=1, inner sep=1.2pt},
+  paneltitle/.style={font=\sffamily\bfseries, text=ink}
+}
+
+\newcommand{\figTransformerOverview}{%
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}[node distance=6mm]
+  \node[blueblock] (in) {输入表示 $X_\ell$};
+  \node[compact, below=of in] (n1) {RMSNorm};
+  \node[wideblock, below=of n1] (attn) {多头自注意力};
+  \node[greenblock, below=of attn] (r1) {$U=X_\ell+\operatorname{Attn}(\operatorname{Norm}(X_\ell))$};
+  \node[compact, below=of r1] (n2) {RMSNorm};
+  \node[wideblock, below=of n2] (ffn) {SwiGLU 前馈网络};
+  \node[greenblock, below=of ffn] (out) {$X_{\ell+1}=U+\operatorname{FFN}(\operatorname{Norm}(U))$};
+  \draw[arrow] (in) -- (n1);
+  \draw[arrow] (n1) -- (attn);
+  \draw[arrow] (attn) -- (r1);
+  \draw[arrow] (r1) -- (n2);
+  \draw[arrow] (n2) -- (ffn);
+  \draw[arrow] (ffn) -- (out);
+  \draw[bluearrow] (in.east) -- ++(14mm,0) |- node[pos=0.18,right,tinylabel]{残差} (r1.east);
+  \draw[bluearrow] (r1.west) -- ++(-14mm,0) |- node[pos=0.18,left,tinylabel]{残差} (out.west);
+  \begin{scope}[on background layer]
+    \node[layerbox, fit=(n1)(attn)(r1)(n2)(ffn)(out), inner sep=5mm] (layer) {};
+  \end{scope}
+  \node[paneltitle, fill=codebg, anchor=north west, inner sep=1mm]
+    at ([xshift=3mm,yshift=-2mm]layer.north west) {前置归一化 Transformer 层};
+\end{tikzpicture}
+\caption{现代仅解码器 Transformer 的单层主路径。蓝色旁路表示恒等残差，绿色节点给出两次更新后的张量。}
+\end{figure}}
+
+\newcommand{\figSelfAttention}{%
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}[node distance=8mm and 13mm]
+  \node[blueblock] (x) {输入 $X$\\[-1mm]\footnotesize $[B,T,d_{\rm model}]$};
+  \node[compact, below left=of x] (q) {$Q=XW_Q$};
+  \node[compact, below=of x] (k) {$K=XW_K$};
+  \node[compact, below right=of x] (v) {$V=XW_V$};
+  \node[wideblock, below=15mm of k] (score) {缩放点积\\[-1mm]$S=QK^\top/\sqrt{d_h}$};
+  \node[amberblock, right=22mm of score] (mask) {因果遮罩 $M$\\[-1mm]\footnotesize 未来位置为 $-\infty$};
+  \node[greenblock, below=of score] (soft) {$A=\softmax(S+M)$};
+  \node[blueblock, below=of soft] (out) {$Y=AV$\\[-1mm]\footnotesize $[B,H,T,d_h]$};
+  \draw[arrow] (x) -- (q); \draw[arrow] (x) -- (k); \draw[arrow] (x) -- (v);
+  \draw[bluearrow] (q) |- (score.west);
+  \draw[bluearrow] (k) -- (score);
+  \draw[amberarrow] (mask) -- (score);
+  \draw[arrow] (score) -- (soft);
+  \draw[greenarrow] (soft) -- (out);
+  \draw[bluearrow] (v) |- (out.east);
+  \node[tinylabel, left=3mm of soft] {$A:[B,H,T,T]$};
+\end{tikzpicture}
+\caption{自注意力的完整数据流。分数矩阵沿最后一个维度归一化，随后用每一行权重汇聚对应的值向量。}
+\end{figure}}
+
+\newcommand{\figMhaMqaGqa}{%
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}
+  \foreach \x/\title/\desc in {0/MHA/一一对应,5.2/MQA/全部共享,10.4/GQA/分组共享}{
+    \node[paneltitle] at (\x,0.25) {\title};
+    \node[tinylabel] at (\x,-0.2) {\desc};
+    \foreach \i in {1,...,4}{
+      \node[head, fill=softblue, draw=blue!65] (q\title\i) at ({\x-2.25+0.9*\i},-1.05) {$Q_{\i}$};
+    }
+  }
+  \foreach \i in {1,...,4}{
+    \node[head, fill=softgreen, draw=green!65] (mkv\i) at ({-2.25+0.9*\i},-2.35) {$KV_{\i}$};
+    \draw[lightarrow] (qMHA\i) -- (mkv\i);
+  }
+  \node[head, fill=softgreen, draw=green!65, minimum width=29mm] (onekv) at (5.2,-2.35) {$KV_1$};
+  \foreach \i in {1,...,4}{\draw[lightarrow] (qMQA\i) -- (onekv);}
+  \node[head, fill=softgreen, draw=green!65, minimum width=15mm] (gkv1) at (9.55,-2.35) {$KV_1$};
+  \node[head, fill=softgreen, draw=green!65, minimum width=15mm] (gkv2) at (11.25,-2.35) {$KV_2$};
+  \draw[lightarrow] (qGQA1) -- (gkv1); \draw[lightarrow] (qGQA2) -- (gkv1);
+  \draw[lightarrow] (qGQA3) -- (gkv2); \draw[lightarrow] (qGQA4) -- (gkv2);
+  \draw[linegray, line width=0.55pt] (2.6,0.35) -- (2.6,-2.85);
+  \draw[linegray, line width=0.55pt] (7.8,0.35) -- (7.8,-2.85);
+  \node[tinylabel] at (0,-3.0) {$n_{\rm kv}=H$};
+  \node[tinylabel] at (5.2,-3.0) {$n_{\rm kv}=1$};
+  \node[tinylabel] at (10.4,-3.0) {$1<n_{\rm kv}<H$};
+\end{tikzpicture}
+\caption{MHA、MQA 与 GQA 的键值共享方式。查询头数量保持不变，键值头越少，缓存与解码读取带宽越小。}
+\end{figure}}
+
+\newcommand{\figKVCache}{%
+\begin{figure}[H]
+\centering
+\begin{subfigure}[t]{0.47\textwidth}
+\vspace{0pt}
+\centering
+\begin{tikzpicture}[node distance=6mm]
+  \node[paneltitle] (title) {提示词预填充：建立缓存};
+  \node[blueblock, below=of title] (tok) {整段提示词 $x_{1:T}$};
+  \node[block, below=of tok] (comp) {并行计算所有 $K,V$};
+  \node[greenblock, below=of comp, minimum width=50mm] (cache) {$[K_1|\cdots|K_T]$\\$[V_1|\cdots|V_T]$};
+  \draw[arrow] (tok) -- (comp); \draw[greenarrow] (comp) -- (cache);
+\end{tikzpicture}
+\end{subfigure}
+\hfill
+\begin{subfigure}[t]{0.47\textwidth}
+\vspace{0pt}
+\centering
+\begin{tikzpicture}[node distance=6mm]
+  \node[paneltitle] (title) {逐词元解码：增量读取};
+  \node[blueblock, below=of title] (new) {新词元 $x_{t}$};
+  \node[block, below=of new] (qkv) {只计算 $q_t,k_t,v_t$};
+  \node[greenblock, below=of qkv, minimum width=50mm] (append) {追加 $k_t,v_t$ 到缓存};
+  \node[amberblock, below=of append] (attend) {$q_t$ 读取 $K_{1:t},V_{1:t}$};
+  \draw[arrow] (new)--(qkv); \draw[greenarrow] (qkv)--(append); \draw[amberarrow] (append)--(attend);
+\end{tikzpicture}
+\end{subfigure}
+\caption{键值缓存的两阶段视角。提示词预填充并行写入整段上下文；逐词元解码只追加当前位置，并读取全部历史缓存。}
+\end{figure}}
+
+\newcommand{\figRoPE}{%
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}[scale=0.95]
+  \draw[step=0.5cm, line width=0.2pt, draw=linegray!55] (-0.15,-0.15) grid (4.1,3.05);
+  \draw[->,draw=muted,line width=0.65pt] (-0.25,0) -- (4.35,0) node[right] {$x_{2i}$};
+  \draw[->,draw=muted,line width=0.65pt] (0,-0.25) -- (0,3.25) node[above] {$x_{2i+1}$};
+  \coordinate (o) at (0,0);
+  \coordinate (u) at (2.55,0.65);
+  \coordinate (m) at (1.38,2.35);
+  \coordinate (n) at (3.05,1.62);
+  \draw[bluearrow, line width=1.1pt] (o) -- (u)
+    node[pos=0.70,below=2.4mm,vectorlabel] {原向量};
+  \draw[greenarrow, line width=1.1pt] (o) -- (m)
+    node[pos=0.83,left=2mm,vectorlabel] {位置 $m$};
+  \draw[amberarrow, line width=1.1pt] (o) -- (n)
+    node[pos=0.78,above right=0.5mm,vectorlabel] {位置 $n$};
+  \draw[draw=green,->,line width=0.7pt] (0.82,0.21) arc[start angle=14,end angle=60,radius=0.85];
+  \draw[draw=amber,->,line width=0.7pt] (1.22,0.31) arc[start angle=14,end angle=28,radius=1.26];
+  \node[vectorlabel] at (0.72,0.86) {$m\theta_i$};
+  \node[vectorlabel] at (1.45,0.38) {$n\theta_i$};
+  \node[wideblock, fill=softblue, draw=blue!65] at (7.4,1.55)
+    {$\langle R_mq,R_nk\rangle$\\[1mm]$=q^\top R_{n-m}k$\\[1mm]\footnotesize 只保留相对位移 $n-m$};
+  \draw[bluearrow] (4.1,1.55) -- (4.9,1.55);
+\end{tikzpicture}
+\caption{RoPE 的二维几何解释：旋转后内积只依赖相对位置。}
+\end{figure}}
+
+\newcommand{\figPretrainingPipeline}{%
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}
+  \node[blueblock, minimum width=30mm] (raw) at (-5.9,0) {原始语料};
+  \node[block, minimum width=34mm] (clean) at (-2.0,0) {清洗与去重};
+  \node[block, minimum width=28mm] (tok) at (1.9,0) {分词器};
+  \node[greenblock, minimum width=30mm] (seq) at (5.8,0) {词元序列};
+  \node[greenblock, minimum width=34mm] (pack) at (5.8,-1.9) {序列拼接与遮罩};
+  \node[block, minimum width=34mm] (lm) at (1.9,-1.9) {因果语言模型};
+  \node[amberblock, minimum width=34mm] (loss) at (-2.0,-1.9) {移位交叉熵};
+  \node[coralblock, minimum width=30mm] (opt) at (-5.9,-1.9) {梯度与更新};
+  \draw[arrow] (raw)--(clean); \draw[arrow] (clean)--(tok); \draw[arrow] (tok)--(seq);
+  \draw[arrow] (seq)--(pack); \draw[arrow] (pack)--(lm); \draw[amberarrow] (lm)--(loss); \draw[amberarrow] (loss)--(opt);
+  \node[tinylabel, above=2mm of clean] {数据质量};
+  \node[tinylabel, above=2mm of lm] {$[B,T]\rightarrow[B,T,V]$};
+  \draw[coral, dashed, -{Stealth[length=2mm]}, rounded corners=2mm] (opt.south) -- ++(0,-5mm) -| node[pos=0.25,below,tinylabel]{反向传播} (lm.south);
+\end{tikzpicture}
+\caption{从语料到参数更新的预训练闭环。上行负责数据表示，下行完成批处理、前向计算和梯度更新。}
+\end{figure}}
+
+\newcommand{\figRLHFStages}{%
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}
+  \node[blueblock] (pt) at (0,0) {预训练模型};
+  \node[block] (sft) at (4.4,0) {监督微调 SFT};
+  \node[greenblock] (policy) at (8.8,0) {参考策略 $\pi_{\rm ref}$};
+  \node[amberblock] (pairs) at (0,-2.1) {人类偏好对\\$y_w\succ y_l$};
+  \node[block] (rm) at (4.4,-2.1) {奖励模型 $r_\phi$};
+  \node[coralblock] (rl) at (8.8,-2.1) {PPO/GRPO 更新};
+  \node[greenblock] (aligned) at (13.2,-2.1) {对齐策略 $\pi_\theta$};
+  \draw[arrow] (pt)--(sft); \draw[arrow] (sft)--(policy);
+  \draw[amberarrow] (pairs)--(rm); \draw[amberarrow] (rm)--(rl);
+  \draw[coral, line width=0.75pt, -{Stealth[length=2.4mm]}] (policy)--(rl);
+  \draw[coral, line width=0.75pt, -{Stealth[length=2.4mm]}] (rl)--(aligned);
+  \node[tinylabel, above=3mm of pairs] {离线学习偏好};
+  \node[tinylabel, below=2mm of rl] {奖励最大化 + KL 约束};
+\end{tikzpicture}
+\caption{经典 RLHF 流程。SFT 提供参考策略，偏好对训练奖励模型，强化学习在奖励与 KL 约束之间更新策略。}
+\end{figure}}
+
+\newcommand{\figPpoGrpo}{%
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}
+  \node[paneltitle] (ptitle) at (-4.2,0) {PPO：价值模型估计基线};
+  \node[tinylabel] at (-4.2,-0.55) {需要价值模型};
+  \node[blueblock] (psample) at (-4.2,-1.45) {策略采样回答};
+  \node[wideblock] (estimate) at (-4.2,-3.05) {奖励 $R_t$ + 价值基线 $V(s_t)$};
+  \node[greenblock] (padv) at (-4.2,-4.65) {$A_t\approx R_t-V(s_t)$};
+  \node[coralblock] (pupdate) at (-4.2,-6.25) {裁剪策略更新};
+  \draw[arrow] (psample)--(estimate); \draw[arrow] (estimate)--(padv); \draw[coral!90,arrow] (padv)--(pupdate);
+
+  \node[paneltitle] (gtitle) at (4.2,0) {GRPO：组内奖励提供基线};
+  \node[tinylabel] at (4.2,-0.55) {无需价值模型};
+  \node[blueblock] (gsample) at (4.2,-1.45) {同一提示采样 $G$ 个回答};
+  \node[amberblock] (reward) at (4.2,-3.05) {组奖励 $r_1,\ldots,r_G$};
+  \node[greenblock] (gadv) at (4.2,-4.65) {$A_i=(r_i-\bar r)/(\sigma_r+\epsilon)$};
+  \node[coralblock] (gupdate) at (4.2,-6.25) {裁剪策略更新};
+  \draw[arrow] (gsample)--(reward); \draw[arrow] (reward)--(gadv); \draw[coral!90,arrow] (gadv)--(gupdate);
+  \draw[linegray, line width=0.6pt] (0,0.45)--(0,-6.75);
+\end{tikzpicture}
+\caption{PPO 与 GRPO 的优势估计差异。两者都可使用概率比裁剪，但 GRPO 用组均值替代单独训练的价值基线。}
+\end{figure}}
+
+\newcommand{\figMoE}{%
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}[node distance=10mm and 11mm]
+  \node[blueblock] (x) {词元表示 $x$};
+  \node[amberblock, below=of x] (router) {路由器\\$p=\softmax(W_rx)$};
+  \node[compact, below left=14mm and 30mm of router] (e1) {专家 $E_1$};
+  \node[compact, below left=14mm and 8mm of router, fill=softgreen, draw=green!65] (e2) {专家 $E_2$};
+  \node[compact, below right=14mm and 8mm of router, fill=softgreen, draw=green!65] (e3) {专家 $E_3$};
+  \node[compact, below right=14mm and 30mm of router] (e4) {专家 $E_4$};
+  \node[greenblock, below=20mm of router] (sum) {$y=p_2E_2(x)+p_3E_3(x)$};
+  \draw[arrow] (x)--(router);
+  \draw[lightarrow, draw=linegray] (router)--(e1);
+  \draw[greenarrow, line width=1.3pt] (router)--node[pos=0.57,left=1mm,vectorlabel]{$p_2$}(e2);
+  \draw[greenarrow, line width=1.0pt] (router)--node[pos=0.57,right=1mm,vectorlabel]{$p_3$}(e3);
+  \draw[lightarrow, draw=linegray] (router)--(e4);
+  \draw[greenarrow] (e2)--(sum); \draw[greenarrow] (e3)--(sum);
+  \node[tinylabel, below=2mm of e1] {未选中}; \node[tinylabel, below=2mm of e4] {未选中};
+  \node[paneltitle, right=13mm of router] {Top-$2$ 路由};
+\end{tikzpicture}
+\caption{Top-$k$ MoE 路由。路由器只激活少数专家，并按门控概率加权合并输出；线宽表示本例中的路由权重。}
+\end{figure}}
+
+\newcommand{\figFFNExpansion}{%
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}[node distance=6mm]
+  \node[blueblock, minimum width=48mm] (x) {残差流\\[-1mm]\footnotesize $[B,T,d_{\rm model}]$};
+  \node[block, below=of x, minimum width=48mm] (up) {上投影与门控投影};
+  \node[greenblock, below=of up, minimum width=48mm] (wide) {宽中间特征空间\\[-1mm]\footnotesize $[B,T,d_{\rm ff}]$};
+  \node[amberblock, below=of wide, minimum width=48mm] (nonlinear) {激活与逐元素门控};
+  \node[block, below=of nonlinear, minimum width=48mm] (down) {下投影};
+  \node[greenblock, below=of down, minimum width=48mm] (add) {残差相加\\[-1mm]\footnotesize $[B,T,d_{\rm model}]$};
+  \draw[arrow] (x)--(up); \draw[arrow] (up)--(wide);
+  \draw[arrow] (wide)--(nonlinear); \draw[arrow] (nonlinear)--(down);
+  \draw[arrow] (down)--(add);
+  \draw[bluearrow] (x.east)--++(24mm,0)|-node[pos=0.28,right,tinylabel]{固定残差宽度}(add.east);
+  \node[tinylabel, right=10mm of wide] {更大的非线性特征基};
+\end{tikzpicture}
+\caption{FFN 的扩张--变换--收缩路径。中间层提供较大的非线性容量，输出回到固定的残差流宽度。}
+\end{figure}}
+
+\newcommand{\figReasoningModes}{%
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}
+  \node[paneltitle] (directtitle) at (0,0) {直接回答模式};
+  \node[compact, fill=softblue, draw=blue!65, minimum width=28mm]
+    (p1) at (-3.0,-1.0) {提示词};
+  \node[compact, fill=softgreen, draw=green!65, minimum width=28mm]
+    (a1) at (3.0,-1.0) {回答};
+  \draw[arrow] (p1)--node[above,tinylabel]{单次生成}(a1);
+  \node[tinylabel] at (0,-1.65) {较小推理预算};
+
+  \draw[linegray, line width=0.6pt] (-7.35,-2.15)--(7.35,-2.15);
+  \node[paneltitle] (reasontitle) at (0,-2.75) {推理导向模式};
+  \node[compact, fill=softblue, draw=blue!65, minimum width=26mm]
+    (p2) at (-6.1,-3.85) {提示词};
+  \node[block, minimum width=42mm]
+    (compute) at (-2.0,-3.85) {中间推理计算};
+  \node[amberblock, minimum width=30mm]
+    (verify) at (2.3,-3.85) {验证 / 选择};
+  \node[compact, fill=softgreen, draw=green!65, minimum width=26mm]
+    (a2) at (5.8,-3.85) {回答};
+  \draw[arrow] (p2)--(compute); \draw[arrow] (compute)--(verify); \draw[arrow] (verify)--(a2);
+  \node[tinylabel] at (-2.0,-4.55) {多步 · 多候选 · 搜索};
+  \node[tinylabel] at (0,-5.10) {内部计算不等于必须公开的推理轨迹};
+\end{tikzpicture}
+\caption{直接回答与推理导向推理的执行差异。后者增加推理预算、候选或验证步骤，但不意味着必须公开内部推理轨迹。}
+\end{figure}}
+
+\newcommand{\figRLVR}{%
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}[node distance=9mm and 8mm]
+  \node[blueblock, minimum width=28mm] (prompt) {任务提示};
+  \node[block, right=of prompt, minimum width=30mm] (policy) {策略模型};
+  \node[greenblock, right=of policy, minimum width=38mm] (rollouts) {多次采样\\[-1mm]\footnotesize 推理轨迹与答案};
+  \node[amberblock, right=of rollouts, minimum width=34mm] (verifier) {可验证器\\[-1mm]\footnotesize 通过 / 失败 / 分级分数};
+  \node[coralblock, below=13mm of rollouts] (update) {策略优化};
+  \draw[arrow] (prompt)--(policy); \draw[arrow] (policy)--(rollouts); \draw[arrow] (rollouts)--(verifier);
+  \draw[amberarrow] (verifier.south)|-node[pos=0.30,right,tinylabel]{可验证奖励}(update.east);
+  \draw[coral!90, line width=0.75pt, -{Stealth[length=2.4mm]}, rounded corners=2mm]
+    (update.west)-|(policy.south);
+\end{tikzpicture}
+\caption{RLVR 的基本闭环。验证器评价最终结果或过程步骤，多次 rollout 为策略优化提供可比较的探索样本。}
+\end{figure}}
+
+\newcommand{\figReasoningDistill}{%
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}[node distance=11mm]
+  \node[blueblock, minimum width=42mm] (teacher) {大型推理教师模型};
+  \node[block, right=of teacher, minimum width=46mm] (data) {候选回答 / 推理轨迹};
+  \node[amberblock, right=of data] (filter) {验证与过滤};
+  \node[greenblock, below=13mm of data, minimum width=46mm] (student) {学生模型训练};
+  \draw[arrow] (teacher)--(data); \draw[arrow] (data)--(filter);
+  \draw[amberarrow] (filter.south)|-(student.east);
+  \draw[bluearrow] (data.south)--(student.north);
+  \node[tinylabel, below=2mm of student] {更小、更低延迟，但能力受教师质量与数据覆盖限制};
+\end{tikzpicture}
+\caption{推理蒸馏的概念流程。可训练数据必须经过质量检查；教师的错误轨迹也可能被学生继承。}
+\end{figure}}
+
+\newcommand{\figLoRA}{%
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}[node distance=8mm and 12mm]
+  \node[blueblock] (x) {输入 $x$};
+  \node[block, right=18mm of x, minimum width=42mm] (base) {冻结主权重 $W$};
+  \node[amberblock, above right=9mm and 18mm of x] (a) {低秩投影 $A$\\[-1mm]\footnotesize $d_{\rm in}\to r$};
+  \node[greenblock, right=of a] (b) {低秩投影 $B$\\[-1mm]\footnotesize $r\to d_{\rm out}$};
+  \node[coralblock, right=20mm of base] (add) {相加\\[-1mm]\footnotesize $Wx+\frac{\alpha}{r}BAx$};
+  \draw[arrow] (x)--(base); \draw[arrow] (base)--(add);
+  \draw[amberarrow] (x.north east)|-(a.west); \draw[greenarrow] (a)--(b);
+  \draw[greenarrow] (b.south east)-|(add.north);
+  \node[tinylabel, below=2mm of base] {不更新梯度};
+  \node[tinylabel, above=2mm of b] {只训练低秩分支};
+\end{tikzpicture}
+\caption{LoRA 在冻结主权重旁增加低秩更新分支。部署时可把 $\frac{\alpha}{r}BA$ 合并进原权重。}
+\end{figure}}
+
+\newcommand{\figInferenceTimeline}{%
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}
+  \node[blueblock, minimum width=59mm] (prefill) at (0,0) {提示词预填充\\[-1mm]\footnotesize 并行处理 $T$ 个提示词元};
+  \node[greenblock, minimum width=22mm] (d1) at (5.0,0) {解码 $t=1$};
+  \node[greenblock, minimum width=22mm] (d2) at (8.0,0) {解码 $t=2$};
+  \node[greenblock, minimum width=22mm] (d3) at (11.0,0) {解码 $t=3$};
+  \draw[arrow] (prefill)--(d1); \draw[arrow] (d1)--(d2); \draw[arrow] (d2)--(d3);
+  \draw[blue, line width=2.4pt] (-2.95,-0.85) -- (2.95,-0.85);
+  \foreach \x in {4.0,4.4,...,12.0}{\draw[green, line width=2.4pt] (\x,-0.85)--++(0.22,0);}
+  \node[amberblock, minimum width=45mm] (cache) at (8.0,-1.55) {持续增长的键值缓存};
+  \draw[amberarrow] (d1.south)--(cache.north west); \draw[amberarrow] (d3.south)--(cache.north east);
+  \node[tinylabel] at (0,-2.35) {计算密集：大矩阵乘法，算术强度高};
+  \node[tinylabel] at (8.0,-2.35) {带宽敏感：每步生成 1 个词元，并读取历史键值};
+\end{tikzpicture}
+\caption{LLM 推理时间线。提示词预填充能并行处理输入；逐词元解码必须串行生成，并随上下文增长读取更大的键值缓存。}
+\end{figure}}
